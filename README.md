@@ -41,14 +41,14 @@ The following keybindings are configured for **Synapse**. Most actions use the `
 | `Super + 1-5` | Switch to Workspace 1-5 |
 | `Super + Alt + 1-5` | Move Window to Workspace 1-5 |
 
-### 🛠️ System & Hardware
+### Shell Keybindings
 | Shortcut | Action |
 | :--- | :--- |
 | `Ctrl + Shift + Esc` | Open System Monitor (btop) |
 | `Super + Ctrl + Shift + K` | **Exit Hyprland (Immediate Logout)** |
 ---
 
-## ⚙️ Configuration Setup
+## User Setup
 
 These are the default vars in hypr/variables.conf for the apps and keybinds change these in ~/.config/hypr/custom/variables.conf
 
