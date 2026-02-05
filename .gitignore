@@ -4,3 +4,5 @@ config/ags/types/
 # Logic artifacts
 node_modules/
 *.log
+# Thunar Bookmarks
+config/gtk-3.0/Bookmarks
