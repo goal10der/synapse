@@ -25,7 +25,6 @@ The following keybindings are configured for **Synapse**. Most actions use the `
 ### Application Shortcuts
 | Shortcut | Action |
 | :--- | :--- |
-| `Super` (Tap) | Toggle AGS Shell App Launcher |
 | `Super + Q` | Kill Active Window |
 | 'Super + C' | Code Editor
 | 'Super + W' | Browser
@@ -44,6 +43,7 @@ The following keybindings are configured for **Synapse**. Most actions use the `
 ### Shell Keybindings
 | Shortcut | Action |
 | :--- | :--- |
+| `Super` (Tap) | Toggle AGS Shell App Launcher |
 | `Ctrl + Shift + Esc` | Open System Monitor (btop) |
 | `Super + Ctrl + Shift + K` | **Exit Hyprland (Immediate Logout)** |
 ---
