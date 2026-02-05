@@ -5,7 +5,11 @@ Pull requests and help would be great i am learning ts as i go with this project
 ## Preview
 
 
-https://github.com/user-attachments/assets/25e1b1cc-f7d2-4dd1-9ce8-659e65d7a48d
+
+https://github.com/user-attachments/assets/0a1b9823-e648-490d-8f82-83e0aa1a270e
+
+
+
 
 Wallpaper taken by me
 
