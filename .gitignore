@@ -5,4 +5,4 @@ config/ags/types/
 node_modules/
 *.log
 # Thunar Bookmarks
-config/gtk-3.0/Bookmarks
+config/gtk-3.0/bookmarks
