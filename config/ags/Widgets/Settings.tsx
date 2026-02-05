@@ -7,6 +7,7 @@ import GLib from "gi://GLib"
 import AppearancePage from "./settings/Appearance"
 import NetworkPage from "./settings/Network"
 import AudioPage from "./settings/Audio"
+import BluetoothPage from "./settings/Bluetooth"
 
 // --- SIMPLE VARIABLE IMPLEMENTATION ---
 class Variable<T> {
@@ -72,7 +73,6 @@ export default function SettingsWindow({ gdkmonitor }: { gdkmonitor: any }) {
             visible={false} 
             application={app}
             
-            // --- ADD THESE TWO LINES ---
             // "on-demand" allows typing only when an input is focused
             keymode={Astal.Keymode.ON_DEMAND} 
             // "exclusive" prevents clicks from falling through to other windows
@@ -91,6 +91,7 @@ export default function SettingsWindow({ gdkmonitor }: { gdkmonitor: any }) {
                         
                         <TabButton label="Appearance" id="appearance" activeTab={activeTab} icon="preferences-desktop-theme-symbolic" />
                         <TabButton label="Network" id="network" activeTab={activeTab} icon="network-wireless-symbolic" />
+                        <TabButton label="Bluetooth" id="bluetooth" activeTab={activeTab} icon="bluetooth-symbolic" />
                         <TabButton label="Audio" id="audio" activeTab={activeTab} icon="audio-speakers-symbolic" />
                         
                         <Gtk.Box vexpand />
@@ -121,6 +122,7 @@ export default function SettingsWindow({ gdkmonitor }: { gdkmonitor: any }) {
 
                                 self.add_named(<AppearancePage scaleFactor={scaleFactor} />, "appearance");
                                 self.add_named(<NetworkPage />, "network");
+                                self.add_named(<BluetoothPage />, "bluetooth");
                                 self.add_named(<AudioPage />, "audio");
 
                                 // Subscribe to state changes

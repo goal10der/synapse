@@ -482,6 +482,7 @@ popover slider {
 }
 
 
+
 /* ============================================================================
    WALLPAPER PICKER
    ============================================================================ */
@@ -529,4 +530,55 @@ scrollbar slider {
 
 scrollbar slider:hover { 
     background-color: var(--primary); 
+}
+/* ============================================================================
+   BLUETOOTH
+   ============================================================================ */
+
+.device-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--on_surface);
+}
+
+.small-text {
+    font-size: 11px;
+}
+
+/* Specific styling for the device items in the list */
+.network-item image {
+    color: var(--primary);
+    -gtk-icon-size: 18px;
+    margin-right: 4px;
+}
+
+/* List Headers (Paired Devices / Available) */
+.dim-label {
+    margin-left: 8px;
+}
+
+/* Danger/Forget Button */
+.danger-button {
+    background-color: transparent;
+    color: var(--error);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.danger-button:hover {
+    background-color: rgba(var(--error-rgb), 0.15);
+    border-color: var(--error);
+}
+
+/* Toggle Separator */
+.settings-card separator {
+    margin: 8px 0;
+    background-color: var(--outline_variant);
+    min-height: 1px;
+}
+
+/* Spinner styling */
+spinner {
+    margin-right: 8px;
 }
