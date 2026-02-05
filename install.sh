@@ -154,7 +154,7 @@ update_system() {
 }
 install_pacman_packages() {
     echo -e "\033[0;34m[→] Installing Pacman packages...\033[0m"
-    sudo pacman -S $CONFIRM_FLAG hyprland iwd foot thunar brightnessctl wireplumber polkit-gnome xdg-desktop-portal-hyprland qt6ct qt5ct blueman geoclue btop starship fish gvfs nss meson vala valadoc gobject-introspection
+    sudo pacman -S $CONFIRM_FLAG pipewire-jack hyprland iwd foot thunar brightnessctl wireplumber polkit-gnome xdg-desktop-portal-hyprland qt6ct qt5ct blueman geoclue btop starship fish gvfs nss meson vala valadoc gobject-introspection
     echo -e "\033[0;32m[✓] Pacman packages installation completed.\033[0m"
 }
 install_aur_packages() {
