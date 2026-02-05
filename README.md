@@ -1,4 +1,7 @@
 # Synapse Dottfiles
+Pull requests and help would be great i am learning ts as i go with this project so if you notice anything within this please tell me
+
+
 ## Preview
 
 
