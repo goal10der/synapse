@@ -22,6 +22,7 @@ show_help() {
     echo "  --aur-helper=[yay|paru]     the AUR helper to use"
     echo "  --vscode=[vscode|code]      install code-oss or visual-studio-code (default: none)"
     echo "  --noconfirm                 ONLY use this flag if you want to skip all confirmation prompts"
+    echo "  --zen-browser               install zen-browser"
 }
 getargs() {
     for arg in "$@"; do
@@ -38,6 +39,9 @@ getargs() {
                 ;;
             --noconfirm)
                 CONFIRM_FLAG="--noconfirm"
+                ;;
+            --zen-browser)
+                ZEN_BROWSER_OPTION="yes"
                 ;;
             *)
                 echo "Unknown argument: $arg"
@@ -161,6 +165,8 @@ install_aur_packages() {
 }
 install_dotfiles() {
     echo -e "\033[0;34m[→] Cleaning and installing dotfiles...\033[0m"
+    mkdir -p "$HOME/Wallpapers"
+    mkdir -p "$HOME/Downloads"
     local targets=(ags btop fish foot gtk-3.0 hypr matugen starship.toml)
     for item in "${targets[@]}"; do
         if [ -e "$HOME/.config/$item" ]; then
@@ -174,6 +180,16 @@ install_dotfiles() {
         fi
     done
     echo -e "\033[0;32m[✓] Dotfiles installation completed.\033[0m"
+}
+install_zen_browser() {
+    local option=$1
+    if [[ "$option" == "yes" ]]; then
+        echo -e "\033[0;34m[→] Installing Zen Browser...\033[0m"
+        $AUR_HELPER -S zen-browser-bin $CONFIRM_FLAG
+        echo -e "\033[0;32m[✓] Zen Browser installation completed.\033[0m"
+    else
+        echo -e "\033[0;34m[→] No Zen Browser option selected. Skipping installation...\033[0m"
+    fi
 }
 install_vscode() {
     local option=$1
@@ -221,6 +237,7 @@ main() {
     install_pacman_packages
     install_aur_packages "$AUR_HELPER"
     install_vscode "$VSCODE_OPTION"
+    install_zen_browser "$ZEN_BROWSER_OPTION"
     install_dotfiles
 
     # End of installation commands
