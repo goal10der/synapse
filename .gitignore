@@ -1,0 +1,6 @@
+# AGS/Astal types
+config/ags/@girs/
+config/ags/types/
+# Logic artifacts
+node_modules/
+*.log
