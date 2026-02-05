@@ -138,7 +138,7 @@ backup_config() {
     local DATE=$(date +%Y%m%d_%H%M%S)
     local BACKUP_DIR="$HOME/config_backup_$DATE"
     mkdir -p "$BACKUP_DIR"
-    local targets=(ags btop fish foot gtk-3.0 hypr matugen starship.toml)
+    local targets=(ags btop fish foot hypr matugen starship.toml)
     for item in "${targets[@]}"; do
         if [ -e "$HOME/.config/$item" ]; then
             cp -rf "$HOME/.config/$item" "$BACKUP_DIR/" 2>/dev/null
@@ -168,7 +168,7 @@ install_dotfiles() {
     mkdir -p "$HOME/Wallpapers"
     cp ./DefaultWallpaper/morningafter.JPG "$HOME/Wallpapers/Default_Wallpaper.jpg"
     mkdir -p "$HOME/Downloads"
-    local targets=(ags btop fish foot gtk-3.0 hypr matugen starship.toml)
+    local targets=(ags btop fish foot hypr matugen starship.toml)
     for item in "${targets[@]}"; do
         if [ -e "$HOME/.config/$item" ]; then
             rm -rf "$HOME/.config/$item"
