@@ -155,12 +155,20 @@ update_system() {
 install_pacman_packages() {
     echo -e "\033[0;34m[→] Installing Pacman packages...\033[0m"
     sudo pacman -S $CONFIRM_FLAG pipewire-jack hyprland iwd foot thunar brightnessctl wireplumber polkit-gnome xdg-desktop-portal-hyprland qt6ct qt5ct blueman geoclue btop starship fish gvfs nss meson vala valadoc gobject-introspection
+    if [$? -ne 0 ]; then
+        echo -e "\033[1;31m[!] Error: Pacman package installation failed.\033[0m"
+        exit 1
+    fi
     echo -e "\033[0;32m[✓] Pacman packages installation completed.\033[0m"
 }
 install_aur_packages() {
     local helper=$1
     echo -e "\033[0;34m[→] Installing AUR packages using $helper...\033[0m"
     $helper -S $CONFIRM_FLAG aylurs-gtk-shell-git libastal-meta matugen awww-bin
+    if [$? -ne 0 ]; then
+        echo -e "\033[1;31m[!] Error: AUR package installation failed.\033[0m"
+        exit 1
+    fi 
     echo -e "\033[0;32m[✓] AUR packages installation completed.\033[0m"
 }
 install_dotfiles() {
