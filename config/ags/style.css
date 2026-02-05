@@ -1,0 +1,532 @@
+/* ============================================================================
+   VARIABLES & IMPORTS
+   ============================================================================ */
+
+@import url("file:///home/tim/.cache/matugen/colors.css");
+
+* { 
+    font-family: "JetBrains"; 
+}
+
+image { 
+    -gtk-icon-size: 14px; 
+}
+
+
+/* ============================================================================
+   BAR & WIDGETS
+   ============================================================================ */
+
+.bar {
+    background-color: transparent;
+    padding: 4px 8px;
+}
+
+/* Shared Widget Button Styling */
+#settings-button,
+.workspaces-container,
+.clock button,
+.battery button,
+.audio-output button,
+.tray-item button,
+.wireless button {
+    min-height: 24px;
+    margin: 4px;
+    padding: 0 10px;
+    border-radius: 12px;
+    background-image: none;
+    background-color: rgba(var(--surface_container-rgb), 0.5);
+    border: 2px solid var(--outline_variant);
+    box-shadow: none;
+    color: var(--on_surface);
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+#settings-button:hover,
+.clock button:hover,
+.battery button:hover {
+    background-color: rgba(var(--surface_container-rgb), 0.8);
+    border-color: var(--primary);
+}
+
+
+/* ============================================================================
+   WORKSPACES
+   ============================================================================ */
+
+.workspaces-container { 
+    min-height: 12px; 
+}
+
+.dot {
+    min-width: 5px;
+    min-height: 5px;
+    margin: 5px;
+    border-radius: 10px;
+    background-color: rgba(var(--on_surface-rgb), 0.3);
+    transition: all 0.3s cubic-bezier(0.1, 0.7, 0.1, 1);
+}
+
+.dot.active {
+    min-width: 20px;
+    background-color: var(--primary);
+}
+
+
+/* ============================================================================
+   VOLUME POPUP
+   ============================================================================ */
+
+.VolumePopup .container {
+    background-color: rgba(var(--surface-rgb), 0.9);
+    border: 2px solid var(--primary);
+    border-radius: 20px;
+    padding: 16px 24px;
+    margin-bottom: 48px;
+}
+
+.VolumePopup image {
+    color: var(--primary);
+    -gtk-icon-size: 20px;
+    margin-right: 12px;
+}
+
+/* Level Bar */
+levelbar { 
+    min-width: 150px; 
+}
+
+levelbar trough {
+    background-color: rgba(var(--on_surface-rgb), 0.1);
+    border-radius: 10px;
+    min-height: 10px;
+    padding: 2px;
+}
+
+levelbar block {
+    background-color: var(--primary);
+    border-radius: 6px;
+    min-height: 10px;
+}
+
+levelbar block.empty { 
+    background-color: transparent; 
+}
+
+
+/* ============================================================================
+   SETTINGS WINDOW
+   ============================================================================ */
+
+.SettingsWindow { 
+    background-color: transparent; 
+}
+
+.settings-container {
+    background-color: rgba(var(--surface-rgb), 0.95);
+    border: 2px solid var(--outline_variant);
+    border-radius: 24px;
+    padding: 12px;
+}
+
+/* Sidebar */
+.settings-sidebar {
+    padding: 16px;
+    background-color: rgba(var(--surface-rgb), 0.3);
+}
+
+.settings-sidebar-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+.sidebar-tab {
+    background-color: rgba(var(--surface_container-rgb), 0.3);
+    border: 1px solid var(--outline_variant);
+    border-radius: 8px;
+    padding: 8px 12px;
+    min-height: 36px;
+    color: var(--on_surface_variant);
+    font-weight: bold;
+    transition: all 0.2s ease-in-out;
+}
+
+.sidebar-tab:hover { 
+    background-color: rgba(var(--primary-rgb), 0.15);
+    border-color: var(--primary);
+}
+
+.sidebar-tab.active {
+    background-color: var(--primary);
+    color: var(--on_primary);
+    border-color: var(--primary);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Main Content */
+.settings-main-content { 
+    padding: 24px; 
+}
+
+.settings-main-content scrolledwindow {
+    padding-right: 8px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary);
+    margin-bottom: 16px;
+}
+
+.section-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.settings-card {
+    background-color: rgba(var(--surface_container_low-rgb), 0.5);
+    border: 1px solid var(--outline_variant);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+}
+
+.dim-label {
+    font-size: 13px;
+    color: var(--on_surface_variant);
+    opacity: 0.8;
+}
+
+.settings-close-btn {
+    background-image: none;
+    background-color: var(--secondary_container);
+    color: var(--on_secondary_container);
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-weight: bold;
+    border: 1px solid var(--outline_variant);
+}
+
+.settings-close-btn:hover { 
+    background-color: var(--error); 
+    color: var(--on_error); 
+}
+
+
+/* ============================================================================
+   APP LAUNCHER
+   ============================================================================ */
+
+#launcher { 
+    background-color: transparent; 
+}
+
+#launcher-content {
+    background-color: rgba(var(--surface-rgb), 0.95);
+    border: 1px solid var(--outline_variant);
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 50px;
+    min-width: 500px;
+}
+
+#search-entry {
+    background-color: rgba(var(--surface-rgb), 0.8);
+    color: var(--on_surface);
+    border-radius: 10px;
+    padding: 12px 15px;
+    border: 1px solid var(--outline);
+    font-size: 1.1rem;
+}
+
+#results-container {
+    margin-top: 8px;
+}
+
+#results-container separator {
+    min-height: 0;
+    margin: 0;
+    background-color: transparent;
+}
+
+#app-item { 
+    border-radius: 10px; 
+    padding: 10px; 
+    transition: all 0.15s ease; 
+}
+
+#app-item:hover, 
+#app-item:focus { 
+    background-color: rgba(var(--primary-rgb), 0.15); 
+}
+
+#app-item label { 
+    color: var(--on_surface); 
+    font-weight: 500; 
+}
+
+#app-item image {
+    margin-right: 12px;
+    -gtk-icon-size: 32px;
+}
+
+
+/* ============================================================================
+   FORM CONTROLS
+   ============================================================================ */
+
+/* Dropdown */
+.tonal-dropdown {
+    background-color: var(--primary_container);
+    color: var(--on_primary_container);
+    border-radius: 4px;
+    border: 1px solid var(--primary);
+    min-height: 20px;
+    padding: 0;
+    font-size: 0.7rem;
+}
+
+.tonal-dropdown > button { 
+    padding: 0 6px; 
+    min-height: 20px; 
+}
+
+.tonal-dropdown arrow { 
+    -gtk-icon-size: 10px; 
+    color: var(--primary); 
+}
+
+/* Scale/Slider */
+scale trough {
+    background-color: rgba(var(--on_surface-rgb), 0.1);
+    border-radius: 10px;
+    min-height: 8px;
+}
+
+scale highlight { 
+    background-color: var(--primary); 
+    border-radius: 10px; 
+}
+
+scale slider {
+    background-color: var(--on_primary);
+    border: 2px solid var(--primary);
+    min-width: 16px;
+    min-height: 16px;
+    margin: -4px;
+    border-radius: 100%;
+}
+
+/* Text Entry */
+entry {
+    background-color: var(--surface_container_highest);
+    border: 1px solid var(--outline_variant);
+    border-radius: 10px;
+    padding: 8px 12px;
+    color: var(--on_surface);
+    caret-color: var(--primary);
+}
+
+entry:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 1px var(--primary);
+}
+
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
+.primary-button {
+    background-color: var(--primary);
+    color: var(--on_primary);
+    border-radius: 10px;
+    padding: 8px 20px;
+    font-weight: bold;
+}
+
+.primary-button:hover {
+    background-color: rgba(var(--primary-rgb), 0.9);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.secondary-button {
+    background-color: var(--secondary_container);
+    color: var(--on_secondary_container);
+    border-radius: 10px;
+    padding: 8px 20px;
+    border: 1px solid var(--outline_variant);
+}
+
+.icon-button {
+    background-color: var(--surface_container_highest);
+    border-radius: 8px;
+    padding: 8px;
+    border: 1px solid var(--outline_variant);
+}
+
+.icon-button:hover {
+    border-color: var(--primary);
+}
+
+
+/* ============================================================================
+   POPOVERS & MENUS
+   ============================================================================ */
+
+popover > contents {
+    background-color: rgba(var(--surface-rgb), 0.95);
+    border: 1px solid var(--outline_variant);
+    border-radius: 16px;
+    padding: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+popover slider {
+    margin: 10px;
+}
+
+.popover-box {
+    padding: 12px;
+    min-width: 200px;
+}
+
+.popover-box .title {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--primary);
+}
+
+.power-profile-button {
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--on_surface);
+    transition: all 0.2s ease;
+    margin-bottom: 4px;
+}
+
+.power-profile-button:hover {
+    background-color: rgba(var(--primary-rgb), 0.1);
+    border-color: var(--outline_variant);
+}
+
+.power-profile-button.active {
+    background-color: var(--primary) !important;
+    color: var(--on_primary) !important;
+    border-color: var(--primary) !important;
+}
+
+.power-profile-button.active:hover {
+    opacity: 0.9;
+}
+
+
+/* ============================================================================
+   NETWORK & WIRELESS
+   ============================================================================ */
+
+.wireless-status {
+    min-width: 32px;
+    min-height: 24px;
+    padding: 0 6px;
+    margin: 0 4px;
+    background-color: rgba(var(--surface_container-rgb), 0.5);
+    border: 1px solid var(--outline_variant);
+    border-radius: 8px;
+}
+
+.wireless-status image {
+    color: var(--primary);
+    -gtk-icon-size: 16px; 
+}
+
+.network-dropdown {
+    background-color: var(--surface_container_highest);
+    border: 1px solid var(--outline_variant);
+    border-radius: 10px;
+    padding: 4px;
+}
+
+.network-item {
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    transition: background 0.2s ease;
+}
+
+.network-item:hover {
+    background-color: rgba(var(--primary-rgb), 0.1);
+}
+
+.network-item.connected {
+    background-color: rgba(var(--primary-rgb), 0.2);
+    border: 1px solid var(--primary);
+}
+
+.network-password-box {
+    padding: 12px;
+    margin: 0 4px 4px 4px;
+    background-color: rgba(var(--surface_container_highest-rgb), 0.5);
+    border-radius: 0 0 10px 10px;
+}
+
+
+/* ============================================================================
+   WALLPAPER PICKER
+   ============================================================================ */
+
+.wallpaper-grid {
+    padding: 10px;
+    min-height: 400px;
+}
+
+.wallpaper-btn {
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+.wallpaper-card {
+    border-radius: 12px;
+    border: 2px solid transparent;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wallpaper-btn:hover .wallpaper-card {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+
+/* ============================================================================
+   SCROLLBARS
+   ============================================================================ */
+
+scrollbar { 
+    background: transparent; 
+}
+
+scrollbar slider {
+    background: rgba(var(--on_surface-rgb), 0.15);
+    border-radius: 20px;
+    min-width: 4px;
+    margin: 2px;
+}
+
+scrollbar slider:hover { 
+    background-color: var(--primary); 
+}

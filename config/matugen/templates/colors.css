@@ -1,0 +1,6 @@
+:root {
+<* for name, value in colors *>
+  --{{ name }}: {{ value.default.hex }};
+  --{{ name }}-rgb: {{ value.default.rgb | replace: "rgb(", "" | replace: ")", "" }};
+<* endfor *>
+}

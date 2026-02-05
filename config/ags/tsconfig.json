@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "jsx": "preserve",
+    "allowJs": true,
+    "checkJs": false,
+    "moduleResolution": "Node",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "typeRoots": ["./@girs", "./typings", "./node_modules/@types"],
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "@girs/**/*.d.ts", "typings/**/*.d.ts"]
+}
