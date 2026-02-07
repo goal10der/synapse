@@ -1,8 +1,8 @@
-import AstalWp from "gi://AstalWp"
-import { createBinding } from "ags"
+import AstalWp from "gi://AstalWp";
+import { createBinding } from "ags";
 
 export default function AudioOutput() {
-  const { defaultSpeaker: speaker } = AstalWp.get_default()!
+  const { defaultSpeaker: speaker } = AstalWp.get_default()!;
 
   return (
     <menubutton cssClasses={["audio-output"]}>
@@ -17,5 +17,5 @@ export default function AudioOutput() {
         </box>
       </popover>
     </menubutton>
-  )
+  );
 }

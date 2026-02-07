@@ -1,27 +1,60 @@
-import Hyprland from "gi://AstalHyprland"
-import Gtk from "gi://Gtk?version=4.0"
-import { createBinding } from "ags"
-
+import Hyprland from "gi://AstalHyprland";
+import Gtk from "gi://Gtk?version=4.0";
+import { workspaceCount } from "./Settings"; // Adjust path
 export default function Workspaces() {
-    const hypr = Hyprland.get_default()
-    const focused = createBinding(hypr, "focused-workspace")
+  const hypr = Hyprland.get_default();
 
-    // The 5 dots we want to draw
-    const dots = [1, 2, 3, 4, 5]
+  return (
+    <box
+      cssClasses={["workspaces-container"]}
+      halign={Gtk.Align.CENTER}
+      $={(self) => {
+        const syncDots = (count: number) => {
+          if (count === undefined) return;
 
-    return <box 
-        cssClasses={["workspaces-container"]} 
-        halign={Gtk.Align.CENTER}
-    >
-        {dots.map(id => (
-            <box 
-                // This binding returns ["dot", "active"] or just ["dot"]
-                cssClasses={focused(ws => {
-                    const classes = ["dot"]
-                    if (ws.id === id) classes.push("active")
-                    return classes
-                })} 
-            />
-        ))}
-    </box>
+          // 1. Clear old dots
+          let child = self.get_first_child();
+          while (child) {
+            const next = child.get_next_sibling();
+            self.remove(child);
+            child = next;
+          }
+
+          // 2. Build dots using raw Gtk constructor
+          for (let i = 1; i <= count; i++) {
+            const dot = new Gtk.Box({
+              css_classes: ["dot"],
+            });
+
+            // Update function for active state
+            const updateActive = () => {
+              const focusedWs = hypr.get_focused_workspace();
+              if (focusedWs?.id === i) {
+                dot.add_css_class("active");
+              } else {
+                dot.remove_css_class("active");
+              }
+            };
+
+            // Connect to Hyprland signal
+            const signalId = hypr.connect(
+              "notify::focused-workspace",
+              updateActive,
+            );
+
+            // Cleanup signal when dot is destroyed
+            dot.connect("destroy", () => hypr.disconnect(signalId));
+
+            // Set initial active state
+            updateActive();
+
+            self.append(dot);
+          }
+        };
+
+        // Sync with your variable
+        workspaceCount.subscribe(syncDots);
+      }}
+    />
+  );
 }

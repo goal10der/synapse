@@ -1,20 +1,23 @@
-import app from "ags/gtk4/app"
-import Astal from "gi://Astal?version=4.0"
-import Gdk from "gi://Gdk?version=4.0"
-import Gtk from "gi://Gtk?version=4.0"
-import { onCleanup } from "ags"
-import Workspaces from "./Widgets/Workspaces"
-import Clock from "./Widgets/Clock"
-import Tray from "./Widgets/Tray"
-import Wireless from "./Widgets/wireless"
-import AudioOutput from "./Widgets/Audio"
-import Battery from "./Widgets/Battry"
+import app from "ags/gtk4/app";
+import Astal from "gi://Astal?version=4.0";
+import Gdk from "gi://Gdk?version=4.0";
+import Gtk from "gi://Gtk?version=4.0";
+import { onCleanup } from "ags";
+import Workspaces from "./Widgets/Workspaces";
+import Clock from "./Widgets/Clock";
+import Tray from "./Widgets/Tray";
+import Wireless from "./Widgets/wireless";
+import AudioOutput from "./Widgets/Audio";
+import Battery from "./Widgets/Battry";
+import NotificationCenter from "./Widgets/Notification";
 
 export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
-  let win: Astal.Window
-  const { TOP, LEFT, RIGHT } = Astal.WindowAnchor
+  let win: Astal.Window;
+  const { TOP, LEFT, RIGHT } = Astal.WindowAnchor;
 
-  onCleanup(() => { win.destroy() })
+  onCleanup(() => {
+    win.destroy();
+  });
 
   return (
     <window
@@ -31,30 +34,39 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
       <centerbox>
         <box $type="start">
           <Workspaces />
-          
-          <button 
+          <button
             $={(self) => {
               self.connect("clicked", () => {
-                // MATCHES the name in SettingsWindow
-                app.toggle_window(`settings-window-${gdkmonitor.connector}`)
-              })
+                app.toggle_window(`settings-window-${gdkmonitor.connector}`);
+              });
             }}
             name="settings-button"
           >
             <Gtk.Image iconName="emblem-system-symbolic" />
           </button>
-          
         </box>
         <box $type="center">
           <Clock />
         </box>
         <box $type="end">
           <Tray />
-          <Wireless />
+          <button
+            $={(self) => {
+              self.connect("clicked", () => {
+                app.toggle_window(
+                  `notification-center-${gdkmonitor.connector}`,
+                );
+              });
+            }}
+            name="notification-button"
+            cssClasses={["notification-button"]}
+          >
+            <Gtk.Image iconName="preferences-system-notifications-symbolic" />
+          </button>
           <AudioOutput />
           <Battery />
         </box>
       </centerbox>
     </window>
-  )
+  );
 }

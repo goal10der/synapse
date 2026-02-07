@@ -13,5 +13,12 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "@girs/**/*.d.ts", "typings/**/*.d.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.js",
+    "**/*.jsx",
+    "@girs/**/*.d.ts",
+    "typings/**/*.d.ts"
+  ]
 }
