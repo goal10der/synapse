@@ -6,7 +6,11 @@ Pull requests and help would be great i am learning ts as i go with this project
 
 
 
-https://github.com/user-attachments/assets/0a1b9823-e648-490d-8f82-83e0aa1a270e
+
+
+https://github.com/user-attachments/assets/ca0ebaf2-4b67-4a52-af28-7114d5e20b2b
+
+
 
 
 
