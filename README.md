@@ -45,8 +45,8 @@ The following keybindings are configured for **Synapse**. Most actions use the `
 | `Super + Alt + Space` | Toggle Floating Mode |
 | `Super + Left Mouse` | Move Window |
 | `Super + Right Mouse` | Resize Window |
-| `Super + 1-5` | Switch to Workspace 1-5 |
-| `Super + Alt + 1-5` | Move Window to Workspace 1-5 |
+| `Super + 1-0` | Switch to Workspace 1-10 |
+| `Super + Alt + 1-0` | Move Window to Workspace 1-10 |
 
 ### Shell Keybindings
 | Shortcut | Action |
