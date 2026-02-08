@@ -51,23 +51,42 @@ export default function Battery() {
           cssClasses={["popover-box"]}
         >
           <label label="Power Profiles" cssClasses={["title"]} />
-          {powerprofiles.get_profiles().map(({ profile }) => (
-            <button
-              onClicked={() => setProfile(profile)}
-              $={(self: any) => {
-                const binding = createBinding(powerprofiles, "active-profile");
-                binding((activeProfile: string) => {
-                  const classes =
-                    activeProfile === profile
+          {powerprofiles.get_profiles().map(({ profile }) => {
+            const isActive = () => powerprofiles.active_profile === profile;
+
+            return (
+              <button
+                onClicked={() => setProfile(profile)}
+                cssClasses={
+                  isActive()
+                    ? ["power-profile-button", "active"]
+                    : ["power-profile-button"]
+                }
+                $={(self: any) => {
+                  // Set initial state
+                  const updateClasses = () => {
+                    const classes = isActive()
                       ? ["power-profile-button", "active"]
                       : ["power-profile-button"];
-                  self.set_css_classes(classes);
-                });
-              }}
-            >
-              <label label={profile} xalign={0} />
-            </button>
-          ))}
+                    self.set_css_classes(classes);
+                  };
+
+                  // Update on profile change
+                  const handler = powerprofiles.connect(
+                    "notify::active-profile",
+                    updateClasses,
+                  );
+
+                  // Cleanup on destroy
+                  self.connect("destroy", () => {
+                    powerprofiles.disconnect(handler);
+                  });
+                }}
+              >
+                <label label={profile} xalign={0} />
+              </button>
+            );
+          })}
         </box>
       </popover>
     </menubutton>

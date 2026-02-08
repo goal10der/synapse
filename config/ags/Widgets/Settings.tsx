@@ -108,8 +108,6 @@ export const runMatugen = (spot: string, imagePath?: string) => {
 
   // Wrap in bash -c to ensure the subshell expansion $() happens
   const cmd = `bash -c 'matugen image -t ${spot} "${targetImage}"'`;
-
-  console.log(`Running Matugen with: ${cmd}`);
   execAsync(cmd);
 };
 

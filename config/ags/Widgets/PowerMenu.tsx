@@ -2,8 +2,7 @@ import app from "ags/gtk4/app";
 import Astal from "gi://Astal?version=4.0";
 import Gdk from "gi://Gdk?version=4.0";
 import Gtk from "gi://Gtk?version=4.0";
-
-const exec = Astal.exec;
+import GLib from "gi://GLib";
 
 const PowerButton = ({
   label,
@@ -115,7 +114,7 @@ export default function PowerMenu({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
               className="lock"
               action={() => {
                 hide();
-                exec("hyprlock");
+                GLib.spawn_command_line_async("hyprlock");
               }}
             />
             <PowerButton
@@ -124,7 +123,7 @@ export default function PowerMenu({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
               className="hibernate"
               action={() => {
                 hide();
-                exec("systemctl hibernate");
+                GLib.spawn_command_line_async("systemctl hibernate");
               }}
             />
             <PowerButton
@@ -133,7 +132,7 @@ export default function PowerMenu({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
               className="reboot"
               action={() => {
                 hide();
-                exec("systemctl reboot");
+                GLib.spawn_command_line_async("systemctl reboot");
               }}
             />
             <PowerButton
@@ -142,7 +141,7 @@ export default function PowerMenu({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
               className="shutdown"
               action={() => {
                 hide();
-                exec("systemctl poweroff");
+                GLib.spawn_command_line_async("systemctl poweroff");
               }}
             />
           </box>
