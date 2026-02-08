@@ -161,7 +161,7 @@ install_pacman_packages() {
         gobject-introspection libnotify hyprlock grim
     )
 
-    echo -e "\033[0;34m[→] Installing Pacman packages one by one...\033[0m"
+    echo -e "\033[0;34m[→] Installing Pacman packages\033[0m"
     local failed_pkgs=()
 
     for pkg in "${packages[@]}"; do
