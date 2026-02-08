@@ -10,3 +10,7 @@ output_path = '/home/tim/.cache/matugen/colors.css'
 [templates.foot]
 input_path = '~/.config/matugen/templates/foot.conf'
 output_path = '~/.config/foot/colors.ini'
+
+[templates.hyprland]
+input_path = '~/.config/matugen/templates/hyprland.conf'
+output_path = '~/.config/hypr/colors/colors.conf'

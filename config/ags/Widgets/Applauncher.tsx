@@ -11,9 +11,18 @@ export default function Applauncher() {
   let win: Astal.Window;
   const apps = new AstalApps.Apps();
 
-  // REPLACEMENT: Use createState instead of new Variable
-  // list is the getter (and binding), setList is the setter
+  // State for search results
   const [list, setList] = createState<AstalApps.Application[]>([]);
+
+  // Listen for app changes (installed/removed)
+  apps.connect("notify::list", () => {
+    // Reload apps when the list changes
+    apps.reload();
+    // Re-run search with current query if there is one
+    if (searchentry && searchentry.text !== "") {
+      search(searchentry.text);
+    }
+  });
 
   function search(text: string) {
     if (text === "") {
@@ -36,8 +45,13 @@ export default function Applauncher() {
       $={(self: any) => {
         win = self;
         self.connect("notify::visible", () => {
-          if (self.visible) searchentry.grab_focus();
-          else searchentry.set_text("");
+          if (self.visible) {
+            // Reload apps when opening launcher to catch any changes
+            apps.reload();
+            searchentry.grab_focus();
+          } else {
+            searchentry.set_text("");
+          }
         });
       }}
       name="launcher"
@@ -53,7 +67,6 @@ export default function Applauncher() {
           })
         }
       />
-
       <Gtk.Box
         name="launcher-content"
         valign={Gtk.Align.START}
@@ -65,15 +78,11 @@ export default function Applauncher() {
           $={(ref: any) => {
             searchentry = ref;
             ref.connect("changed", () => search(ref.text));
-            // Note: We use list() to get the current raw value
             ref.connect("activate", () => launch(list()[0]));
           }}
           placeholderText="Start typing to search..."
         />
-
         <Gtk.Revealer
-          // OLD: bind(list).as(...)
-          // NEW: list(l => ...)
           revealChild={list((l: any[]) => l.length > 0)}
           transitionType={Gtk.RevealerTransitionType.SLIDE_DOWN}
         >

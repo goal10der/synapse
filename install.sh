@@ -153,23 +153,62 @@ update_system() {
     echo -e "\033[0;32m[✓] System update completed.\033[0m"
 }
 install_pacman_packages() {
-    echo -e "\033[0;34m[→] Installing Pacman packages...\033[0m"
-    sudo pacman -S $CONFIRM_FLAG pipewire-jack hyprland iwd foot thunar brightnessctl wireplumber polkit-gnome xdg-desktop-portal-hyprland qt6ct qt5ct blueman geoclue btop starship fish gvfs nss meson vala valadoc gobject-introspection libnotify
-    if [[$? -ne 0 ]]; then
-        echo -e "\033[1;31m[!] Error: Pacman package installation failed.\033[0m"
-        exit 1
+    local packages=(
+        pipewire-jack hyprland iwd foot thunar brightnessctl slurp 
+        wl-clipboard swappy wireplumber polkit-gnome hypridle 
+        xdg-desktop-portal-hyprland qt6ct qt5ct blueman geoclue 
+        btop starship fish gvfs nss meson vala valadoc 
+        gobject-introspection libnotify hyprlock grim
+    )
+
+    echo -e "\033[0;34m[→] Installing Pacman packages one by one...\033[0m"
+    local failed_pkgs=()
+
+    for pkg in "${packages[@]}"; do
+        echo -ne "    Installing $pkg... "
+        if sudo pacman -S --needed $CONFIRM_FLAG "$pkg" &>/dev/null; then
+            echo -e "\033[0;32m[✓]\033[0m"
+        else
+            echo -e "\033[1;31m[X]\033[0m"
+            failed_pkgs+=("$pkg")
+        fi
+    done
+
+    if [ ${#failed_pkgs[@]} -ne 0 ]; then
+        echo -e "\n\033[1;33m[!] The following Pacman packages failed to install:\033[0m"
+        for p in "${failed_pkgs[@]}"; do echo "  - $p"; done
+    else
+        echo -e "\033[0;32m[✓] All Pacman packages installed successfully.\033[0m"
     fi
-    echo -e "\033[0;32m[✓] Pacman packages installation completed.\033[0m"
 }
+
 install_aur_packages() {
     local helper=$1
-    echo -e "\033[0;34m[→] Installing AUR packages using $helper...\033[0m"
-    $helper -S $CONFIRM_FLAG aylurs-gtk-shell-git libastal-meta matugen awww-bin
-    if [[ $? -ne 0 ]]; then
-        echo -e "\033[1;31m[!] Error: AUR package installation failed.\033[0m"
-        exit 1
-    fi 
-    echo -e "\033[0;32m[✓] AUR packages installation completed.\033[0m"
+    local aur_packages=(
+        aylurs-gtk-shell-git 
+        libastal-meta 
+        matugen 
+        awww-bin
+    )
+
+    echo -e "\n\033[0;34m[→] Installing AUR packages using $helper...\033[0m"
+    local failed_aur=()
+
+    for pkg in "${aur_packages[@]}"; do
+        echo -ne "    Building $pkg... "
+        # Using --needed equivalent logic for AUR helpers
+        if $helper -S --needed $CONFIRM_FLAG "$pkg" &>/dev/null; then
+            echo -e "\033[0;32m[✓]\033[0m"
+        else
+            echo -e "\033[1;31m[X]\033[0m"
+            failed_aur+=("$pkg")
+        fi
+    done
+
+    if [ ${#failed_aur[@]} -ne 0 ]; then
+        echo -e "\n\033[1;31m[!] Some AUR packages failed to build:\033[0m"
+        for p in "${failed_aur[@]}"; do echo "  - $p"; done
+    fi
 }
 install_dotfiles() {
     echo -e "\033[0;34m[→] Cleaning and installing dotfiles...\033[0m"

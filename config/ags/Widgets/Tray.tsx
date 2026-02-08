@@ -15,10 +15,15 @@ export default function Tray() {
   };
 
   return (
-    <box cssClasses={["tray"]}>
+    <box cssClasses={["tray"]} valign={Gtk.Align.CENTER}>
       <For each={items}>
         {(item) => (
-          <menubutton $={(self) => init(self, item)} cssClasses={["tray-item"]}>
+          <menubutton
+            $={(self) => init(self, item)}
+            cssClasses={["tray-item"]}
+            heightRequest={24}
+            valign={Gtk.Align.CENTER}
+          >
             <image gicon={createBinding(item, "gicon")} />
           </menubutton>
         )}

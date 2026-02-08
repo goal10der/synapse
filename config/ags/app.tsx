@@ -4,7 +4,6 @@ import app from "ags/gtk4/app";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import Gtk from "gi://Gtk?version=4.0";
-
 // Imports from your local directory
 import Bar from "./Bar";
 import VolumePopup from "./Widgets/VolumePopup";
@@ -12,6 +11,8 @@ import SettingsWindow from "./Widgets/Settings";
 import Applauncher from "./Widgets/Applauncher";
 import NotificationCenter from "./Widgets/Notification";
 import NotificationPopups from "./Widgets/Notificationpopup";
+import Sidebar from "./Widgets/RightSidebar";
+import PowerMenu from "./Widgets/PowerMenu";
 
 const configDir = `${GLib.get_user_config_dir()}/ags`;
 const STYLE_PATH = `${configDir}/style.css`;
@@ -23,10 +24,8 @@ let fileMonitor: Gio.FileMonitor;
 let debounceTimerId: number = 0;
 
 app.start({
-  instanceName: "shell", // This allows 'ags -i shell run toggle'
+  instanceName: "shell",
   css: STYLE_PATH,
-
-  // This handles the toggle request from your keybinds
   requestHandler(argv, res) {
     if (argv[0] === "toggle") {
       if (applauncherWin) {
@@ -36,11 +35,28 @@ app.start({
       }
       return res("launcher not initialized");
     }
+
+    // Add sidebar toggle handler
+    if (argv[0] === "RightSidebar") {
+      const monitors = app.get_monitors();
+      if (monitors.length > 0) {
+        const connector = monitors[0].connector;
+        app.toggle_window(`RightSidebar-${connector}`);
+        return res("ok");
+      }
+      return res("no monitors found");
+    }
+
+    // PowerMenu toggle handler
+    if (argv[0] === "toggle-powermenu") {
+      const monitors = app.get_monitors();
+      monitors.forEach((m) => app.toggle_window(`powermenu-${m.connector}`));
+      return res("ok");
+    }
+
     return res("unknown command");
   },
-
   main() {
-    // Disable GTK Inspector
     const settings = Gtk.Settings.get_default();
     if (settings) {
       settings.gtk_enable_inspector_keybinding = false;
@@ -48,7 +64,6 @@ app.start({
 
     // 1. Create the Launcher (only once, not per monitor)
     applauncherWin = Applauncher() as Gtk.Window;
-    // Force it to be hidden BEFORE adding to app
     applauncherWin.visible = false;
     applauncherWin.hide();
     app.add_window(applauncherWin);
@@ -59,7 +74,6 @@ app.start({
       fileMonitor = dir.monitor_directory(Gio.FileMonitorFlags.NONE, null);
       fileMonitor.connect("changed", (_self, file) => {
         if (file.get_basename() !== "colors.css") return;
-
         if (debounceTimerId > 0) GLib.source_remove(debounceTimerId);
         debounceTimerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
           app.apply_css(STYLE_PATH);
@@ -71,7 +85,7 @@ app.start({
       console.error(e);
     }
 
-    // 3. Setup Bar and Settings for every monitor
+    // 3. Setup Bar, Settings, and Sidebar for every monitor
     const monitors = createBinding(app, "monitors");
     return (
       <For each={monitors}>
@@ -82,6 +96,8 @@ app.start({
             <VolumePopup gdkmonitor={gdkmonitor} />
             <NotificationCenter gdkmonitor={gdkmonitor} />
             <NotificationPopups />
+            <Sidebar gdkmonitor={gdkmonitor} />
+            <PowerMenu gdkmonitor={gdkmonitor} />
           </This>
         )}
       </For>

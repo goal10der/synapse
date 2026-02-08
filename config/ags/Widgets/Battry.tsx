@@ -7,16 +7,11 @@ export default function Battery() {
   const battery = AstalBattery.get_default();
   const powerprofiles = AstalPowerProfiles.get_default();
 
-  // Use round for better percentage accuracy
   const percent = createBinding(
     battery,
     "percentage",
   )((p) => `${Math.round(p * 100)}%`);
 
-  /**
-   * We bind to 'time-to-empty' specifically so the tooltip updates
-   * every time the system recalculates the remaining time.
-   */
   const tooltip = createBinding(
     battery,
     "time-to-empty",
@@ -24,14 +19,11 @@ export default function Battery() {
     if (battery.charging) {
       const fullSeconds = battery.time_to_full;
       if (fullSeconds <= 0) return "Charging (Calculating...)";
-
       const h = Math.floor(fullSeconds / 3600);
       const m = Math.floor((fullSeconds % 3600) / 60);
       return `Charging (${h}h ${m}m until full)`;
     }
-
     if (s <= 0 || s > 86400) return "Calculating remaining time...";
-
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
     return `${h}h ${m}m remaining`;
@@ -46,8 +38,10 @@ export default function Battery() {
       visible={createBinding(battery, "isPresent")}
       cssClasses={["battery"]}
       tooltipText={tooltip}
+      heightRequest={24}
+      valign={Gtk.Align.CENTER}
     >
-      <box>
+      <box valign={Gtk.Align.CENTER}>
         <image iconName={createBinding(battery, "iconName")} />
         <label label={percent} />
       </box>
@@ -61,12 +55,8 @@ export default function Battery() {
             <button
               onClicked={() => setProfile(profile)}
               $={(self: any) => {
-                // Subscribe to active profile changes
                 const binding = createBinding(powerprofiles, "active-profile");
                 binding((activeProfile: string) => {
-                  console.log(
-                    `[PowerProfile] Active: ${activeProfile}, This button: ${profile}`,
-                  );
                   const classes =
                     activeProfile === profile
                       ? ["power-profile-button", "active"]

@@ -1,5 +1,6 @@
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
+import Gio from "gi://Gio";
 
 // Simple Variable class for state management
 class Variable<T> {
@@ -30,25 +31,40 @@ function stripAnsi(str: string): string {
   return str.replace(/\u001b\[[0-9;]*m/g, "");
 }
 
+/**
+ * TRULY ASYNC EXECUTION
+ * This prevents the UI from freezing by running commands in a subprocess
+ */
+async function execAsync(cmd: string): Promise<string> {
+  const launcher = new Gio.SubprocessLauncher({
+    flags: Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
+  });
+  const argv = GLib.shell_parse_argv(cmd)[1];
+  const proc = launcher.spawnv(argv);
+  return new Promise((resolve, reject) => {
+    proc.communicate_utf8_async(null, null, (p, res) => {
+      try {
+        const [_, stdout, stderr] = p!.communicate_utf8_finish(res);
+        if (stdout) resolve(stripAnsi(stdout.trim()));
+        else resolve("");
+      } catch (e) {
+        reject(e);
+      }
+    });
+  });
+}
+
+// Keep sync only for very fast, local checks like getting the device name
 function execSync(cmd: string): string {
   try {
     const [success, stdout] = GLib.spawn_command_line_sync(cmd);
     if (success && stdout) {
-      const output = new TextDecoder().decode(stdout).trim();
-      return stripAnsi(output);
+      return stripAnsi(new TextDecoder().decode(stdout).trim());
     }
   } catch (err) {
     console.error(`Failed to execute: ${cmd}`, err);
   }
   return "";
-}
-
-function execAsync(cmd: string): void {
-  try {
-    GLib.spawn_command_line_async(cmd);
-  } catch (err) {
-    console.error(`Failed to execute: ${cmd}`, err);
-  }
 }
 
 interface WifiNetwork {
@@ -75,109 +91,95 @@ function getWifiDevice(): string {
   return "wlan0";
 }
 
-function scanNetworks(device: string): WifiNetwork[] {
-  execSync(`iwctl station ${device} scan`);
-  GLib.usleep(1000000);
-
-  const output = execSync(`iwctl station ${device} get-networks`);
-  const lines = output.split("\n");
-  const networks: WifiNetwork[] = [];
-
-  for (const line of lines) {
-    if (
-      line.includes("Network name") ||
-      line.includes("Available networks") ||
-      line.trim() === "" ||
-      line.includes("----") ||
-      line.includes("No networks")
-    ) {
-      continue;
-    }
-
-    const connected = line.trim().startsWith(">");
-    const cleanLine = line.replace(">", "").trim();
-    const parts = cleanLine.split(/\s{2,}/);
-
-    if (parts.length >= 2) {
-      networks.push({
-        name: parts[0].trim(),
-        connected,
-        security: parts[1]?.trim() || "unknown",
-        signal: parts[2]?.trim() || "****",
-      });
-    }
-  }
-
-  return networks;
-}
-
 export default function NetworkPage() {
   const device = getWifiDevice();
-
   const networks = new Variable<WifiNetwork[]>([]);
   const isScanning = new Variable(false);
   const expandedNetwork = new Variable<string>("");
 
-  const refreshNetworks = () => {
+  const refreshNetworks = async () => {
+    if (isScanning.get()) return;
     isScanning.set(true);
 
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
-      const foundNetworks = scanNetworks(device);
-      // Sort connected to top
+    try {
+      await execAsync(`iwctl station ${device} scan`);
+
+      // Non-blocking wait
+      await new Promise((resolve) =>
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+          resolve(null);
+          return GLib.SOURCE_REMOVE;
+        }),
+      );
+
+      const output = await execAsync(`iwctl station ${device} get-networks`);
+      const lines = output.split("\n");
+      const foundNetworks: WifiNetwork[] = [];
+
+      for (const line of lines) {
+        if (
+          line.includes("Network name") ||
+          line.includes("----") ||
+          line.trim() === ""
+        )
+          continue;
+
+        const connected = line.trim().startsWith(">");
+        const cleanLine = line.replace(">", "").trim();
+        const parts = cleanLine.split(/\s{2,}/);
+
+        if (parts.length >= 2) {
+          foundNetworks.push({
+            name: parts[0].trim(),
+            connected,
+            security: parts[1]?.trim() || "unknown",
+            signal: parts[2]?.trim() || "****",
+          });
+        }
+      }
+
       foundNetworks.sort((a, b) =>
         a.connected === b.connected ? 0 : a.connected ? -1 : 1,
       );
       networks.set(foundNetworks);
+    } catch (e) {
+      console.error("WiFi Scan Error:", e);
+    } finally {
       isScanning.set(false);
-      return GLib.SOURCE_REMOVE;
-    });
-  };
-
-  const connectToNetwork = (ssid: string, password?: string) => {
-    if (password) {
-      execAsync(
-        `iwctl station ${device} connect "${ssid}" --passphrase "${password}"`,
-      );
-    } else {
-      execAsync(`iwctl station ${device} connect "${ssid}"`);
     }
   };
 
-  const disconnectNetwork = () => {
-    execAsync(`iwctl station ${device} disconnect`);
-  };
-
-  const handleNetworkClick = (network: WifiNetwork) => {
-    if (network.connected) {
-      disconnectNetwork();
-      GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
-        refreshNetworks();
-        return GLib.SOURCE_REMOVE;
-      });
-      return;
-    }
-
-    if (network.security === "open") {
-      connectToNetwork(network.name);
-      GLib.timeout_add(GLib.PRIORITY_DEFAULT, 3000, () => {
-        refreshNetworks();
-        return GLib.SOURCE_REMOVE;
-      });
-    } else {
-      expandedNetwork.set(network.name);
-    }
-  };
-
-  const handleConnect = (network: WifiNetwork, password: string) => {
-    connectToNetwork(network.name, password);
+  const handleConnect = async (network: WifiNetwork, password?: string) => {
     expandedNetwork.set("");
+    const cmd = password
+      ? `iwctl station ${device} connect "${network.name}" --passphrase "${password}"`
+      : `iwctl station ${device} connect "${network.name}"`;
+
+    await execAsync(cmd);
     GLib.timeout_add(GLib.PRIORITY_DEFAULT, 3000, () => {
       refreshNetworks();
       return GLib.SOURCE_REMOVE;
     });
   };
 
-  // Initial scan
+  const disconnectNetwork = async () => {
+    await execAsync(`iwctl station ${device} disconnect`);
+    refreshNetworks();
+  };
+
+  const handleNetworkClick = (network: WifiNetwork) => {
+    if (network.connected) {
+      disconnectNetwork();
+      return;
+    }
+
+    if (network.security === "open") {
+      handleConnect(network);
+    } else {
+      expandedNetwork.set(network.name);
+    }
+  };
+
   refreshNetworks();
 
   return (
@@ -188,7 +190,6 @@ export default function NetworkPage() {
     >
       <Gtk.Label label="Network" xalign={0} cssClasses={["page-title"]} />
 
-      {/* WiFi Status */}
       <Gtk.Box
         orientation={Gtk.Orientation.VERTICAL}
         cssClasses={["settings-card"]}
@@ -206,17 +207,18 @@ export default function NetworkPage() {
           <Gtk.Button
             iconName="view-refresh-symbolic"
             cssClasses={["icon-button"]}
-            onClicked={refreshNetworks}
+            onClicked={() => refreshNetworks()}
             $={(self: any) => {
               isScanning.subscribe((scanning) => {
                 self.set_sensitive(!scanning);
+                if (scanning) self.add_css_class("scanning");
+                else self.remove_css_class("scanning");
               });
             }}
           />
         </Gtk.Box>
       </Gtk.Box>
 
-      {/* Network List */}
       <Gtk.Box
         orientation={Gtk.Orientation.VERTICAL}
         cssClasses={["settings-card"]}
@@ -247,7 +249,6 @@ export default function NetworkPage() {
                   spacing: 12,
                 });
 
-                // FIXED ICON LOGIC: Using standard network icons
                 buttonBox.append(
                   new Gtk.Image({
                     iconName: network.connected
@@ -281,13 +282,6 @@ export default function NetworkPage() {
                   }),
                 );
 
-                buttonBox.append(
-                  new Gtk.Label({
-                    label: network.security,
-                    cssClasses: ["dim-label"],
-                  }),
-                );
-
                 const button = new Gtk.Button({
                   child: buttonBox,
                   cssClasses: network.connected
@@ -302,6 +296,7 @@ export default function NetworkPage() {
                   const passwordBox = new Gtk.Box({
                     orientation: Gtk.Orientation.HORIZONTAL,
                     spacing: 8,
+                    marginTop: 8, // FIXED: Changed from padding_top to marginTop
                     cssClasses: ["network-password-box"],
                   });
 
@@ -362,33 +357,13 @@ export default function NetworkPage() {
                   self.remove(child);
                   child = next;
                 }
-
-                networkList.forEach((network) => {
-                  const item = createNetworkItem(network);
-                  self.append(item);
-                });
+                networkList.forEach((network) =>
+                  self.append(createNetworkItem(network)),
+                );
               });
             }}
           />
         </Gtk.ScrolledWindow>
-      </Gtk.Box>
-
-      {/* IWD Info */}
-      <Gtk.Box
-        orientation={Gtk.Orientation.VERTICAL}
-        cssClasses={["settings-card"]}
-        spacing={10}
-      >
-        <Gtk.Label
-          label="IWD Status"
-          xalign={0}
-          cssClasses={["section-title"]}
-        />
-        <Gtk.Label
-          label={`Service Status: ${execSync("systemctl is-active iwd")}`}
-          xalign={0}
-          cssClasses={["dim-label"]}
-        />
       </Gtk.Box>
     </Gtk.Box>
   );
