@@ -200,7 +200,7 @@ $sensitivity = 0.5
 ### Adding Wallpapers
 
 1. Place images in `~/Wallpapers/`
-2. Open the settings panel (`Super + N` then click settings)
+2. Open the settings button located on the bar
 3. Navigate to the wallpaper section
 4. Click on any wallpaper to apply
 
