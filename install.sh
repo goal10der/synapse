@@ -269,14 +269,44 @@ install_dotfiles() {
     
     local targets=(ags btop fish foot hypr matugen starship.toml)
     for item in "${targets[@]}"; do
-        if [ -e "$HOME/.config/$item" ]; then
-            rm -rf "$HOME/.config/$item"
-        fi
-        if [ -e "$SCRIPT_DIR/config/$item" ]; then
-            cp -rf "$SCRIPT_DIR/config/$item" "$HOME/.config/$item"
-            echo "    - Installed $item"
+        # Special handling for hypr to preserve custom directory
+        if [[ "$item" == "hypr" ]]; then
+            # Backup custom directory if it exists
+            if [ -d "$HOME/.config/hypr/custom" ]; then
+                echo "    - Preserving hypr/custom directory..."
+                mkdir -p "/tmp/hypr_custom_backup"
+                cp -rf "$HOME/.config/hypr/custom" "/tmp/hypr_custom_backup/"
+            fi
+            
+            # Remove and reinstall hypr config
+            if [ -e "$HOME/.config/$item" ]; then
+                rm -rf "$HOME/.config/$item"
+            fi
+            if [ -e "$SCRIPT_DIR/config/$item" ]; then
+                cp -rf "$SCRIPT_DIR/config/$item" "$HOME/.config/$item"
+                echo "    - Installed $item"
+            else
+                echo -e "\033[1;33m    [!] Warning: $item not found in repo source.\033[0m"
+            fi
+            
+            # Restore custom directory if it was backed up
+            if [ -d "/tmp/hypr_custom_backup/custom" ]; then
+                echo "    - Restoring hypr/custom directory..."
+                mkdir -p "$HOME/.config/hypr"
+                cp -rf "/tmp/hypr_custom_backup/custom" "$HOME/.config/hypr/"
+                rm -rf "/tmp/hypr_custom_backup"
+            fi
         else
-            echo -e "\033[1;33m    [!] Warning: $item not found in repo source.\033[0m"
+            # Normal handling for other configs
+            if [ -e "$HOME/.config/$item" ]; then
+                rm -rf "$HOME/.config/$item"
+            fi
+            if [ -e "$SCRIPT_DIR/config/$item" ]; then
+                cp -rf "$SCRIPT_DIR/config/$item" "$HOME/.config/$item"
+                echo "    - Installed $item"
+            else
+                echo -e "\033[1;33m    [!] Warning: $item not found in repo source.\033[0m"
+            fi
         fi
     done
     
