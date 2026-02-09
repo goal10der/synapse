@@ -7,17 +7,14 @@ import GLib from "gi://GLib";
 import { notificationTimeout } from "./settings/Appearance";
 
 function Notification({ notification }: { notification: Notifd.Notification }) {
-  // Auto-dismiss after timeout
   const timeoutId = GLib.timeout_add(
     GLib.PRIORITY_DEFAULT,
     notificationTimeout.get(),
     () => {
       notification.dismiss();
-      return false; // Don't repeat
+      return false;
     },
   );
-
-  // Cleanup timeout if notification is manually dismissed
   notification.connect("resolved", () => {
     if (timeoutId > 0) {
       GLib.source_remove(timeoutId);

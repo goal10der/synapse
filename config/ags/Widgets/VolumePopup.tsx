@@ -15,24 +15,17 @@ export default function VolumePopup({ gdkmonitor }: { gdkmonitor: any }) {
 
   const init = (revealer: Gtk.Revealer, levelbar: Gtk.LevelBar) => {
     const window = revealer.get_root() as Gtk.Window;
-
-    // Don't proceed if window isn't ready
     if (!window) return;
-
-    // Manual update function to handle the 1.0 (100%) limit
     const updateLevel = () => {
       const vol = speaker.volume;
       levelbar.value = vol > 1 ? 1 : vol;
     };
-
-    // Set initial value
     updateLevel();
 
     const show = () => {
-      // Safety check
       if (!window) return;
 
-      updateLevel(); // Sync bar before showing
+      updateLevel();
 
       if (!window.visible) {
         window.set_visible(true);
@@ -58,8 +51,6 @@ export default function VolumePopup({ gdkmonitor }: { gdkmonitor: any }) {
     volumeSignal = speaker.connect("notify::volume", show);
     muteSignal = speaker.connect("notify::mute", show);
   };
-
-  // Cleanup on destroy
   onCleanup(() => {
     if (timeoutId) GLib.source_remove(timeoutId);
     if (volumeSignal) speaker.disconnect(volumeSignal);
@@ -78,7 +69,6 @@ export default function VolumePopup({ gdkmonitor }: { gdkmonitor: any }) {
       keymode={Astal.Keymode.NONE}
       visible={false}
       $={(self) => {
-        // Set input region once when window is created
         const region = new Cairo.Region();
         self.input_region = region;
       }}
@@ -89,7 +79,6 @@ export default function VolumePopup({ gdkmonitor }: { gdkmonitor: any }) {
         transitionDuration={300}
         valign={Gtk.Align.END}
         $={(self) => {
-          // Wait for next tick to ensure window is fully initialized
           GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
             const lb = self.get_child().get_last_child() as Gtk.LevelBar;
             init(self, lb);

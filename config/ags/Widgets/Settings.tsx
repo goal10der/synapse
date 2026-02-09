@@ -2,13 +2,10 @@ import app from "ags/gtk4/app";
 import Astal from "gi://Astal?version=4.0";
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
-// Component Imports
 import AppearancePage from "./settings/Appearance";
 import NetworkPage from "./settings/Network";
 import AudioPage from "./settings/Audio";
 import BluetoothPage from "./settings/Bluetooth";
-
-// --- PERSISTENCE SETUP ---
 const SAVE_PATH = `${GLib.get_user_cache_dir()}/ags/settings.json`;
 
 function loadSavedValue(key: string, defaultValue: any) {
@@ -18,16 +15,13 @@ function loadSavedValue(key: string, defaultValue: any) {
       const cache = JSON.parse(new TextDecoder().decode(content));
       return cache[key] !== undefined ? cache[key] : defaultValue;
     }
-  } catch (e) {
-    // File doesn't exist yet or is corrupt, return default
-  }
+  } catch (e) {}
   return defaultValue;
 }
 
 function saveToDisk(key: string, value: any) {
   try {
     let cache: any = {};
-    // Try to load existing cache first so we don't overwrite other saved settings
     try {
       const [success, content] = GLib.file_get_contents(SAVE_PATH);
       if (success) cache = JSON.parse(new TextDecoder().decode(content));
@@ -41,8 +35,6 @@ function saveToDisk(key: string, value: any) {
     console.error(`Failed to save ${key} to disk:`, e);
   }
 }
-
-// --- SIMPLE VARIABLE IMPLEMENTATION ---
 class Variable<T> {
   private value: T;
   private subscribers: Array<(value: T) => void> = [];
@@ -57,15 +49,12 @@ class Variable<T> {
 
   set(newValue: T) {
     this.value = newValue;
-    // We iterate over a copy so that unsubscribing during a notify doesn't skip items
     [...this.subscribers].forEach((callback) => callback(this.value));
   }
 
   subscribe(callback: (value: T) => void) {
     this.subscribers.push(callback);
     callback(this.value);
-
-    // ✅ Return an automatic un-subscriber
     return () => this.unsubscribe(callback);
   }
 
@@ -73,18 +62,14 @@ class Variable<T> {
     this.subscribers = this.subscribers.filter((sub) => sub !== callback);
   }
 }
-
-// Initialize with saved value
 export const workspaceCount = new Variable(loadSavedValue("workspaceCount", 5));
 
 export const setWorkspaceCount = (val: number) => {
   if (val >= 1 && val <= 10) {
     workspaceCount.set(val);
-    saveToDisk("workspaceCount", val); // Save every time it changes
+    saveToDisk("workspaceCount", val);
   }
 };
-
-// --- UTILITIES ---
 export function execAsync(cmd: string): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
@@ -105,13 +90,9 @@ export const runMatugen = (spot: string, imagePath?: string) => {
   const targetImage = imagePath
     ? `"${imagePath}"`
     : `$(awww query | sed -n "s/.*image: //p" | cut -d: -f1 | head -n1)`;
-
-  // Wrap in bash -c to ensure the subshell expansion $() happens
   const cmd = `bash -c 'matugen image -t ${spot} "${targetImage}"'`;
   execAsync(cmd);
 };
-
-// --- TAB BUTTON COMPONENT ---
 function TabButton({ label, id, activeTab, icon }: any) {
   return (
     <Gtk.Button
@@ -138,8 +119,6 @@ function TabButton({ label, id, activeTab, icon }: any) {
     </Gtk.Button>
   );
 }
-
-// --- MAIN WINDOW ---
 export default function SettingsWindow({ gdkmonitor }: { gdkmonitor: any }) {
   const activeTab = new Variable("appearance");
   const monitorWidth = gdkmonitor.geometry.width || 1920;

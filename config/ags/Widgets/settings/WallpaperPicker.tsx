@@ -5,7 +5,7 @@ import { onCleanup } from "ags";
 import { matugenState, execAsync } from "../Settings";
 
 const WALLPAPER_DIR = `${GLib.get_home_dir()}/Wallpapers`;
-const POLL_INTERVAL = 2000; // Check every 2 seconds
+const POLL_INTERVAL = 2000;
 
 const loadWallpapers = () => {
   const wallpapers: string[] = [];
@@ -81,8 +81,6 @@ export default function WallpaperPicker() {
     if (!flowBoxRef) return;
 
     const newWallpapers = loadWallpapers();
-
-    // Check if wallpapers changed
     if (JSON.stringify(currentWallpapers) === JSON.stringify(newWallpapers)) {
       return;
     }
@@ -91,16 +89,12 @@ export default function WallpaperPicker() {
       `Wallpapers changed: ${currentWallpapers.length} -> ${newWallpapers.length}`,
     );
     currentWallpapers = newWallpapers;
-
-    // Remove all children
     while (flowBoxRef.get_first_child()) {
       const child = flowBoxRef.get_first_child();
       if (child) {
         flowBoxRef.remove(child);
       }
     }
-
-    // Add new buttons
     newWallpapers.forEach((path) => {
       flowBoxRef!.append(createWallpaperButton(path));
     });
@@ -120,15 +114,11 @@ export default function WallpaperPicker() {
     };
     poll();
   };
-
-  // Try file monitoring first, fall back to polling
   let monitorActive = false;
   let fileMonitor: any = null;
   try {
     const file = Gio.File.new_for_path(WALLPAPER_DIR);
     fileMonitor = file.monitor_directory(Gio.FileMonitorFlags.NONE, null);
-
-    // ✅ Store signal ID for cleanup
     monitorSignalId = fileMonitor.connect(
       "changed",
       (_monitor: any, file: any, otherFile: any, eventType: number) => {
@@ -152,13 +142,9 @@ export default function WallpaperPicker() {
   } catch (e) {
     console.error(`File monitor failed, using polling: ${e}`);
   }
-
-  // Always use polling as backup
   if (!monitorActive) {
     console.log(`Starting polling mode (every ${POLL_INTERVAL}ms)`);
   }
-
-  // ✅ Cleanup file monitor and polling timeout on component destroy
   onCleanup(() => {
     if (pollTimeoutId) {
       GLib.source_remove(pollTimeoutId);
@@ -190,13 +176,9 @@ export default function WallpaperPicker() {
             flowBoxRef = self;
             currentWallpapers = loadWallpapers();
             console.log(`Initial load: ${currentWallpapers.length} wallpapers`);
-
-            // Initial population
             currentWallpapers.forEach((path) => {
               self.append(createWallpaperButton(path));
             });
-
-            // Start polling
             startPolling();
           }}
         />

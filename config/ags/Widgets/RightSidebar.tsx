@@ -1,4 +1,3 @@
-// RightSidebar.tsx
 import app from "ags/gtk4/app";
 import Astal from "gi://Astal?version=4.0";
 import AstalWp from "gi://AstalWp?version=0.1";
@@ -9,12 +8,8 @@ import GLib from "gi://GLib";
 import Gio from "gi://Gio";
 import { onCleanup } from "ags";
 import { editMode, toggleEditMode } from "../State";
-
-// Page imports
 import NetworkPage from "./settings/Network";
 import BluetoothPage from "./settings/Bluetooth";
-
-/* --- CUSTOM SHELL HELPERS --- */
 function exec(cmd: string): string {
   try {
     const [success, stdout] = GLib.spawn_command_line_sync(cmd);
@@ -125,7 +120,6 @@ export default function RightSidebar({
               self.value = wp.audio.defaultSpeaker.volume;
           };
           sync();
-          // ✅ Store signal ID and cleanup on destroy
           if (wp?.audio?.defaultSpeaker) {
             const signalId = wp.audio.defaultSpeaker.connect(
               "notify::volume",
@@ -194,7 +188,6 @@ export default function RightSidebar({
           spacing={8}
           $={(self) => {
             const updateNotifications = () => {
-              // Clear existing children
               let child = self.get_first_child();
               while (child) {
                 const next = child.get_next_sibling();
@@ -260,15 +253,9 @@ export default function RightSidebar({
                 });
               }
             };
-
-            // Initial update
             updateNotifications();
-
-            // Listen for notification changes
             const notifiedId = notifd.connect("notified", updateNotifications);
             const resolvedId = notifd.connect("resolved", updateNotifications);
-
-            // Cleanup
             self.connect("destroy", () => {
               notifd.disconnect(notifiedId);
               notifd.disconnect(resolvedId);
@@ -278,9 +265,6 @@ export default function RightSidebar({
       </Gtk.ScrolledWindow>
     </box>
   );
-
-  /* --- PAGES --- */
-
   const mainPage = (
     <box
       orientation={Gtk.Orientation.VERTICAL}

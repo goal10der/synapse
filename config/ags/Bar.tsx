@@ -1,4 +1,3 @@
-// Bar.tsx
 import app from "ags/gtk4/app";
 import Astal from "gi://Astal?version=4.0";
 import Gdk from "gi://Gdk?version=4.0";
@@ -20,11 +19,7 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
   let draggedWidget: WidgetType | null = null;
 
   const { TOP, LEFT, RIGHT } = Astal.WindowAnchor;
-
-  // Store draggable containers
   const draggableContainers = new Map<WidgetType, Gtk.Box>();
-
-  // ... [keep createWidget, createDragIcon, createDraggableContainer, createDropZone helpers exactly as they were] ...
   const createWidget = (type: WidgetType): Gtk.Widget => {
     switch (type) {
       case "clock":
@@ -117,7 +112,6 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
 
     const updateEditMode = () => {
       const isEditMode = editMode.get();
-      // Remove existing controllers
       const controllers: Gtk.EventController[] = [];
       for (let i = 0; i < 20; i++) {
         const controller = container.observe_controllers().get_item(i);
@@ -329,8 +323,6 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
     populate(centerBox, config.center, "center");
     populate(rightBox, config.right, "right");
   };
-
-  // Subscribe to changes (only for bar content)
   const unsub1 = barConfig.subscribe(updateBar);
   const unsub2 = editMode.subscribe(updateBar);
 
@@ -341,9 +333,7 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
 
   return (
     <window
-      // FIXED: Use '$' instead of 'setup' to access the instance
       $={(self) => {
-        // This function handles the class toggling on the window directly
         const updateWindowMode = (isEdit: boolean) => {
           if (isEdit) {
             self.add_css_class("bar-edit-mode");
@@ -351,14 +341,8 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
             self.remove_css_class("bar-edit-mode");
           }
         };
-
-        // Initialize state
         updateWindowMode(editMode.get());
-
-        // Subscribe to changes
         const unsub = editMode.subscribe(updateWindowMode);
-
-        // Clean up subscription when window is destroyed
         self.connect("destroy", unsub);
       }}
       visible

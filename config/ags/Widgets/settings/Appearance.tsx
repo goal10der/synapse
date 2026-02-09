@@ -1,13 +1,11 @@
 import Gtk from "gi://Gtk?version=4.0";
 import WallpaperPicker from "./WallpaperPicker";
-// Import the state object instead of the let variable
 import { matugenState, runMatugen } from "../Settings";
 import Notifd from "gi://AstalNotifd";
 import { createState } from "ags";
-import { workspaceCount, setWorkspaceCount } from "../Settings"; // Adjust path
+import { workspaceCount, setWorkspaceCount } from "../Settings";
 
-// Create a global state for notification timeout (in milliseconds)
-export const [notificationTimeout, setNotificationTimeout] = createState(5000); // Default 5000ms
+export const [notificationTimeout, setNotificationTimeout] = createState(5000);
 
 export default function AppearancePage({
   scaleFactor,
@@ -80,15 +78,10 @@ export default function AppearancePage({
                   if (!isNaN(value) && value >= 1000 && value <= 30000) {
                     setNotificationTimeout(value);
                   } else {
-                    // Reset to current value if invalid
                     updateValue();
                   }
                 };
-
-                // When user presses Enter
                 self.connect("activate", applyValue);
-
-                // When user focuses away - use GTK4 event controller
                 const focusController = new Gtk.EventControllerFocus();
                 focusController.connect("leave", applyValue);
                 self.add_controller(focusController);
@@ -130,7 +123,6 @@ export default function AppearancePage({
               widthRequest={50}
               halign={Gtk.Align.CENTER}
               $={(self) => {
-                // Sync entry text with state (with safety check)
                 const syncText = (val: number) => {
                   if (val !== undefined && val !== null) {
                     self.text = val.toString();
@@ -166,7 +158,6 @@ export default function AppearancePage({
           </Gtk.Box>
         </Gtk.Box>
       </Gtk.Box>
-      {/* MATUGEN TONAL SPOT Section */}
       <Gtk.Box orientation={Gtk.Orientation.VERTICAL} spacing={8}>
         <Gtk.Label
           label="MATUGEN TONAL SPOT"
@@ -176,12 +167,11 @@ export default function AppearancePage({
         <Gtk.Box halign={Gtk.Align.START} valign={Gtk.Align.START}>
           <Gtk.DropDown
             cssClasses={["tonal-dropdown"]}
-            widthRequest={180} // Made it wider to avoid the "tiny square" look
-            heightRequest={36} // Standard height
+            widthRequest={180}
+            heightRequest={36}
             valign={Gtk.Align.CENTER}
             model={Gtk.StringList.new(tonalSpotsName)}
             $={(self) => {
-              // Target the main toggle button
               const btn = self.get_first_child();
               if (btn) btn.add_css_class("tonal-main-btn");
 
@@ -194,7 +184,6 @@ export default function AppearancePage({
           />
         </Gtk.Box>
       </Gtk.Box>
-      {/* WALLPAPERS Section */}
       <Gtk.Label label="WALLPAPERS" xalign={0} cssClasses={["section-title"]} />
       <WallpaperPicker />
     </Gtk.Box>

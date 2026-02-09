@@ -63,21 +63,16 @@ export default function Battery() {
                     : ["power-profile-button"]
                 }
                 $={(self: any) => {
-                  // Set initial state
                   const updateClasses = () => {
                     const classes = isActive()
                       ? ["power-profile-button", "active"]
                       : ["power-profile-button"];
                     self.set_css_classes(classes);
                   };
-
-                  // Update on profile change
                   const handler = powerprofiles.connect(
                     "notify::active-profile",
                     updateClasses,
                   );
-
-                  // Cleanup on destroy
                   self.connect("destroy", () => {
                     powerprofiles.disconnect(handler);
                   });

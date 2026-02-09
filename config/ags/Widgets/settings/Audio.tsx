@@ -1,9 +1,6 @@
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import AstalWp from "gi://AstalWp";
-import { onCleanup } from "ags";
-
-// Simple Variable class for state management
 class Variable<T> {
   private value: T;
   private subscribers: Array<(value: T) => void> = [];
@@ -24,7 +21,6 @@ class Variable<T> {
   subscribe(callback: (value: T) => void) {
     this.subscribers.push(callback);
     callback(this.value);
-    // ✅ Return unsubscribe function to prevent memory leaks
     return () => {
       this.subscribers = this.subscribers.filter((sub) => sub !== callback);
     };
@@ -70,7 +66,7 @@ function getCurrentLimit(): number {
   if (match) {
     return parseFloat(match[1]);
   }
-  return 1.0; // Default
+  return 1.0;
 }
 
 function updateKeybindsLimit(newLimit: number): boolean {
@@ -78,8 +74,6 @@ function updateKeybindsLimit(newLimit: number): boolean {
   const contents = readKeybindsFile();
 
   if (!contents) return false;
-
-  // Replace the --limit value in the volume keybind
   const updatedContents = contents.replace(
     /--limit=([\d.]+)/,
     `--limit=${newLimit.toFixed(1)}`,
@@ -87,7 +81,6 @@ function updateKeybindsLimit(newLimit: number): boolean {
 
   try {
     GLib.file_set_contents(configPath, updatedContents);
-    // Reload Hyprland config
     execAsyncNoWait("hyprctl reload");
     return true;
   } catch (err) {
@@ -112,12 +105,10 @@ export default function AudioPage() {
   let maxVolumeEntry: any = null;
 
   const setMaxVolume = (decimal: number) => {
-    if (decimal < 0.01 || decimal > 5.0) return; // Reasonable bounds (1% to 500%)
+    if (decimal < 0.01 || decimal > 5.0) return;
 
     if (updateKeybindsLimit(decimal)) {
       maxVolume.set(decimal);
-
-      // Apply the limit immediately to current volume
       execAsyncNoWait(
         `wpctl set-volume @DEFAULT_AUDIO_SINK@ ${speaker.volume} --limit ${decimal}`,
       );
@@ -140,8 +131,6 @@ export default function AudioPage() {
       cssClasses={["page-container"]}
     >
       <Gtk.Label label="Audio" xalign={0} cssClasses={["page-title"]} />
-
-      {/* Current Volume Display */}
       <Gtk.Box
         orientation={Gtk.Orientation.VERTICAL}
         cssClasses={["settings-card"]}
@@ -160,7 +149,6 @@ export default function AudioPage() {
                   const percent = Math.round(speaker.volume * 100);
                   self.set_label(`${percent}%`);
                 };
-                // ✅ Store signal ID and cleanup on destroy
                 const signalId = speaker.connect(
                   "notify::volume",
                   updateVolume,
@@ -183,7 +171,6 @@ export default function AudioPage() {
                 self.set_icon_name(icon);
                 self.set_tooltip_text(speaker.mute ? "Unmute" : "Mute");
               };
-              // ✅ Store signal ID and cleanup on destroy
               const signalId = speaker.connect("notify::mute", updateMuteIcon);
               updateMuteIcon();
               self.connect("destroy", () => {
@@ -226,7 +213,6 @@ export default function AudioPage() {
             placeholderText="100"
             $={(self: any) => {
               maxVolumeEntry = self;
-              // ✅ Store subscription and signal ID for cleanup
               const unsub = maxVolume.subscribe((max) => {
                 self.set_text(Math.round(max * 100).toString());
               });
@@ -251,7 +237,6 @@ export default function AudioPage() {
             <Gtk.Button
               label={`${percent}%`}
               $={(self: any) => {
-                // ✅ Store subscription and cleanup on destroy
                 const unsub = maxVolume.subscribe((max) => {
                   const currentPercent = Math.round(max * 100);
                   const classes =
@@ -267,7 +252,6 @@ export default function AudioPage() {
           ))}
         </Gtk.Box>
       </Gtk.Box>
-      {/* Audio Device Info */}
       <Gtk.Box
         orientation={Gtk.Orientation.VERTICAL}
         cssClasses={["settings-card"]}
@@ -285,7 +269,6 @@ export default function AudioPage() {
                 `Active Output: ${speaker.description || "Unknown Device"}`,
               );
             };
-            // ✅ Store signal ID and cleanup on destroy
             const signalId = speaker.connect(
               "notify::description",
               updateDevice,

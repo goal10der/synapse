@@ -2,7 +2,6 @@ import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import Gio from "gi://Gio";
 
-// Simple Variable class for state management
 class Variable<T> {
   private value: T;
   private subscribers: Set<(value: T) => void> = new Set();
@@ -322,8 +321,6 @@ export default function NetworkPage() {
 
                   container.append(revealer);
                 }
-
-                // CRITICAL: Cleanup everything when the item is removed
                 container.connect("destroy", () => {
                   if (subUnsub) subUnsub();
                   button.disconnect(clickId);
@@ -333,12 +330,10 @@ export default function NetworkPage() {
               };
 
               const networksUnsub = networks.subscribe((networkList) => {
-                // EXPLICIT CLEARANCE: Destroy children to stop memory ballooning
                 let child = self.get_first_child();
                 while (child) {
                   const next = child.get_next_sibling();
                   self.remove(child);
-                  // Force C-side to release references and fire "destroy" signals
                   if (child.run_dispose) child.run_dispose();
                   child = next;
                 }

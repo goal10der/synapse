@@ -4,7 +4,6 @@ import app from "ags/gtk4/app";
 import Gio from "gi://Gio";
 import GLib from "gi://GLib";
 import Gtk from "gi://Gtk?version=4.0";
-// Imports from your local directory
 import Bar from "./Bar";
 import VolumePopup from "./Widgets/VolumePopup";
 import SettingsWindow from "./Widgets/Settings";
@@ -17,10 +16,6 @@ import { toggleEditMode, editMode } from "./State";
 const configDir = `${GLib.get_user_config_dir()}/ags`;
 const STYLE_PATH = `${configDir}/style.css`;
 const MATUGEN_DIR = `${GLib.get_home_dir()}/.cache/matugen`;
-
-// Keep references on `app` so the Garbage Collector doesn't collect them
-// (no module-level variables required)
-
 app.start({
   instanceName: "shell",
   css: STYLE_PATH,
@@ -34,8 +29,6 @@ app.start({
       }
       return res("launcher not initialized");
     }
-
-    // Add sidebar toggle handler
     if (argv[0] === "RightSidebar") {
       const monitors = app.get_monitors();
       if (monitors.length > 0) {
@@ -45,8 +38,6 @@ app.start({
       }
       return res("no monitors found");
     }
-
-    // PowerMenu toggle handler
     if (argv[0] === "toggle-powermenu") {
       const monitors = app.get_monitors();
       monitors.forEach((m) => app.toggle_window(`powermenu-${m.connector}`));
@@ -66,15 +57,11 @@ app.start({
     if (settings) {
       settings.gtk_enable_inspector_keybinding = false;
     }
-
-    // 1. Create the Launcher (only once, not per monitor)
     const _app: any = app;
     _app.applauncherWin = Applauncher() as Gtk.Window;
     _app.applauncherWin.visible = false;
     _app.applauncherWin.hide();
     app.add_window(_app.applauncherWin);
-
-    // 2. Setup the CSS monitor for Matugen
     const dir = Gio.File.new_for_path(MATUGEN_DIR);
     try {
       _app.fileMonitor = dir.monitor_directory(Gio.FileMonitorFlags.NONE, null);
@@ -95,8 +82,6 @@ app.start({
     } catch (e) {
       console.error(e);
     }
-
-    // 3. Setup Bar, Settings, and Sidebar for every monitor
     const monitors = createBinding(app, "monitors");
     return (
       <For each={monitors}>

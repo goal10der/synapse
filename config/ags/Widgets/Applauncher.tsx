@@ -10,22 +10,14 @@ export default function Applauncher() {
   let searchentry: Gtk.Entry;
   let win: Astal.Window;
   const apps = new AstalApps.Apps();
-
-  // State for search results
   const [list, setList] = createState<AstalApps.Application[]>([]);
-
-  // ✅ Store signal ID for cleanup
   try {
     const appsSignalId = apps.connect("notify::list", () => {
-      // Reload apps when the list changes
       apps.reload();
-      // Re-run search with current query if there is one
       if (searchentry && searchentry.text !== "") {
         search(searchentry.text);
       }
     });
-
-    // ✅ Cleanup on component destroy
     onCleanup(() => {
       if (appsSignalId && typeof apps.disconnect === "function") {
         try {
@@ -43,7 +35,6 @@ export default function Applauncher() {
     if (text === "") {
       setList([]);
     } else {
-      // fuzzy_query returns the list
       setList(apps.fuzzy_query(text).slice(0, 8));
     }
   }
@@ -60,13 +51,10 @@ export default function Applauncher() {
       $={(self: any) => {
         win = self;
         try {
-          // ✅ Store signal ID and cleanup on destroy
           const visibleSignalId = self.connect("notify::visible", () => {
             try {
               if (self.visible) {
-                // Reload apps when opening launcher to catch any changes
                 apps.reload();
-                // Only grab focus if searchentry is ready
                 if (searchentry) {
                   searchentry.grab_focus();
                 }
@@ -114,7 +102,6 @@ export default function Applauncher() {
           $={(ref: any) => {
             searchentry = ref;
             try {
-              // ✅ Store signal IDs and cleanup on destroy
               const changedSignalId = ref.connect("changed", () => {
                 try {
                   search(ref.text);
