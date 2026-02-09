@@ -1,12 +1,17 @@
 # Synapse Dotfiles
 
 A modern Hyprland configuration with dynamic Material You theming and a custom AGS shell.
+**DOES NOT CONFIGURE A GREETER OR YOUR NETWORK AUTOMATICLLY**
 
 > **Note:** This is a learning project built while exploring TypeScript. Contributions, suggestions, and pull requests are highly welcome!
 
 ## Preview
 
-https://github.com/user-attachments/assets/ca0ebaf2-4b67-4a52-af28-7114d5e20b2b
+
+
+https://github.com/user-attachments/assets/0b587393-734a-49eb-a4b8-6a41c256d283
+
+
 
 _Wallpaper photographed by me_
 
@@ -18,7 +23,7 @@ _Wallpaper photographed by me_
 - **Modern Animations** - Smooth, physics-based window and workspace transitions
 - **Network Management** - Integrated WiFi and Bluetooth controls
 - **Power Profiles** - Quick switching between power modes for laptops
-- **System Monitoring** - Built-in resource monitoring with btop integration
+- **System Monitoring** - Built-in resource monitoring with btop
 - **User Config Preservation** - Custom settings survive updates
 
 ## Installation
@@ -87,7 +92,7 @@ Options:
 
 After installation:
 
-1. **Logout and back in** to start your Hyprland session
+1. **Start-hyprland** to start your Hyprland session
 2. **Enable iwd service** if not already running:
    ```bash
    sudo systemctl enable --now iwd
