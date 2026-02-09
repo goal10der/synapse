@@ -53,7 +53,7 @@ export interface BarConfig {
 const defaultConfig: BarConfig = {
   left: ["clock", "settings"],
   center: ["workspaces"],
-  right: ["tray", "sidebar", "notifications", "battery"],
+  right: ["tray", "sidebar", "battery"],
 };
 
 export const barConfig = new Variable<BarConfig>(defaultConfig);

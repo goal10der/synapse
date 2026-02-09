@@ -1,9 +1,8 @@
 // RightSidebar.tsx
 import app from "ags/gtk4/app";
 import Astal from "gi://Astal?version=4.0";
-import AstalBluetooth from "gi://AstalBluetooth?version=0.1";
-import AstalNetwork from "gi://AstalNetwork?version=0.1";
 import AstalWp from "gi://AstalWp?version=0.1";
+import Notifd from "gi://AstalNotifd";
 import Gdk from "gi://Gdk?version=4.0";
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
@@ -78,6 +77,7 @@ export default function RightSidebar({
 }) {
   let win: Astal.Window;
   let stack: Gtk.Stack;
+  const notifd = Notifd.get_default();
 
   /* --- UI COMPONENTS --- */
 
@@ -159,6 +159,126 @@ export default function RightSidebar({
     </box>
   );
 
+  const NotificationCenter = () => (
+    <box
+      orientation={Gtk.Orientation.VERTICAL}
+      cssClasses={["notification-section"]}
+      spacing={8}
+    >
+      <box cssClasses={["notification-header"]} spacing={12}>
+        <label
+          label="Notifications"
+          halign={Gtk.Align.START}
+          cssClasses={["notification-title"]}
+        />
+        <box hexpand />
+        <button
+          $={(self) => {
+            self.connect("clicked", () => {
+              notifd.get_notifications().forEach((n) => n.dismiss());
+            });
+          }}
+          cssClasses={["clear-all"]}
+        >
+          <label label="Clear All" />
+        </button>
+      </box>
+
+      <Gtk.ScrolledWindow
+        vexpand
+        maxContentHeight={400}
+        cssClasses={["notification-list"]}
+      >
+        <box
+          orientation={Gtk.Orientation.VERTICAL}
+          spacing={8}
+          $={(self) => {
+            const updateNotifications = () => {
+              // Clear existing children
+              let child = self.get_first_child();
+              while (child) {
+                const next = child.get_next_sibling();
+                self.remove(child);
+                child = next;
+              }
+
+              const notifications = notifd.get_notifications();
+
+              if (notifications.length === 0) {
+                const emptyBox = (
+                  <box cssClasses={["no-notifications"]}>
+                    <label label="No notifications" />
+                  </box>
+                ) as Gtk.Widget;
+                self.append(emptyBox);
+              } else {
+                notifications.forEach((notification) => {
+                  const notifBox = (
+                    <box
+                      cssClasses={["notification-item"]}
+                      orientation={Gtk.Orientation.VERTICAL}
+                      spacing={4}
+                    >
+                      <box spacing={8}>
+                        <label
+                          label={notification.summary}
+                          halign={Gtk.Align.START}
+                          cssClasses={["notification-summary"]}
+                          hexpand
+                        />
+                        <button
+                          $={(btn) => {
+                            btn.connect("clicked", () => {
+                              notification.dismiss();
+                            });
+                          }}
+                          cssClasses={["dismiss-button"]}
+                        >
+                          <label label="×" />
+                        </button>
+                      </box>
+
+                      {notification.body && (
+                        <label
+                          label={notification.body}
+                          halign={Gtk.Align.START}
+                          wrap
+                          cssClasses={["notification-body"]}
+                        />
+                      )}
+
+                      {notification.appName && (
+                        <label
+                          label={notification.appName}
+                          halign={Gtk.Align.START}
+                          cssClasses={["notification-app"]}
+                        />
+                      )}
+                    </box>
+                  ) as Gtk.Widget;
+                  self.append(notifBox);
+                });
+              }
+            };
+
+            // Initial update
+            updateNotifications();
+
+            // Listen for notification changes
+            const notifiedId = notifd.connect("notified", updateNotifications);
+            const resolvedId = notifd.connect("resolved", updateNotifications);
+
+            // Cleanup
+            self.connect("destroy", () => {
+              notifd.disconnect(notifiedId);
+              notifd.disconnect(resolvedId);
+            });
+          }}
+        />
+      </Gtk.ScrolledWindow>
+    </box>
+  );
+
   /* --- PAGES --- */
 
   const mainPage = (
@@ -166,76 +286,82 @@ export default function RightSidebar({
       orientation={Gtk.Orientation.VERTICAL}
       spacing={16}
       cssClasses={["main-sidebar-page"]}
+      vexpand
     >
-      <Header />
+      <box orientation={Gtk.Orientation.VERTICAL} spacing={16} vexpand={false}>
+        <Header />
 
-      <box
-        orientation={Gtk.Orientation.VERTICAL}
-        spacing={8}
-        cssClasses={["sliders-section"]}
-      >
-        <VolumeSlider />
-        <BrightnessSlider />
+        <box
+          orientation={Gtk.Orientation.VERTICAL}
+          spacing={8}
+          cssClasses={["sliders-section"]}
+        >
+          <VolumeSlider />
+          <BrightnessSlider />
+        </box>
+
+        <box orientation={Gtk.Orientation.VERTICAL} spacing={12}>
+          <button
+            cssClasses={["qs-tile"]}
+            onClicked={() => toggleEditMode()}
+            $={(self) => {
+              const unsub = editMode.subscribe((active) => {
+                if (active) self.add_css_class("active");
+                else self.remove_css_class("active");
+              });
+              onCleanup(unsub);
+            }}
+          >
+            <box spacing={12}>
+              <image iconName="view-grid-symbolic" />
+              <label
+                label="Edit Layout"
+                hexpand
+                xalign={0}
+                $={(self) => {
+                  const unsub = editMode.subscribe(
+                    (v) => (self.label = v ? "Exit Edit Mode" : "Edit Layout"),
+                  );
+                  onCleanup(unsub);
+                }}
+              />
+              {/* CHECKMARK FIX: visible={false} sets the default state to hidden */}
+              <image
+                visible={false}
+                iconName="object-select-symbolic"
+                $={(self) => {
+                  const unsub = editMode.subscribe((v) => (self.visible = v));
+                  onCleanup(unsub);
+                }}
+              />
+            </box>
+          </button>
+
+          <button
+            cssClasses={["qs-tile"]}
+            onClicked={() => stack.set_visible_child_name("wifi")}
+          >
+            <box spacing={12}>
+              <image iconName="network-wireless-symbolic" />
+              <label label="Wi-Fi Settings" hexpand xalign={0} />
+              <image iconName="go-next-symbolic" />
+            </box>
+          </button>
+          <button
+            cssClasses={["qs-tile"]}
+            onClicked={() => stack.set_visible_child_name("bluetooth")}
+          >
+            <box spacing={12}>
+              <image iconName="bluetooth-symbolic" />
+              <label label="Bluetooth Settings" hexpand xalign={0} />
+              <image iconName="go-next-symbolic" />
+            </box>
+          </button>
+        </box>
       </box>
 
-      <box orientation={Gtk.Orientation.VERTICAL} spacing={12}>
-        <button
-          cssClasses={["qs-tile"]}
-          onClicked={() => toggleEditMode()}
-          $={(self) => {
-            const unsub = editMode.subscribe((active) => {
-              if (active) self.add_css_class("active");
-              else self.remove_css_class("active");
-            });
-            onCleanup(unsub);
-          }}
-        >
-          <box spacing={12}>
-            <image iconName="view-grid-symbolic" />
-            <label
-              label="Edit Layout"
-              hexpand
-              xalign={0}
-              $={(self) => {
-                const unsub = editMode.subscribe(
-                  (v) => (self.label = v ? "Exit Edit Mode" : "Edit Layout"),
-                );
-                onCleanup(unsub);
-              }}
-            />
-            {/* CHECKMARK FIX: visible={false} sets the default state to hidden */}
-            <image
-              visible={false}
-              iconName="object-select-symbolic"
-              $={(self) => {
-                const unsub = editMode.subscribe((v) => (self.visible = v));
-                onCleanup(unsub);
-              }}
-            />
-          </box>
-        </button>
-
-        <button
-          cssClasses={["qs-tile"]}
-          onClicked={() => stack.set_visible_child_name("wifi")}
-        >
-          <box spacing={12}>
-            <image iconName="network-wireless-symbolic" />
-            <label label="Wi-Fi Settings" hexpand xalign={0} />
-            <image iconName="go-next-symbolic" />
-          </box>
-        </button>
-        <button
-          cssClasses={["qs-tile"]}
-          onClicked={() => stack.set_visible_child_name("bluetooth")}
-        >
-          <box spacing={12}>
-            <image iconName="bluetooth-symbolic" />
-            <label label="Bluetooth Settings" hexpand xalign={0} />
-            <image iconName="go-next-symbolic" />
-          </box>
-        </button>
-      </box>
+      {/* Notification Center - takes remaining space */}
+      <NotificationCenter />
     </box>
   );
 

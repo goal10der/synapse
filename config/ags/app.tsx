@@ -9,7 +9,6 @@ import Bar from "./Bar";
 import VolumePopup from "./Widgets/VolumePopup";
 import SettingsWindow from "./Widgets/Settings";
 import Applauncher from "./Widgets/Applauncher";
-import NotificationCenter from "./Widgets/Notification";
 import NotificationPopups from "./Widgets/Notificationpopup";
 import Sidebar from "./Widgets/RightSidebar";
 import PowerMenu from "./Widgets/PowerMenu";
@@ -106,7 +105,6 @@ app.start({
             <Bar gdkmonitor={gdkmonitor} />
             <SettingsWindow gdkmonitor={gdkmonitor} />
             <VolumePopup gdkmonitor={gdkmonitor} />
-            <NotificationCenter gdkmonitor={gdkmonitor} />
             <NotificationPopups />
             <Sidebar gdkmonitor={gdkmonitor} />
             <PowerMenu gdkmonitor={gdkmonitor} />
