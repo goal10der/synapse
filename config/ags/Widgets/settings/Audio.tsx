@@ -1,6 +1,7 @@
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import AstalWp from "gi://AstalWp";
+import { onCleanup } from "ags";
 
 // Simple Variable class for state management
 class Variable<T> {
@@ -23,6 +24,10 @@ class Variable<T> {
   subscribe(callback: (value: T) => void) {
     this.subscribers.push(callback);
     callback(this.value);
+    // ✅ Return unsubscribe function to prevent memory leaks
+    return () => {
+      this.subscribers = this.subscribers.filter((sub) => sub !== callback);
+    };
   }
 }
 
@@ -155,8 +160,15 @@ export default function AudioPage() {
                   const percent = Math.round(speaker.volume * 100);
                   self.set_label(`${percent}%`);
                 };
-                speaker.connect("notify::volume", updateVolume);
+                // ✅ Store signal ID and cleanup on destroy
+                const signalId = speaker.connect(
+                  "notify::volume",
+                  updateVolume,
+                );
                 updateVolume();
+                self.connect("destroy", () => {
+                  speaker.disconnect(signalId);
+                });
               }}
               xalign={0}
               cssClasses={["dim-label"]}
@@ -171,8 +183,12 @@ export default function AudioPage() {
                 self.set_icon_name(icon);
                 self.set_tooltip_text(speaker.mute ? "Unmute" : "Mute");
               };
-              speaker.connect("notify::mute", updateMuteIcon);
+              // ✅ Store signal ID and cleanup on destroy
+              const signalId = speaker.connect("notify::mute", updateMuteIcon);
               updateMuteIcon();
+              self.connect("destroy", () => {
+                speaker.disconnect(signalId);
+              });
             }}
             onClicked={() => speaker.set_mute(!speaker.mute)}
             cssClasses={["icon-button"]}
@@ -210,11 +226,16 @@ export default function AudioPage() {
             placeholderText="100"
             $={(self: any) => {
               maxVolumeEntry = self;
-              maxVolume.subscribe((max) => {
+              // ✅ Store subscription and signal ID for cleanup
+              const unsub = maxVolume.subscribe((max) => {
                 self.set_text(Math.round(max * 100).toString());
               });
+              const signalId = self.connect("activate", applyMaxVolume);
 
-              self.connect("activate", applyMaxVolume);
+              self.connect("destroy", () => {
+                unsub();
+                self.disconnect(signalId);
+              });
             }}
           />
           <Gtk.Label
@@ -230,7 +251,8 @@ export default function AudioPage() {
             <Gtk.Button
               label={`${percent}%`}
               $={(self: any) => {
-                maxVolume.subscribe((max) => {
+                // ✅ Store subscription and cleanup on destroy
+                const unsub = maxVolume.subscribe((max) => {
                   const currentPercent = Math.round(max * 100);
                   const classes =
                     currentPercent === percent
@@ -238,6 +260,7 @@ export default function AudioPage() {
                       : ["volume-preset-btn"];
                   self.set_css_classes(classes);
                 });
+                self.connect("destroy", unsub);
               }}
               onClicked={() => setMaxVolume(percent / 100)}
             />
@@ -262,8 +285,15 @@ export default function AudioPage() {
                 `Active Output: ${speaker.description || "Unknown Device"}`,
               );
             };
-            speaker.connect("notify::description", updateDevice);
+            // ✅ Store signal ID and cleanup on destroy
+            const signalId = speaker.connect(
+              "notify::description",
+              updateDevice,
+            );
             updateDevice();
+            self.connect("destroy", () => {
+              speaker.disconnect(signalId);
+            });
           }}
           xalign={0}
           cssClasses={["dim-label"]}

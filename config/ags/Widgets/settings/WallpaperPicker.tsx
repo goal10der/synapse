@@ -1,6 +1,7 @@
 import GLib from "gi://GLib";
 import Gtk from "gi://Gtk?version=4.0";
 import Gio from "gi://Gio";
+import { onCleanup } from "ags";
 import { matugenState, execAsync } from "../Settings";
 
 const WALLPAPER_DIR = `${GLib.get_home_dir()}/Wallpapers`;
@@ -35,6 +36,7 @@ export default function WallpaperPicker() {
   let flowBoxRef: Gtk.FlowBox | null = null;
   let currentWallpapers: string[] = [];
   let pollTimeoutId: number | null = null;
+  let monitorSignalId: number | null = null;
 
   const applyWallpaper = (path: string) => {
     const cmd = `bash -c 'awww img "${path}" -t wipe --transition-duration 3 --transition-bezier .17,.67,.48,1.01 --transition-fps 60 && matugen image --type ${matugenState.currentTonalSpot} "${path}"'`;
@@ -121,24 +123,29 @@ export default function WallpaperPicker() {
 
   // Try file monitoring first, fall back to polling
   let monitorActive = false;
+  let fileMonitor: any = null;
   try {
     const file = Gio.File.new_for_path(WALLPAPER_DIR);
-    const monitor = file.monitor_directory(Gio.FileMonitorFlags.NONE, null);
+    fileMonitor = file.monitor_directory(Gio.FileMonitorFlags.NONE, null);
 
-    monitor.connect("changed", (_monitor, file, otherFile, eventType) => {
-      if (
-        eventType === Gio.FileMonitorEvent.CREATED ||
-        eventType === Gio.FileMonitorEvent.DELETED ||
-        eventType === Gio.FileMonitorEvent.MOVED_IN ||
-        eventType === Gio.FileMonitorEvent.MOVED_OUT ||
-        eventType === Gio.FileMonitorEvent.CHANGES_DONE_HINT
-      ) {
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
-          updateGrid();
-          return GLib.SOURCE_REMOVE;
-        });
-      }
-    });
+    // ✅ Store signal ID for cleanup
+    monitorSignalId = fileMonitor.connect(
+      "changed",
+      (_monitor: any, file: any, otherFile: any, eventType: number) => {
+        if (
+          eventType === Gio.FileMonitorEvent.CREATED ||
+          eventType === Gio.FileMonitorEvent.DELETED ||
+          eventType === Gio.FileMonitorEvent.MOVED_IN ||
+          eventType === Gio.FileMonitorEvent.MOVED_OUT ||
+          eventType === Gio.FileMonitorEvent.CHANGES_DONE_HINT
+        ) {
+          GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
+            updateGrid();
+            return GLib.SOURCE_REMOVE;
+          });
+        }
+      },
+    );
 
     monitorActive = true;
     console.log(`File monitor active for: ${WALLPAPER_DIR}`);
@@ -150,6 +157,19 @@ export default function WallpaperPicker() {
   if (!monitorActive) {
     console.log(`Starting polling mode (every ${POLL_INTERVAL}ms)`);
   }
+
+  // ✅ Cleanup file monitor and polling timeout on component destroy
+  onCleanup(() => {
+    if (pollTimeoutId) {
+      GLib.source_remove(pollTimeoutId);
+      pollTimeoutId = null;
+    }
+    if (monitorSignalId && fileMonitor) {
+      try {
+        fileMonitor.disconnect(monitorSignalId);
+      } catch (e) {}
+    }
+  });
 
   return (
     <Gtk.ScrolledWindow

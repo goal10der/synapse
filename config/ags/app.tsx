@@ -19,19 +19,18 @@ const configDir = `${GLib.get_user_config_dir()}/ags`;
 const STYLE_PATH = `${configDir}/style.css`;
 const MATUGEN_DIR = `${GLib.get_home_dir()}/.cache/matugen`;
 
-// Keep these alive so the Garbage Collector doesn't break them
-let applauncherWin: Gtk.Window;
-let fileMonitor: Gio.FileMonitor;
-let debounceTimerId: number = 0;
+// Keep references on `app` so the Garbage Collector doesn't collect them
+// (no module-level variables required)
 
 app.start({
   instanceName: "shell",
   css: STYLE_PATH,
   requestHandler(argv, res) {
     if (argv[0] === "toggle") {
-      if (applauncherWin) {
-        applauncherWin.visible = !applauncherWin.visible;
-        if (applauncherWin.visible) applauncherWin.present();
+      const _app: any = app;
+      if (_app.applauncherWin) {
+        _app.applauncherWin.visible = !_app.applauncherWin.visible;
+        if (_app.applauncherWin.visible) _app.applauncherWin.present();
         return res("ok");
       }
       return res("launcher not initialized");
@@ -70,23 +69,29 @@ app.start({
     }
 
     // 1. Create the Launcher (only once, not per monitor)
-    applauncherWin = Applauncher() as Gtk.Window;
-    applauncherWin.visible = false;
-    applauncherWin.hide();
-    app.add_window(applauncherWin);
+    const _app: any = app;
+    _app.applauncherWin = Applauncher() as Gtk.Window;
+    _app.applauncherWin.visible = false;
+    _app.applauncherWin.hide();
+    app.add_window(_app.applauncherWin);
 
     // 2. Setup the CSS monitor for Matugen
     const dir = Gio.File.new_for_path(MATUGEN_DIR);
     try {
-      fileMonitor = dir.monitor_directory(Gio.FileMonitorFlags.NONE, null);
-      fileMonitor.connect("changed", (_self, file) => {
+      _app.fileMonitor = dir.monitor_directory(Gio.FileMonitorFlags.NONE, null);
+      _app.fileMonitor.connect("changed", (_self, file) => {
         if (file.get_basename() !== "colors.css") return;
-        if (debounceTimerId > 0) GLib.source_remove(debounceTimerId);
-        debounceTimerId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
-          app.apply_css(STYLE_PATH);
-          debounceTimerId = 0;
-          return false;
-        });
+        if ((_app.debounceTimerId ?? 0) > 0)
+          GLib.source_remove(_app.debounceTimerId);
+        _app.debounceTimerId = GLib.timeout_add(
+          GLib.PRIORITY_DEFAULT,
+          300,
+          () => {
+            app.apply_css(STYLE_PATH);
+            _app.debounceTimerId = 0;
+            return false;
+          },
+        );
       });
     } catch (e) {
       console.error(e);

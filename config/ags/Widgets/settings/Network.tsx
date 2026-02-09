@@ -5,7 +5,7 @@ import Gio from "gi://Gio";
 // Simple Variable class for state management
 class Variable<T> {
   private value: T;
-  private subscribers: Array<(value: T) => void> = [];
+  private subscribers: Set<(value: T) => void> = new Set();
 
   constructor(initialValue: T) {
     this.value = initialValue;
@@ -16,45 +16,44 @@ class Variable<T> {
   }
 
   set(newValue: T) {
+    if (this.value === newValue) return;
     this.value = newValue;
     this.subscribers.forEach((callback) => callback(this.value));
   }
 
   subscribe(callback: (value: T) => void) {
-    this.subscribers.push(callback);
+    this.subscribers.add(callback);
     callback(this.value);
+    return () => this.subscribers.delete(callback);
   }
 }
 
-// Strip ANSI escape codes
 function stripAnsi(str: string): string {
   return str.replace(/\u001b\[[0-9;]*m/g, "");
 }
 
-/**
- * TRULY ASYNC EXECUTION
- * This prevents the UI from freezing by running commands in a subprocess
- */
 async function execAsync(cmd: string): Promise<string> {
-  const launcher = new Gio.SubprocessLauncher({
-    flags: Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
-  });
-  const argv = GLib.shell_parse_argv(cmd)[1];
-  const proc = launcher.spawnv(argv);
-  return new Promise((resolve, reject) => {
-    proc.communicate_utf8_async(null, null, (p, res) => {
-      try {
-        const [_, stdout, stderr] = p!.communicate_utf8_finish(res);
-        if (stdout) resolve(stripAnsi(stdout.trim()));
-        else resolve("");
-      } catch (e) {
-        reject(e);
-      }
+  try {
+    const launcher = new Gio.SubprocessLauncher({
+      flags: Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
     });
-  });
+    const argv = GLib.shell_parse_argv(cmd)[1];
+    const proc = launcher.spawnv(argv);
+    return new Promise((resolve, reject) => {
+      proc.communicate_utf8_async(null, null, (p, res) => {
+        try {
+          const [_, stdout] = p!.communicate_utf8_finish(res);
+          resolve(stdout ? stripAnsi(stdout.trim()) : "");
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+  } catch (e) {
+    return "";
+  }
 }
 
-// Keep sync only for very fast, local checks like getting the device name
 function execSync(cmd: string): string {
   try {
     const [success, stdout] = GLib.spawn_command_line_sync(cmd);
@@ -77,14 +76,11 @@ interface WifiNetwork {
 function getWifiDevice(): string {
   const output = execSync("iwctl device list");
   const lines = output.split("\n");
-
   for (const line of lines) {
     if (line.includes("station")) {
       const parts = line.trim().split(/\s+/);
       for (const part of parts) {
-        if (part.match(/^(wlan|wlp|wlo)\w*/)) {
-          return part;
-        }
+        if (part.match(/^(wlan|wlp|wlo)\w*/)) return part;
       }
     }
   }
@@ -104,7 +100,6 @@ export default function NetworkPage() {
     try {
       await execAsync(`iwctl station ${device} scan`);
 
-      // Non-blocking wait
       await new Promise((resolve) =>
         GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
           resolve(null);
@@ -120,14 +115,12 @@ export default function NetworkPage() {
         if (
           line.includes("Network name") ||
           line.includes("----") ||
-          line.trim() === ""
+          !line.trim()
         )
           continue;
-
         const connected = line.trim().startsWith(">");
         const cleanLine = line.replace(">", "").trim();
         const parts = cleanLine.split(/\s{2,}/);
-
         if (parts.length >= 2) {
           foundNetworks.push({
             name: parts[0].trim(),
@@ -137,11 +130,9 @@ export default function NetworkPage() {
           });
         }
       }
-
-      foundNetworks.sort((a, b) =>
-        a.connected === b.connected ? 0 : a.connected ? -1 : 1,
+      networks.set(
+        foundNetworks.sort((a, b) => Number(b.connected) - Number(a.connected)),
       );
-      networks.set(foundNetworks);
     } catch (e) {
       console.error("WiFi Scan Error:", e);
     } finally {
@@ -154,26 +145,19 @@ export default function NetworkPage() {
     const cmd = password
       ? `iwctl station ${device} connect "${network.name}" --passphrase "${password}"`
       : `iwctl station ${device} connect "${network.name}"`;
-
     await execAsync(cmd);
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 3000, () => {
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
       refreshNetworks();
       return GLib.SOURCE_REMOVE;
     });
   };
 
-  const disconnectNetwork = async () => {
-    await execAsync(`iwctl station ${device} disconnect`);
-    refreshNetworks();
-  };
-
   const handleNetworkClick = (network: WifiNetwork) => {
     if (network.connected) {
-      disconnectNetwork();
-      return;
-    }
-
-    if (network.security === "open") {
+      execAsync(`iwctl station ${device} disconnect`).then(() =>
+        refreshNetworks(),
+      );
+    } else if (network.security === "open") {
       handleConnect(network);
     } else {
       expandedNetwork.set(network.name);
@@ -209,11 +193,13 @@ export default function NetworkPage() {
             cssClasses={["icon-button"]}
             onClicked={() => refreshNetworks()}
             $={(self: any) => {
-              isScanning.subscribe((scanning) => {
+              const unsub = isScanning.subscribe((scanning) => {
                 self.set_sensitive(!scanning);
-                if (scanning) self.add_css_class("scanning");
-                else self.remove_css_class("scanning");
+                scanning
+                  ? self.add_css_class("scanning")
+                  : self.remove_css_class("scanning");
               });
+              self.connect("destroy", unsub);
             }}
           />
         </Gtk.Box>
@@ -229,7 +215,6 @@ export default function NetworkPage() {
           xalign={0}
           cssClasses={["section-title"]}
         />
-
         <Gtk.ScrolledWindow
           heightRequest={400}
           vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC}
@@ -241,9 +226,7 @@ export default function NetworkPage() {
               const createNetworkItem = (network: WifiNetwork) => {
                 const container = new Gtk.Box({
                   orientation: Gtk.Orientation.VERTICAL,
-                  spacing: 0,
                 });
-
                 const buttonBox = new Gtk.Box({
                   orientation: Gtk.Orientation.HORIZONTAL,
                   spacing: 12,
@@ -264,17 +247,15 @@ export default function NetworkPage() {
                 });
                 if (network.connected)
                   ssidLabel.add_css_class("connected-label");
-                buttonBox.append(ssidLabel);
 
-                if (network.connected) {
+                buttonBox.append(ssidLabel);
+                if (network.connected)
                   buttonBox.append(
                     new Gtk.Label({
                       label: "CONNECTED",
                       cssClasses: ["connected-status-pill"],
                     }),
                   );
-                }
-
                 buttonBox.append(
                   new Gtk.Label({
                     label: network.signal,
@@ -289,47 +270,42 @@ export default function NetworkPage() {
                     : ["network-item"],
                 });
 
-                button.connect("clicked", () => handleNetworkClick(network));
+                const clickId = button.connect("clicked", () =>
+                  handleNetworkClick(network),
+                );
                 container.append(button);
+
+                let subUnsub: (() => void) | null = null;
 
                 if (network.security !== "open" && !network.connected) {
                   const passwordBox = new Gtk.Box({
                     orientation: Gtk.Orientation.HORIZONTAL,
                     spacing: 8,
-                    marginTop: 8, // FIXED: Changed from padding_top to marginTop
+                    marginTop: 8,
                     cssClasses: ["network-password-box"],
                   });
-
                   const passwordEntry = new Gtk.Entry({
-                    placeholderText: "Enter password",
+                    placeholderText: "Password",
                     visibility: false,
                     hexpand: true,
                   });
-
-                  const doConnect = () => {
-                    const password = passwordEntry.get_text();
-                    if (password) {
-                      handleConnect(network, password);
-                      passwordEntry.set_text("");
-                    }
-                  };
-
-                  passwordEntry.connect("activate", doConnect);
-
                   const connectBtn = new Gtk.Button({
                     label: "Connect",
                     cssClasses: ["primary-button"],
                   });
-                  connectBtn.connect("clicked", doConnect);
-
                   const cancelBtn = new Gtk.Button({
                     label: "Cancel",
                     cssClasses: ["secondary-button"],
                   });
-                  cancelBtn.connect("clicked", () => {
-                    expandedNetwork.set("");
-                    passwordEntry.set_text("");
-                  });
+
+                  const onConn = () => {
+                    if (passwordEntry.text)
+                      handleConnect(network, passwordEntry.text);
+                  };
+
+                  passwordEntry.connect("activate", onConn);
+                  connectBtn.connect("clicked", onConn);
+                  cancelBtn.connect("clicked", () => expandedNetwork.set(""));
 
                   passwordBox.append(passwordEntry);
                   passwordBox.append(connectBtn);
@@ -340,27 +316,36 @@ export default function NetworkPage() {
                     transitionType: Gtk.RevealerTransitionType.SLIDE_DOWN,
                   });
 
-                  expandedNetwork.subscribe((expanded) => {
-                    revealer.set_reveal_child(expanded === network.name);
+                  subUnsub = expandedNetwork.subscribe((expanded) => {
+                    revealer.reveal_child = expanded === network.name;
                   });
 
                   container.append(revealer);
                 }
 
+                // CRITICAL: Cleanup everything when the item is removed
+                container.connect("destroy", () => {
+                  if (subUnsub) subUnsub();
+                  button.disconnect(clickId);
+                });
+
                 return container;
               };
 
-              networks.subscribe((networkList) => {
+              const networksUnsub = networks.subscribe((networkList) => {
+                // EXPLICIT CLEARANCE: Destroy children to stop memory ballooning
                 let child = self.get_first_child();
                 while (child) {
                   const next = child.get_next_sibling();
                   self.remove(child);
+                  // Force C-side to release references and fire "destroy" signals
+                  if (child.run_dispose) child.run_dispose();
                   child = next;
                 }
-                networkList.forEach((network) =>
-                  self.append(createNetworkItem(network)),
-                );
+                networkList.forEach((n) => self.append(createNetworkItem(n)));
               });
+
+              self.connect("destroy", networksUnsub);
             }}
           />
         </Gtk.ScrolledWindow>

@@ -1,6 +1,7 @@
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import Bluetooth from "gi://AstalBluetooth";
+import { onCleanup } from "ags";
 
 // --- STATE MANAGEMENT CLASS ---
 class Variable<T> {
@@ -23,6 +24,10 @@ class Variable<T> {
   subscribe(callback: (value: T) => void) {
     this.subscribers.push(callback);
     callback(this.value);
+    // ✅ Return unsubscribe function to prevent memory leaks
+    return () => {
+      this.subscribers = this.subscribers.filter((sub) => sub !== callback);
+    };
   }
 }
 
@@ -32,6 +37,11 @@ export default function BluetoothPage() {
   const devices = new Variable<Bluetooth.Device[]>(bt.get_devices() || []);
   const isScanning = new Variable(bt.adapter?.discovering ?? false);
   const isPowered = new Variable(bt.adapter?.powered ?? false);
+
+  // Store all signal IDs for cleanup
+  const signalIds: number[] = [];
+  const adapterSignalIds: number[] = [];
+  let scanTimeoutId: number | null = null;
 
   const sync = () => {
     const allDevices = bt.get_devices() || [];
@@ -55,23 +65,59 @@ export default function BluetoothPage() {
     devices.set(sorted);
   };
 
-  bt.connect("device-added", sync);
-  bt.connect("device-removed", sync);
+  // ✅ Store signal IDs for cleanup
+  signalIds.push(bt.connect("device-added", sync));
+  signalIds.push(bt.connect("device-removed", sync));
 
   const setupAdapter = () => {
     if (!bt.adapter) return;
     isPowered.set(bt.adapter.powered);
     isScanning.set(bt.adapter.discovering);
-    bt.adapter.connect("notify::powered", () =>
-      isPowered.set(bt.adapter.powered),
+    // ✅ Disconnect previous adapter signals before creating new ones
+    adapterSignalIds.forEach((id) => {
+      try {
+        bt.adapter?.disconnect(id);
+      } catch (e) {}
+    });
+    adapterSignalIds.length = 0;
+
+    adapterSignalIds.push(
+      bt.adapter.connect("notify::powered", () =>
+        isPowered.set(bt.adapter.powered),
+      ),
     );
-    bt.adapter.connect("notify::discovering", () =>
-      isScanning.set(bt.adapter.discovering),
+    adapterSignalIds.push(
+      bt.adapter.connect("notify::discovering", () =>
+        isScanning.set(bt.adapter.discovering),
+      ),
     );
   };
 
   setupAdapter();
-  bt.connect("notify::adapter", setupAdapter);
+  signalIds.push(bt.connect("notify::adapter", setupAdapter));
+
+  // ✅ Cleanup on component destroy
+  onCleanup(() => {
+    // Clear scan timeout
+    if (scanTimeoutId !== null) {
+      GLib.source_remove(scanTimeoutId);
+      scanTimeoutId = null;
+    }
+    signalIds.forEach((id) => {
+      try {
+        if (id && typeof bt.disconnect === "function") {
+          bt.disconnect(id);
+        }
+      } catch (e) {}
+    });
+    adapterSignalIds.forEach((id) => {
+      try {
+        if (id && bt.adapter && typeof bt.adapter.disconnect === "function") {
+          bt.adapter.disconnect(id);
+        }
+      } catch (e) {}
+    });
+  });
 
   return (
     <Gtk.Box
@@ -96,13 +142,15 @@ export default function BluetoothPage() {
               cssClasses={["section-title"]}
             />
             <Gtk.Label
-              $={(self: any) =>
-                isPowered.subscribe((p) =>
+              $={(self: any) => {
+                // ✅ Store and cleanup subscription
+                const unsub = isPowered.subscribe((p) =>
                   self.set_label(
                     p ? "Radio is active" : "Radio is powered off",
                   ),
-                )
-              }
+                );
+                self.connect("destroy", unsub);
+              }}
               xalign={0}
               cssClasses={["dim-label"]}
             />
@@ -110,10 +158,18 @@ export default function BluetoothPage() {
           <Gtk.Switch
             valign={Gtk.Align.CENTER}
             $={(self: any) => {
-              isPowered.subscribe((p) => self.set_active(p));
-              self.connect("state-set", (_: any, state: boolean) => {
-                if (bt.adapter) bt.adapter.set_powered(state);
-                return true;
+              // ✅ Store and cleanup subscriptions
+              const unsub = isPowered.subscribe((p) => self.set_active(p));
+              const connId = self.connect(
+                "state-set",
+                (_: any, state: boolean) => {
+                  if (bt.adapter) bt.adapter.set_powered(state);
+                  return true;
+                },
+              );
+              self.connect("destroy", () => {
+                unsub();
+                self.disconnect(connId);
               });
             }}
           />
@@ -129,18 +185,45 @@ export default function BluetoothPage() {
           hexpand
         />
         <Gtk.Spinner
-          $={(self: any) =>
-            isScanning.subscribe((s) => {
+          $={(self: any) => {
+            // ✅ Store and cleanup subscription
+            const unsub = isScanning.subscribe((s) => {
               self.set_visible(s);
               s ? self.start() : self.stop();
-            })
-          }
+            });
+            self.connect("destroy", unsub);
+          }}
         />
         <Gtk.Button
           iconName="view-refresh-symbolic"
           cssClasses={["icon-button"]}
-          onClicked={() => bt.adapter?.start_discovery()}
-          $={(self: any) => isScanning.subscribe((s) => self.set_sensitive(!s))}
+          onClicked={() => {
+            if (bt.adapter) {
+              // Clear any existing timeout
+              if (scanTimeoutId !== null) {
+                GLib.source_remove(scanTimeoutId);
+              }
+              // Start discovery
+              bt.adapter.start_discovery();
+              // Auto-stop after 15 seconds to save battery
+              scanTimeoutId = GLib.timeout_add(
+                GLib.PRIORITY_DEFAULT,
+                15000,
+                () => {
+                  if (bt.adapter) {
+                    bt.adapter.stop_discovery();
+                  }
+                  scanTimeoutId = null;
+                  return false; // Don't repeat
+                },
+              );
+            }
+          }}
+          $={(self: any) => {
+            // ✅ Store and cleanup subscription
+            const unsub = isScanning.subscribe((s) => self.set_sensitive(!s));
+            self.connect("destroy", unsub);
+          }}
         />
       </Gtk.Box>
 
@@ -152,12 +235,17 @@ export default function BluetoothPage() {
         spacing={4}
         vexpand={true}
         $={(self: any) => {
-          devices.subscribe((list) => {
-            // Clear current list
+          // ✅ Store subscription and cleanup
+          const unsub = devices.subscribe((list) => {
+            // Clear current list - explicitly destroy widgets to trigger cleanup
             let child = self.get_first_child();
             while (child) {
               const next = child.get_next_sibling();
               self.remove(child);
+              // Explicitly destroy to trigger "destroy" signal and cleanup handlers
+              if (typeof child.destroy === "function") {
+                child.destroy();
+              }
               child = next;
             }
 
@@ -167,11 +255,17 @@ export default function BluetoothPage() {
                 cssClasses: ["bt-row"],
               });
 
+              // Store signal IDs for this device
+              const deviceSignalIds: number[] = [];
+
               const updateStatus = () => {
                 if (dev.connected) row.add_css_class("bt-connected");
                 else row.remove_css_class("bt-connected");
               };
-              dev.connect("notify::connected", updateStatus);
+              // ✅ Store signal ID and cleanup on destroy
+              deviceSignalIds.push(
+                dev.connect("notify::connected", updateStatus),
+              );
               updateStatus();
 
               const icon = new Gtk.Image({
@@ -204,7 +298,10 @@ export default function BluetoothPage() {
                 if (dev.connected) nameLabel.add_css_class("bt-label-active");
                 else nameLabel.remove_css_class("bt-label-active");
               };
-              dev.connect("notify::connected", updatePillVisibility);
+              // ✅ Store signal ID
+              deviceSignalIds.push(
+                dev.connect("notify::connected", updatePillVisibility),
+              );
               updatePillVisibility();
 
               info.append(nameBox);
@@ -215,15 +312,18 @@ export default function BluetoothPage() {
                 valign: Gtk.Align.CENTER,
               });
 
-              connectBtn.connect("clicked", () => {
-                if (dev.connected) {
-                  dev.disconnect_device(() => sync());
-                } else {
-                  if (!dev.paired) dev.pair();
-                  dev.set_trusted(true);
-                  dev.connect_device(() => sync());
-                }
-              });
+              // ✅ Store signal ID
+              deviceSignalIds.push(
+                connectBtn.connect("clicked", () => {
+                  if (dev.connected) {
+                    dev.disconnect_device(() => sync());
+                  } else {
+                    if (!dev.paired) dev.pair();
+                    dev.set_trusted(true);
+                    dev.connect_device(() => sync());
+                  }
+                }),
+              );
 
               row.append(icon);
               row.append(info);
@@ -234,12 +334,27 @@ export default function BluetoothPage() {
                   cssClasses: ["bt-icon-btn", "bt-danger"],
                   valign: Gtk.Align.CENTER,
                 });
-                forgetBtn.connect("clicked", () =>
-                  bt.adapter?.remove_device(dev),
+                // ✅ Store signal ID
+                deviceSignalIds.push(
+                  forgetBtn.connect("clicked", () =>
+                    bt.adapter?.remove_device(dev),
+                  ),
                 );
                 row.append(forgetBtn);
               }
               row.append(connectBtn);
+
+              // ✅ Cleanup signals when row is destroyed
+              row.connect("destroy", () => {
+                deviceSignalIds.forEach((id) => {
+                  try {
+                    if (id && typeof dev.disconnect === "function") {
+                      dev.disconnect(id);
+                    }
+                  } catch (e) {}
+                });
+              });
+
               return row;
             };
 
@@ -270,6 +385,8 @@ export default function BluetoothPage() {
               available.forEach((d) => self.append(createRow(d)));
             }
           });
+          // ✅ Cleanup subscription on destroy
+          self.connect("destroy", unsub);
         }}
       />
     </Gtk.Box>

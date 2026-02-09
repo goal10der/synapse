@@ -125,7 +125,16 @@ export default function RightSidebar({
               self.value = wp.audio.defaultSpeaker.volume;
           };
           sync();
-          wp?.audio?.defaultSpeaker?.connect("notify::volume", sync);
+          // ✅ Store signal ID and cleanup on destroy
+          if (wp?.audio?.defaultSpeaker) {
+            const signalId = wp.audio.defaultSpeaker.connect(
+              "notify::volume",
+              sync,
+            );
+            self.connect("destroy", () => {
+              wp.audio?.defaultSpeaker?.disconnect(signalId);
+            });
+          }
         }}
       />
     </box>

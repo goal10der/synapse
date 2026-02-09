@@ -1,4 +1,4 @@
-import { For, createState } from "ags";
+import { For, createState, onCleanup } from "ags";
 import Astal from "gi://Astal?version=4.0";
 import Gtk from "gi://Gtk?version=4.0";
 import Gdk from "gi://Gdk?version=4.0";
@@ -14,15 +14,30 @@ export default function Applauncher() {
   // State for search results
   const [list, setList] = createState<AstalApps.Application[]>([]);
 
-  // Listen for app changes (installed/removed)
-  apps.connect("notify::list", () => {
-    // Reload apps when the list changes
-    apps.reload();
-    // Re-run search with current query if there is one
-    if (searchentry && searchentry.text !== "") {
-      search(searchentry.text);
-    }
-  });
+  // ✅ Store signal ID for cleanup
+  try {
+    const appsSignalId = apps.connect("notify::list", () => {
+      // Reload apps when the list changes
+      apps.reload();
+      // Re-run search with current query if there is one
+      if (searchentry && searchentry.text !== "") {
+        search(searchentry.text);
+      }
+    });
+
+    // ✅ Cleanup on component destroy
+    onCleanup(() => {
+      if (appsSignalId && typeof apps.disconnect === "function") {
+        try {
+          apps.disconnect(appsSignalId);
+        } catch (e) {
+          console.error("Failed to disconnect apps signal:", e);
+        }
+      }
+    });
+  } catch (e) {
+    console.error("Failed to connect apps signal:", e);
+  }
 
   function search(text: string) {
     if (text === "") {
@@ -44,15 +59,36 @@ export default function Applauncher() {
     <window
       $={(self: any) => {
         win = self;
-        self.connect("notify::visible", () => {
-          if (self.visible) {
-            // Reload apps when opening launcher to catch any changes
-            apps.reload();
-            searchentry.grab_focus();
-          } else {
-            searchentry.set_text("");
-          }
-        });
+        try {
+          // ✅ Store signal ID and cleanup on destroy
+          const visibleSignalId = self.connect("notify::visible", () => {
+            try {
+              if (self.visible) {
+                // Reload apps when opening launcher to catch any changes
+                apps.reload();
+                // Only grab focus if searchentry is ready
+                if (searchentry) {
+                  searchentry.grab_focus();
+                }
+              } else {
+                if (searchentry) {
+                  searchentry.set_text("");
+                }
+              }
+            } catch (e) {
+              console.error("Error in launcher visibility handler:", e);
+            }
+          });
+          self.connect("destroy", () => {
+            try {
+              self.disconnect(visibleSignalId);
+            } catch (e) {
+              console.error("Failed to disconnect visible signal:", e);
+            }
+          });
+        } catch (e) {
+          console.error("Failed to setup launcher window:", e);
+        }
       }}
       name="launcher"
       visible={false}
@@ -77,8 +113,34 @@ export default function Applauncher() {
           name="search-entry"
           $={(ref: any) => {
             searchentry = ref;
-            ref.connect("changed", () => search(ref.text));
-            ref.connect("activate", () => launch(list()[0]));
+            try {
+              // ✅ Store signal IDs and cleanup on destroy
+              const changedSignalId = ref.connect("changed", () => {
+                try {
+                  search(ref.text);
+                } catch (e) {
+                  console.error("Failed to search:", e);
+                }
+              });
+              const activateSignalId = ref.connect("activate", () => {
+                try {
+                  const firstApp = list()[0];
+                  if (firstApp) launch(firstApp);
+                } catch (e) {
+                  console.error("Failed to launch app:", e);
+                }
+              });
+              ref.connect("destroy", () => {
+                try {
+                  ref.disconnect(changedSignalId);
+                  ref.disconnect(activateSignalId);
+                } catch (e) {
+                  console.error("Failed to disconnect entry signals:", e);
+                }
+              });
+            } catch (e) {
+              console.error("Failed to setup launcher entry:", e);
+            }
           }}
           placeholderText="Start typing to search..."
         />
@@ -96,7 +158,19 @@ export default function Applauncher() {
                 {(app) => (
                   <Gtk.Button
                     name="app-item"
-                    $={(self) => self.connect("clicked", () => launch(app))}
+                    $={(self) => {
+                      try {
+                        const clickId = self.connect("clicked", () => {
+                          try {
+                            launch(app);
+                          } catch (e) {
+                            console.error("Failed to launch app:", e);
+                          }
+                        });
+                      } catch (e) {
+                        console.error("Failed to connect button click:", e);
+                      }
+                    }}
                   >
                     <Gtk.Box name="app-item-content">
                       <Gtk.Image

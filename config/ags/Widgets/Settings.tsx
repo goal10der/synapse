@@ -2,7 +2,6 @@ import app from "ags/gtk4/app";
 import Astal from "gi://Astal?version=4.0";
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
-import { createState } from "ags";
 // Component Imports
 import AppearancePage from "./settings/Appearance";
 import NetworkPage from "./settings/Network";
@@ -58,19 +57,20 @@ class Variable<T> {
 
   set(newValue: T) {
     this.value = newValue;
-    this.subscribers.forEach((callback) => callback(this.value));
+    // We iterate over a copy so that unsubscribing during a notify doesn't skip items
+    [...this.subscribers].forEach((callback) => callback(this.value));
   }
 
   subscribe(callback: (value: T) => void) {
     this.subscribers.push(callback);
     callback(this.value);
+
+    // ✅ Return an automatic un-subscriber
+    return () => this.unsubscribe(callback);
   }
 
   unsubscribe(callback: (value: T) => void) {
-    const index = this.subscribers.indexOf(callback);
-    if (index > -1) {
-      this.subscribers.splice(index, 1);
-    }
+    this.subscribers = this.subscribers.filter((sub) => sub !== callback);
   }
 }
 
