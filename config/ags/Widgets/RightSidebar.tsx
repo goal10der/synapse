@@ -1,3 +1,4 @@
+// RightSidebar.tsx
 import app from "ags/gtk4/app";
 import Astal from "gi://Astal?version=4.0";
 import AstalBluetooth from "gi://AstalBluetooth?version=0.1";
@@ -8,6 +9,7 @@ import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import Gio from "gi://Gio";
 import { onCleanup } from "ags";
+import { editMode, toggleEditMode } from "../State";
 
 // Page imports
 import NetworkPage from "./settings/Network";
@@ -62,7 +64,6 @@ const wp = AstalWp.get_default();
 const maxBrightness = Number(exec("brightnessctl max")) || 100;
 const brightness = createVar(0);
 
-// Polling for external brightness changes
 GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
   execAsync("brightnessctl get").then((out) =>
     brightness.set(Number(out) / maxBrightness),
@@ -89,11 +90,18 @@ export default function RightSidebar({
         cssClasses={["sidebar-title"]}
       />
       <button
+        cssClasses={["settings-toggle"]}
+        onClicked={() => {
+          app.toggle_window(`settings-window-${gdkmonitor.connector}`);
+          win.hide();
+        }}
+      >
+        <image iconName="emblem-system-symbolic" />
+      </button>
+      <button
         cssClasses={["powermenu-toggle"]}
         onClicked={() => {
-          // Toggles the Power Menu window
           app.toggle_window(`powermenu-${gdkmonitor.connector}`);
-          // Hide sidebar when power menu opens for a cleaner UI
           win.hide();
         }}
       >
@@ -162,6 +170,42 @@ export default function RightSidebar({
       </box>
 
       <box orientation={Gtk.Orientation.VERTICAL} spacing={12}>
+        <button
+          cssClasses={["qs-tile"]}
+          onClicked={() => toggleEditMode()}
+          $={(self) => {
+            const unsub = editMode.subscribe((active) => {
+              if (active) self.add_css_class("active");
+              else self.remove_css_class("active");
+            });
+            onCleanup(unsub);
+          }}
+        >
+          <box spacing={12}>
+            <image iconName="view-grid-symbolic" />
+            <label
+              label="Edit Layout"
+              hexpand
+              xalign={0}
+              $={(self) => {
+                const unsub = editMode.subscribe(
+                  (v) => (self.label = v ? "Exit Edit Mode" : "Edit Layout"),
+                );
+                onCleanup(unsub);
+              }}
+            />
+            {/* CHECKMARK FIX: visible={false} sets the default state to hidden */}
+            <image
+              visible={false}
+              iconName="object-select-symbolic"
+              $={(self) => {
+                const unsub = editMode.subscribe((v) => (self.visible = v));
+                onCleanup(unsub);
+              }}
+            />
+          </box>
+        </button>
+
         <button
           cssClasses={["qs-tile"]}
           onClicked={() => stack.set_visible_child_name("wifi")}

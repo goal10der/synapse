@@ -21,6 +21,7 @@ image {
 .bar {
   background-color: transparent;
   padding: 0 8px;
+  margin-top: 8px;
 }
 
 .clock,
@@ -1096,4 +1097,91 @@ switch:checked {
 
 .powermenu-card:active {
   transform: scale(0.95);
+}
+/* Drop zone styling */
+.drop-zone {
+  min-width: 60px;
+  min-height: 24px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.drop-zone-active {
+  border-color: #9d9d9d;
+  background: rgba(60, 60, 60, 0.1);
+}
+
+.drop-zone-label {
+  font-size: 10px;
+  opacity: 0.6;
+  padding: 0 8px;
+}
+/* Drag icon styling */
+.drag-icon {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 4px 12px;
+  min-height: 24px;
+}
+
+.drag-label {
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* Widget being dragged */
+.draggable-widget.dragging {
+  opacity: 0.5;
+}
+
+/* Existing styles */
+.bar-edit-mode {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0px 0px;
+}
+
+.draggable-widget.edit-mode {
+  border: 2px dashed transparent;
+  border-radius: 4px;
+  transition: all 200ms;
+}
+
+.draggable-widget.edit-mode:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.draggable-widget.drop-before {
+  border-left-color: #ffffff;
+  border-left-style: solid;
+  border-left-width: 3px;
+}
+
+.draggable-widget.drop-after {
+  border-right-color: #ffffff;
+  border-right-style: solid;
+  border-right-width: 3px;
+}
+
+/* Drop zone styling */
+.drop-zone {
+  min-width: 80px;
+  min-height: 24px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.drop-zone-active {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.drop-zone-label {
+  font-size: 10px;
+  opacity: 0.6;
+  padding: 0 8px;
 }

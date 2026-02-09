@@ -13,6 +13,7 @@ import NotificationCenter from "./Widgets/Notification";
 import NotificationPopups from "./Widgets/Notificationpopup";
 import Sidebar from "./Widgets/RightSidebar";
 import PowerMenu from "./Widgets/PowerMenu";
+import { toggleEditMode, editMode } from "./State";
 
 const configDir = `${GLib.get_user_config_dir()}/ags`;
 const STYLE_PATH = `${configDir}/style.css`;
@@ -52,6 +53,12 @@ app.start({
       const monitors = app.get_monitors();
       monitors.forEach((m) => app.toggle_window(`powermenu-${m.connector}`));
       return res("ok");
+    }
+    if (argv[0] === "toggle-edit-mode") {
+      toggleEditMode();
+      return res(
+        `ok - edit mode is now ${editMode.get() ? "enabled" : "disabled"}`,
+      );
     }
 
     return res("unknown command");
