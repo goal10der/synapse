@@ -15,6 +15,7 @@ window,
 
 image {
   -gtk-icon-size: 14px;
+  color: var(--primary);
 }
 
 /* === BAR === */
@@ -23,7 +24,9 @@ image {
   padding: 0 8px;
   margin-top: 8px;
 }
-
+.bar-button-image {
+  color: var(--primary);
+}
 .clock,
 #settings-button,
 #notification-button,
@@ -40,7 +43,7 @@ image {
   border-radius: 12px;
   background: var(--surface_container);
   border: 1.5px solid var(--outline_variant);
-  color: var(--on_surface);
+  color: var(--primary);
   font-size: 13px;
   font-weight: 500;
   transition: all 0.2s ease;
@@ -67,13 +70,9 @@ image {
 .audio-output button image,
 .tray-item button image,
 .wireless button image {
+  color: var(--primary);
   margin: 0;
   padding: 0;
-}
-
-.clock image {
-  -gtk-icon-size: 12px;
-  color: var(--on_surface);
 }
 
 .clock:hover image,
@@ -332,11 +331,13 @@ levelbar block.empty {
 
 #app-item label {
   font-weight: 500;
+  color: var(--primary);
 }
 
 #app-item image {
   -gtk-icon-size: 32px;
   margin-right: 12px;
+  color: var(--primary);
 }
 
 /* === FORM ELEMENTS === */
@@ -438,7 +439,7 @@ button.flat,
   border: 1.5px solid var(--outline_variant);
   border-radius: 8px;
   padding: 8px 12px;
-  color: var(--on_surface);
+  color: var(--primary);
   box-shadow: none;
   text-shadow: none;
   transition: all 0.2s ease;

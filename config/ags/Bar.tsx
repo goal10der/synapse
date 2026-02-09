@@ -39,7 +39,11 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
             valign={Gtk.Align.CENTER}
             heightRequest={24}
           >
-            <image iconName="emblem-system-symbolic" pixelSize={14} />
+            <image
+              iconName="emblem-system-symbolic"
+              pixelSize={14}
+              cssClasses={["bar-button-image"]}
+            />
           </button>
         ) as Gtk.Widget;
       case "workspaces":
@@ -58,7 +62,11 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
             heightRequest={24}
             widthRequest={24}
           >
-            <image iconName="open-menu-symbolic" pixelSize={14} />
+            <image
+              iconName="open-menu-symbolic"
+              pixelSize={14}
+              cssClasses={["bar-button-image"]}
+            />
           </button>
         ) as Gtk.Widget;
       case "notifications":
