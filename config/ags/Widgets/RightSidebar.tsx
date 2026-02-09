@@ -235,6 +235,14 @@ export default function RightSidebar({
                         </button>
                       </box>
 
+                      {notification.image && (
+                        <image
+                          file={notification.image}
+                          pixelSize={80}
+                          cssClasses={["notification-image"]}
+                        />
+                      )}
+
                       {notification.body && (
                         <label
                           label={notification.body}

@@ -63,6 +63,14 @@ function Notification({ notification }: { notification: Notifd.Notification }) {
         </button>
       </box>
 
+      {notification.image && (
+        <image
+          file={notification.image}
+          pixelSize={100}
+          cssClasses={["notification-popup-image"]}
+        />
+      )}
+
       {notification.body && (
         <label
           label={notification.body}
