@@ -7,6 +7,7 @@ import NetworkPage from "./settings/Network";
 import AudioPage from "./settings/Audio";
 import BluetoothPage from "./settings/Bluetooth";
 const SAVE_PATH = `${GLib.get_user_cache_dir()}/ags/settings.json`;
+import { Variable } from "../utils/Variable";
 
 function loadSavedValue(key: string, defaultValue: any) {
   try {
@@ -33,33 +34,6 @@ function saveToDisk(key: string, value: any) {
     GLib.file_set_contents(SAVE_PATH, JSON.stringify(cache));
   } catch (e) {
     console.error(`Failed to save ${key} to disk:`, e);
-  }
-}
-class Variable<T> {
-  private value: T;
-  private subscribers: Array<(value: T) => void> = [];
-
-  constructor(initialValue: T) {
-    this.value = initialValue;
-  }
-
-  get(): T {
-    return this.value;
-  }
-
-  set(newValue: T) {
-    this.value = newValue;
-    [...this.subscribers].forEach((callback) => callback(this.value));
-  }
-
-  subscribe(callback: (value: T) => void) {
-    this.subscribers.push(callback);
-    callback(this.value);
-    return () => this.unsubscribe(callback);
-  }
-
-  unsubscribe(callback: (value: T) => void) {
-    this.subscribers = this.subscribers.filter((sub) => sub !== callback);
   }
 }
 export const workspaceCount = new Variable(loadSavedValue("workspaceCount", 5));

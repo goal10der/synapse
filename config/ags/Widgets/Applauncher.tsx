@@ -31,7 +31,7 @@ export default function Applauncher() {
     console.error("Failed to connect apps signal:", e);
   }
 
-  function search(text: string) {
+  function search(text: string): void {
     if (text === "") {
       setList([]);
     } else {
@@ -39,10 +39,16 @@ export default function Applauncher() {
     }
   }
 
-  function launch(app?: AstalApps.Application) {
+  function launch(app?: AstalApps.Application): void {
     if (app) {
-      win.set_visible(false);
-      app.launch();
+      try {
+        win.set_visible(false);
+        app.launch();
+      } catch (e) {
+        console.error("Failed to launch application:", e);
+        // Show window again if launch failed
+        win.set_visible(true);
+      }
     }
   }
 

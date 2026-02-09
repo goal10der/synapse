@@ -1,4 +1,4 @@
-import { createBinding, onCleanup } from "ags";
+import { createBinding } from "ags";
 import AstalWp from "gi://AstalWp";
 import GLib from "gi://GLib";
 import Astal from "gi://Astal?version=4.0";
@@ -10,12 +10,14 @@ export default function VolumePopup({ gdkmonitor }: { gdkmonitor: any }) {
   if (!speaker) return <box />;
 
   let timeoutId: number | null = null;
-  let volumeSignal: number | null = null;
-  let muteSignal: number | null = null;
 
   const init = (revealer: Gtk.Revealer, levelbar: Gtk.LevelBar) => {
+    let volumeSignal: number | null = null;
+    let muteSignal: number | null = null;
+
     const window = revealer.get_root() as Gtk.Window;
     if (!window) return;
+
     const updateLevel = () => {
       const vol = speaker.volume;
       levelbar.value = vol > 1 ? 1 : vol;
@@ -50,12 +52,14 @@ export default function VolumePopup({ gdkmonitor }: { gdkmonitor: any }) {
 
     volumeSignal = speaker.connect("notify::volume", show);
     muteSignal = speaker.connect("notify::mute", show);
+
+    // Clean up signals when revealer is destroyed
+    revealer.connect("destroy", () => {
+      if (timeoutId) GLib.source_remove(timeoutId);
+      if (volumeSignal) speaker.disconnect(volumeSignal);
+      if (muteSignal) speaker.disconnect(muteSignal);
+    });
   };
-  onCleanup(() => {
-    if (timeoutId) GLib.source_remove(timeoutId);
-    if (volumeSignal) speaker.disconnect(volumeSignal);
-    if (muteSignal) speaker.disconnect(muteSignal);
-  });
 
   return (
     <window

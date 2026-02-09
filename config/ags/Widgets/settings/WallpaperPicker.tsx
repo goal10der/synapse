@@ -101,12 +101,17 @@ export default function WallpaperPicker() {
   };
 
   const startPolling = () => {
+    if (pollTimeoutId !== null) {
+      return; // Already polling
+    }
+
     const poll = () => {
       updateGrid();
       pollTimeoutId = GLib.timeout_add(
         GLib.PRIORITY_DEFAULT,
         POLL_INTERVAL,
         () => {
+          pollTimeoutId = null;
           poll();
           return GLib.SOURCE_REMOVE;
         },

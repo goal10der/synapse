@@ -29,7 +29,7 @@ export default function Battery() {
     return `${h}h ${m}m remaining`;
   });
 
-  const setProfile = (profile: string) => {
+  const setProfile = (profile: string): void => {
     powerprofiles.set_active_profile(profile);
   };
 

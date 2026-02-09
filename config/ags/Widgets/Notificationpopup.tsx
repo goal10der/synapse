@@ -7,17 +7,35 @@ import GLib from "gi://GLib";
 import { notificationTimeout } from "./settings/Appearance";
 
 function Notification({ notification }: { notification: Notifd.Notification }) {
-  const timeoutId = GLib.timeout_add(
-    GLib.PRIORITY_DEFAULT,
-    notificationTimeout.get(),
-    () => {
-      notification.dismiss();
-      return false;
-    },
-  );
-  notification.connect("resolved", () => {
-    if (timeoutId > 0) {
+  let timeoutId: number | null = null;
+
+  const scheduleAutoDismiss = () => {
+    if (timeoutId !== null) {
       GLib.source_remove(timeoutId);
+    }
+    timeoutId = GLib.timeout_add(
+      GLib.PRIORITY_DEFAULT,
+      notificationTimeout.get(),
+      () => {
+        notification.dismiss();
+        timeoutId = null;
+        return false;
+      },
+    );
+  };
+
+  scheduleAutoDismiss();
+
+  // Re-schedule if timeout setting changes
+  const unsubTimeout = notificationTimeout.subscribe(() => {
+    scheduleAutoDismiss();
+  });
+
+  notification.connect("resolved", () => {
+    unsubTimeout();
+    if (timeoutId !== null) {
+      GLib.source_remove(timeoutId);
+      timeoutId = null;
     }
   });
 

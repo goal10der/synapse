@@ -7,7 +7,7 @@ import { onCleanup } from "ags";
 import Workspaces from "./Widgets/Workspaces";
 import Clock from "./Widgets/Clock";
 import Tray from "./Widgets/Tray";
-import Battery from "./Widgets/Battry";
+import Battery from "./Widgets/Battery";
 import { barConfig, editMode, saveBarConfig, type WidgetType } from "./State";
 
 type Section = "left" | "center" | "right";
@@ -113,18 +113,22 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
     const updateEditMode = () => {
       const isEditMode = editMode.get();
       const controllers: Gtk.EventController[] = [];
-      for (let i = 0; i < 20; i++) {
-        const controller = container.observe_controllers().get_item(i);
-        if (!controller) break;
+
+      // Collect all existing drag/drop controllers
+      let i = 0;
+      let controller = container.observe_controllers().get_item(i);
+      while (controller !== null) {
         if (
           controller instanceof Gtk.DragSource ||
           controller instanceof Gtk.DropTarget
         ) {
           controllers.push(controller);
         }
+        i++;
+        controller = container.observe_controllers().get_item(i);
       }
-      controllers.forEach((c) => container.remove_controller(c));
 
+      controllers.forEach((c) => container.remove_controller(c));
       if (isEditMode) {
         container.add_css_class("edit-mode");
         const dragSource = Gtk.DragSource.new();
@@ -228,13 +232,18 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
     const updateEditMode = () => {
       const isEditMode = editMode.get();
       const controllers: Gtk.EventController[] = [];
-      for (let i = 0; i < 20; i++) {
-        const controller = dropZone.observe_controllers().get_item(i);
-        if (!controller) break;
-        if (controller instanceof Gtk.DropTarget) controllers.push(controller);
-      }
-      controllers.forEach((c) => dropZone.remove_controller(c));
 
+      let i = 0;
+      let controller = dropZone.observe_controllers().get_item(i);
+      while (controller !== null) {
+        if (controller instanceof Gtk.DropTarget) {
+          controllers.push(controller);
+        }
+        i++;
+        controller = dropZone.observe_controllers().get_item(i);
+      }
+
+      controllers.forEach((c) => dropZone.remove_controller(c));
       if (isEditMode) {
         const dropTarget = Gtk.DropTarget.new(
           GObject.TYPE_STRING,

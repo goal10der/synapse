@@ -10,6 +10,7 @@ import { onCleanup } from "ags";
 import { editMode, toggleEditMode } from "../State";
 import NetworkPage from "./settings/Network";
 import BluetoothPage from "./settings/Bluetooth";
+
 function exec(cmd: string): string {
   try {
     const [success, stdout] = GLib.spawn_command_line_sync(cmd);
@@ -169,7 +170,10 @@ export default function RightSidebar({
         <button
           $={(self) => {
             self.connect("clicked", () => {
-              notifd.get_notifications().forEach((n) => n.dismiss());
+              const notifications = notifd.get_notifications();
+              if (notifications) {
+                notifications.forEach((n) => n.dismiss());
+              }
             });
           }}
           cssClasses={["clear-all"]}
@@ -197,7 +201,7 @@ export default function RightSidebar({
 
               const notifications = notifd.get_notifications();
 
-              if (notifications.length === 0) {
+              if (!notifications || notifications.length === 0) {
                 const emptyBox = (
                   <box cssClasses={["no-notifications"]}>
                     <label label="No notifications" />
@@ -265,6 +269,7 @@ export default function RightSidebar({
       </Gtk.ScrolledWindow>
     </box>
   );
+
   const mainPage = (
     <box
       orientation={Gtk.Orientation.VERTICAL}
@@ -309,7 +314,6 @@ export default function RightSidebar({
                   onCleanup(unsub);
                 }}
               />
-              {/* CHECKMARK FIX: visible={false} sets the default state to hidden */}
               <image
                 visible={false}
                 iconName="object-select-symbolic"

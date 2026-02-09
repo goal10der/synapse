@@ -95,17 +95,17 @@ export default function BluetoothPage() {
     }
     signalIds.forEach((id) => {
       try {
-        if (id && typeof bt.disconnect === "function") {
-          bt.disconnect(id);
-        }
-      } catch (e) {}
+        bt.disconnect(id);
+      } catch (e) {
+        console.error("Failed to disconnect bluetooth signal:", e);
+      }
     });
     adapterSignalIds.forEach((id) => {
       try {
-        if (id && bt.adapter && typeof bt.adapter.disconnect === "function") {
-          bt.adapter.disconnect(id);
-        }
-      } catch (e) {}
+        bt.adapter?.disconnect(id);
+      } catch (e) {
+        console.error("Failed to disconnect adapter signal:", e);
+      }
     });
   });
 
