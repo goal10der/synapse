@@ -53,10 +53,6 @@ app.start({
     return res("unknown command");
   },
   main() {
-    const settings = Gtk.Settings.get_default();
-    if (settings) {
-      settings.gtk_enable_inspector_keybinding = false;
-    }
     const _app: any = app;
     _app.applauncherWin = Applauncher() as Gtk.Window;
     _app.applauncherWin.visible = false;

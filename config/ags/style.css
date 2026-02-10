@@ -1205,13 +1205,13 @@ switch:checked {
 }
 
 .notification-image-wrapper picture {
-  border-radius: 9999px;
+  border-radius: 100%;
   min-width: 48px;
   min-height: 48px;
 }
 
 .notification-popup-image-wrapper {
-  border-radius: 9999px;
+  border-radius: 100%;
   min-width: 44px;
   min-height: 44px;
   background-color: var(--surface_container);
@@ -1220,7 +1220,7 @@ switch:checked {
 }
 
 .notification-popup-image-wrapper picture {
-  border-radius: 9999px;
+  border-radius: 100%;
   min-width: 44px;
   min-height: 44px;
 }
