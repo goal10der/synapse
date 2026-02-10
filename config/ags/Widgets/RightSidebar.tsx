@@ -3,9 +3,11 @@ import Astal from "gi://Astal?version=4.0";
 import AstalWp from "gi://AstalWp?version=0.1";
 import Notifd from "gi://AstalNotifd";
 import Gdk from "gi://Gdk?version=4.0";
+import GdkPixbuf from "gi://GdkPixbuf?version=2.0";
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import Gio from "gi://Gio";
+import Pango from "gi://Pango"; // <--- Added Pango
 import { onCleanup } from "ags";
 import { editMode, toggleEditMode } from "../State";
 import NetworkPage from "./settings/Network";
@@ -213,52 +215,89 @@ export default function RightSidebar({
                   const notifBox = (
                     <box
                       cssClasses={["notification-item"]}
-                      orientation={Gtk.Orientation.VERTICAL}
-                      spacing={4}
+                      orientation={Gtk.Orientation.HORIZONTAL}
+                      spacing={10}
                     >
-                      <box spacing={8}>
-                        <label
-                          label={notification.summary}
-                          halign={Gtk.Align.START}
-                          cssClasses={["notification-summary"]}
-                          hexpand
-                        />
-                        <button
-                          $={(btn) => {
-                            btn.connect("clicked", () => {
-                              notification.dismiss();
-                            });
-                          }}
-                          cssClasses={["dismiss-button"]}
-                        >
-                          <label label="×" />
-                        </button>
-                      </box>
-
                       {notification.image && (
-                        <image
-                          file={notification.image}
-                          pixelSize={80}
-                          cssClasses={["notification-image"]}
+                        // Inside NotificationCenter -> notification.image block:
+                        <box
+                          cssClasses={["notification-image-wrapper"]}
+                          widthRequest={44}
+                          heightRequest={44}
+                          valign={Gtk.Align.CENTER} // <--- Add this: keeps it a square/circle, not an oval
+                          halign={Gtk.Align.CENTER}
+                          hexpand={false} // <--- Add this: prevents horizontal stretching
+                          vexpand={false} // <--- Add this: prevents vertical stretching
+                          $={(self) => {
+                            try {
+                              const pixbuf =
+                                GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                                  notification.image,
+                                  48,
+                                  48,
+                                  false,
+                                );
+                              const texture =
+                                Gdk.Texture.new_for_pixbuf(pixbuf);
+                              const picture = new Gtk.Picture();
+                              picture.set_paintable(texture);
+                              picture.set_size_request(44, 44);
+                              picture.set_can_shrink(false); // Prevents the image itself from collapsing
+                              self.append(picture);
+                            } catch (e) {
+                              console.error("Failed to load image:", e);
+                            }
+                          }}
                         />
                       )}
 
-                      {notification.body && (
-                        <label
-                          label={notification.body}
-                          halign={Gtk.Align.START}
-                          wrap
-                          cssClasses={["notification-body"]}
-                        />
-                      )}
+                      <box
+                        orientation={Gtk.Orientation.VERTICAL}
+                        spacing={4}
+                        hexpand
+                      >
+                        <box spacing={8}>
+                          <label
+                            label={notification.summary}
+                            halign={Gtk.Align.START}
+                            cssClasses={["notification-summary"]}
+                            hexpand
+                            // 3. Add Ellipsization for Summary
+                            ellipsize={Pango.EllipsizeMode.END}
+                            maxWidthChars={20}
+                          />
+                          <button
+                            $={(btn) => {
+                              btn.connect("clicked", () => {
+                                notification.dismiss();
+                              });
+                            }}
+                            cssClasses={["dismiss-button"]}
+                          >
+                            <label label="×" />
+                          </button>
+                        </box>
 
-                      {notification.appName && (
-                        <label
-                          label={notification.appName}
-                          halign={Gtk.Align.START}
-                          cssClasses={["notification-app"]}
-                        />
-                      )}
+                        {notification.body && (
+                          <label
+                            label={notification.body}
+                            halign={Gtk.Align.START}
+                            wrap
+                            useMarkup
+                            cssClasses={["notification-body"]}
+                            ellipsize={Pango.EllipsizeMode.END}
+                            lines={2}
+                          />
+                        )}
+
+                        {notification.appName && (
+                          <label
+                            label={notification.appName}
+                            halign={Gtk.Align.START}
+                            cssClasses={["notification-app"]}
+                          />
+                        )}
+                      </box>
                     </box>
                   ) as Gtk.Widget;
                   self.append(notifBox);

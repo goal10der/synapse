@@ -7,7 +7,16 @@ window,
 .notification-popups {
   background-color: transparent;
 }
-
+.notification-popup {
+  background-color: var(--surface);
+  border: 1.5px solid var(--primary);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--on_surface);
+  margin: 8px;
+  min-width: 380px; /* increase from 350px */
+  transition: all 0.2s ease;
+}
 * {
   font-family: "JetBrains";
   font-size: 13px;
@@ -1185,4 +1194,33 @@ switch:checked {
   font-size: 10px;
   opacity: 0.6;
   padding: 0 8px;
+}
+.notification-image-wrapper {
+  border-radius: 9999px;
+  min-width: 48px;
+  min-height: 48px;
+  background-color: var(--surface_container);
+  border: 1px solid var(--outline_variant);
+  padding: 0;
+}
+
+.notification-image-wrapper picture {
+  border-radius: 9999px;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.notification-popup-image-wrapper {
+  border-radius: 9999px;
+  min-width: 44px;
+  min-height: 44px;
+  background-color: var(--surface_container);
+  border: 1px solid var(--outline_variant);
+  padding: 0;
+}
+
+.notification-popup-image-wrapper picture {
+  border-radius: 9999px;
+  min-width: 44px;
+  min-height: 44px;
 }

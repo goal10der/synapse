@@ -1,6 +1,8 @@
 import Astal from "gi://Astal?version=4.0";
 import Gtk from "gi://Gtk?version=4.0";
+import Gdk from "gi://Gdk?version=4.0";
 import Notifd from "gi://AstalNotifd";
+import Pango from "gi://Pango"; // <--- Add this import
 import { onCleanup, createState, For, createBinding } from "ags";
 import app from "ags/gtk4/app";
 import GLib from "gi://GLib";
@@ -26,7 +28,6 @@ function Notification({ notification }: { notification: Notifd.Notification }) {
 
   scheduleAutoDismiss();
 
-  // Re-schedule if timeout setting changes
   const unsubTimeout = notificationTimeout.subscribe(() => {
     scheduleAutoDismiss();
   });
@@ -42,51 +43,81 @@ function Notification({ notification }: { notification: Notifd.Notification }) {
   return (
     <box
       cssClasses={["notification-popup"]}
-      orientation={Gtk.Orientation.VERTICAL}
+      orientation={Gtk.Orientation.HORIZONTAL}
+      spacing={10}
+      heightRequest={64}
+      widthRequest={400}
     >
-      <box cssClasses={["notification-popup-header"]}>
-        <label
-          label={notification.summary}
-          halign={Gtk.Align.START}
-          cssClasses={["notification-popup-summary"]}
-        />
-        <box hexpand />
-        <button
-          $={(self) => {
-            self.connect("clicked", () => {
-              notification.dismiss();
-            });
-          }}
-          cssClasses={["notification-popup-close"]}
-        >
-          <label label="×" />
-        </button>
-      </box>
-
       {notification.image && (
-        <image
-          file={notification.image}
-          pixelSize={100}
-          cssClasses={["notification-popup-image"]}
+        <box
+          cssClasses={["notification-popup-image-wrapper"]}
+          widthRequest={44}
+          heightRequest={44}
+          valign={Gtk.Align.CENTER}
+          hexpand={false}
+          $={(self) => {
+            try {
+              const GdkPixbuf = imports.gi.GdkPixbuf;
+              const pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                notification.image,
+                50,
+                50,
+                false,
+              );
+              const texture = Gdk.Texture.new_for_pixbuf(pixbuf);
+              const picture = new Gtk.Picture();
+              picture.set_paintable(texture);
+              picture.set_size_request(44, 44);
+              self.append(picture);
+            } catch (e) {
+              console.error("Failed to load notification image:", e);
+            }
+          }}
         />
       )}
 
-      {notification.body && (
-        <label
-          label={notification.body}
-          halign={Gtk.Align.START}
-          wrap
-          cssClasses={["notification-popup-body"]}
-        />
-      )}
+      <box orientation={Gtk.Orientation.VERTICAL} spacing={4} hexpand>
+        <box cssClasses={["notification-popup-header"]}>
+          <label
+            label={notification.summary}
+            halign={Gtk.Align.START}
+            cssClasses={["notification-popup-summary"]}
+            hexpand
+            ellipsize={Pango.EllipsizeMode.END}
+            maxWidthChars={20}
+          />
+          <button
+            $={(self) => {
+              self.connect("clicked", () => {
+                notification.dismiss();
+              });
+            }}
+            cssClasses={["notification-popup-close"]}
+          >
+            <label label="×" />
+          </button>
+        </box>
 
-      {notification.appName && (
-        <label
-          label={notification.appName}
-          halign={Gtk.Align.START}
-          cssClasses={["notification-popup-app"]}
-        />
-      )}
+        {notification.body && (
+          <label
+            label={notification.body}
+            halign={Gtk.Align.START}
+            wrap
+            useMarkup
+            cssClasses={["notification-popup-body"]}
+            ellipsize={Pango.EllipsizeMode.END}
+            lines={2}
+          />
+        )}
+
+        {notification.appName && (
+          <label
+            label={notification.appName}
+            halign={Gtk.Align.START}
+            cssClasses={["notification-popup-app"]}
+          />
+        )}
+      </box>
     </box>
   );
 }
