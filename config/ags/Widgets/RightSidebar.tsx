@@ -3,7 +3,6 @@ import Astal from "gi://Astal?version=4.0";
 import AstalWp from "gi://AstalWp?version=0.1";
 import Notifd from "gi://AstalNotifd";
 import Gdk from "gi://Gdk?version=4.0";
-import GdkPixbuf from "gi://GdkPixbuf?version=2.0";
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import Gio from "gi://Gio";
@@ -212,44 +211,55 @@ export default function RightSidebar({
                 self.append(emptyBox);
               } else {
                 notifications.forEach((notification) => {
+                  // Create notification image box with CSS provider (like BottomPopup)
+                  let notificationImageBox: Gtk.Box | null = null;
+
+                  if (notification.image) {
+                    notificationImageBox = new Gtk.Box();
+                    notificationImageBox.set_css_classes([
+                      "notification-image-wrapper",
+                    ]);
+                    notificationImageBox.set_size_request(70, 70);
+                    notificationImageBox.set_hexpand(false);
+                    notificationImageBox.set_vexpand(false);
+                    notificationImageBox.set_halign(Gtk.Align.CENTER);
+                    notificationImageBox.set_valign(Gtk.Align.CENTER);
+
+                    // Use CSS provider for the image
+                    const imageProvider = new Gtk.CssProvider();
+                    const imageUrl = notification.image.startsWith("file://")
+                      ? notification.image
+                      : notification.image.startsWith("/")
+                        ? `file://${notification.image}`
+                        : notification.image;
+
+                    imageProvider.load_from_data(
+                      `
+                      * {
+                        background-image: url('${imageUrl}');
+                        background-size: cover;
+                        background-position: center;
+                        border-radius: 4px;
+                      }
+                      `,
+                      -1,
+                    );
+
+                    notificationImageBox
+                      .get_style_context()
+                      .add_provider(
+                        imageProvider,
+                        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION,
+                      );
+                  }
+
                   const notifBox = (
                     <box
                       cssClasses={["notification-item"]}
                       orientation={Gtk.Orientation.HORIZONTAL}
                       spacing={10}
                     >
-                      {notification.image && (
-                        // Inside NotificationCenter -> notification.image block:
-                        <box
-                          cssClasses={["notification-image-wrapper"]}
-                          widthRequest={44}
-                          heightRequest={44}
-                          valign={Gtk.Align.CENTER} // <--- Add this: keeps it a square/circle, not an oval
-                          halign={Gtk.Align.CENTER}
-                          hexpand={false} // <--- Add this: prevents horizontal stretching
-                          vexpand={false} // <--- Add this: prevents vertical stretching
-                          $={(self) => {
-                            try {
-                              const pixbuf =
-                                GdkPixbuf.Pixbuf.new_from_file_at_scale(
-                                  notification.image,
-                                  48,
-                                  48,
-                                  false,
-                                );
-                              const texture =
-                                Gdk.Texture.new_for_pixbuf(pixbuf);
-                              const picture = new Gtk.Picture();
-                              picture.set_paintable(texture);
-                              picture.set_size_request(44, 44);
-                              picture.set_can_shrink(false); // Prevents the image itself from collapsing
-                              self.append(picture);
-                            } catch (e) {
-                              console.error("Failed to load image:", e);
-                            }
-                          }}
-                        />
-                      )}
+                      {notificationImageBox}
 
                       <box
                         orientation={Gtk.Orientation.VERTICAL}
@@ -262,7 +272,6 @@ export default function RightSidebar({
                             halign={Gtk.Align.START}
                             cssClasses={["notification-summary"]}
                             hexpand
-                            // 3. Add Ellipsization for Summary
                             ellipsize={Pango.EllipsizeMode.END}
                             maxWidthChars={20}
                           />

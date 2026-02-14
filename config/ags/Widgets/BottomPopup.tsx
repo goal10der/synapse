@@ -35,17 +35,11 @@ export default function MusicPopup({
 
     isVisible.set(true);
 
-    // Access GObject property properly - use get_property or the getter method
+    // Access cover art property
     let cover = "";
     try {
-      // Try direct property access first
+      // Direct property access (this is working based on logs)
       cover = player.coverArt || player.cover_art || "";
-
-      // If that doesn't work, try the GObject way
-      if (!cover && typeof player.get_property === "function") {
-        cover = player.get_property("cover-art") || "";
-      }
-
       console.log("Cover art URL:", cover);
     } catch (e) {
       console.error("Error getting cover art:", e);
@@ -61,9 +55,6 @@ export default function MusicPopup({
       let newCover = "";
       try {
         newCover = player.coverArt || player.cover_art || "";
-        if (!newCover && typeof player.get_property === "function") {
-          newCover = player.get_property("cover-art") || "";
-        }
         console.log("Cover art changed to:", newCover);
       } catch (e) {
         console.error("Error getting updated cover art:", e);
@@ -92,38 +83,68 @@ export default function MusicPopup({
     updatePlayer();
   }
 
-  // Create album cover box
-  const albumCoverBox = (
-    <box
-      cssClasses={["album-cover"]}
-      css={`
-        min-width: 80px;
-        min-height: 80px;
-        border-radius: 8px;
-        background-color: rgba(255, 255, 255, 0.1);
-      `}
-    />
-  ) as any;
+  // Create album cover box using CSS provider (like WallpaperPicker)
+  const albumCoverBox = new Gtk.Box();
+  albumCoverBox.set_css_classes(["album-cover"]);
+  // Set size request to make it square
+  albumCoverBox.set_size_request(100, 100);
+  // Prevent the box from expanding
+  albumCoverBox.set_hexpand(false);
+  albumCoverBox.set_vexpand(false);
+  albumCoverBox.set_halign(Gtk.Align.START);
+  albumCoverBox.set_valign(Gtk.Align.CENTER);
 
-  // Subscribe to coverArt changes with proper update logic
+  // Create CSS provider for the cover art
+  let coverArtProvider: Gtk.CssProvider | null = null;
+
+  // Subscribe to coverArt changes with CSS provider
   coverArt.subscribe((art) => {
-    if (!art || art === "") {
-      albumCoverBox.css = `
-        min-width: 80px;
-        min-height: 80px;
-        border-radius: 8px;
-        background-color: rgba(255, 255, 255, 0.1);
-      `;
-    } else {
-      albumCoverBox.css = `
-        background-image: url('${art}');
-        background-size: cover;
-        background-position: center;
-        min-width: 80px;
-        min-height: 80px;
-        border-radius: 8px;
-      `;
+    // Remove old provider if exists
+    if (coverArtProvider) {
+      albumCoverBox.get_style_context().remove_provider(coverArtProvider);
+      coverArtProvider = null;
     }
+
+    // Create new provider with updated cover art
+    coverArtProvider = new Gtk.CssProvider();
+
+    if (!art || art === "") {
+      // No cover art - show placeholder
+      coverArtProvider.load_from_data(
+        `
+        * {
+          border-radius: 8px;
+          background-color: rgba(255, 255, 255, 0.1);
+        }
+        `,
+        -1,
+      );
+    } else {
+      // Has cover art - ensure proper file:// protocol
+      const imageUrl = art.startsWith("file://")
+        ? art
+        : art.startsWith("/")
+          ? `file://${art}`
+          : art;
+
+      console.log("Setting cover art with URL:", imageUrl);
+
+      coverArtProvider.load_from_data(
+        `
+        * {
+          background-image: url('${imageUrl}');
+          background-size: cover;
+          background-position: center;
+          border-radius: 8px;
+        }
+        `,
+        -1,
+      );
+    }
+
+    albumCoverBox
+      .get_style_context()
+      .add_provider(coverArtProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
   });
 
   // Create title label

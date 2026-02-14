@@ -2,7 +2,7 @@ import Astal from "gi://Astal?version=4.0";
 import Gtk from "gi://Gtk?version=4.0";
 import Gdk from "gi://Gdk?version=4.0";
 import Notifd from "gi://AstalNotifd";
-import Pango from "gi://Pango"; // <--- Add this import
+import Pango from "gi://Pango";
 import { onCleanup, createState, For, createBinding } from "ags";
 import app from "ags/gtk4/app";
 import GLib from "gi://GLib";
@@ -40,6 +40,43 @@ function Notification({ notification }: { notification: Notifd.Notification }) {
     }
   });
 
+  // Create notification image box if image exists
+  let notificationImageBox: Gtk.Box | null = null;
+
+  if (notification.image) {
+    notificationImageBox = new Gtk.Box();
+    notificationImageBox.set_css_classes(["notification-popup-image-wrapper"]);
+    notificationImageBox.set_size_request(70, 70);
+    notificationImageBox.set_hexpand(false);
+    notificationImageBox.set_vexpand(false);
+    notificationImageBox.set_halign(Gtk.Align.CENTER);
+    notificationImageBox.set_valign(Gtk.Align.CENTER);
+
+    // Use CSS provider for the image (like WallpaperPicker and BottomPopup)
+    const imageProvider = new Gtk.CssProvider();
+    const imageUrl = notification.image.startsWith("file://")
+      ? notification.image
+      : notification.image.startsWith("/")
+        ? `file://${notification.image}`
+        : notification.image;
+
+    imageProvider.load_from_data(
+      `
+      * {
+        background-image: url('${imageUrl}');
+        background-size: cover;
+        background-position: center;
+        border-radius: 4px;
+      }
+      `,
+      -1,
+    );
+
+    notificationImageBox
+      .get_style_context()
+      .add_provider(imageProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+  }
+
   return (
     <box
       cssClasses={["notification-popup"]}
@@ -48,33 +85,7 @@ function Notification({ notification }: { notification: Notifd.Notification }) {
       heightRequest={64}
       widthRequest={400}
     >
-      {notification.image && (
-        <box
-          cssClasses={["notification-popup-image-wrapper"]}
-          widthRequest={44}
-          heightRequest={44}
-          valign={Gtk.Align.CENTER}
-          hexpand={false}
-          $={(self) => {
-            try {
-              const GdkPixbuf = imports.gi.GdkPixbuf;
-              const pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
-                notification.image,
-                50,
-                50,
-                false,
-              );
-              const texture = Gdk.Texture.new_for_pixbuf(pixbuf);
-              const picture = new Gtk.Picture();
-              picture.set_paintable(texture);
-              picture.set_size_request(44, 44);
-              self.append(picture);
-            } catch (e) {
-              console.error("Failed to load notification image:", e);
-            }
-          }}
-        />
-      )}
+      {notificationImageBox}
 
       <box orientation={Gtk.Orientation.VERTICAL} spacing={4} hexpand>
         <box cssClasses={["notification-popup-header"]}>

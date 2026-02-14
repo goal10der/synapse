@@ -9,8 +9,9 @@ const POLL_INTERVAL = 2000;
 
 const loadWallpapers = () => {
   const wallpapers: string[] = [];
+  let dir: any = null;
   try {
-    const dir = GLib.Dir.open(WALLPAPER_DIR, 0);
+    dir = GLib.Dir.open(WALLPAPER_DIR, 0);
     let name: string | null;
     while ((name = dir.read_name()) !== null) {
       if (
@@ -28,6 +29,14 @@ const loadWallpapers = () => {
     }
   } catch (e) {
     console.error(`Wallpaper Directory Error: ${e}`);
+  } finally {
+    if (dir) {
+      try {
+        dir.close();
+      } catch (e) {
+        console.error(`Failed to close directory: ${e}`);
+      }
+    }
   }
   return wallpapers.sort();
 };
@@ -63,7 +72,7 @@ export default function WallpaperPicker() {
         background-size: cover;
         background-position: center;
         min-width: 160px;
-        min-height: 90px;
+        min-height: 150px;
         border-radius: 10px;
       }
       `,
@@ -101,23 +110,8 @@ export default function WallpaperPicker() {
   };
 
   const startPolling = () => {
-    if (pollTimeoutId !== null) {
-      return; // Already polling
-    }
-
-    const poll = () => {
-      updateGrid();
-      pollTimeoutId = GLib.timeout_add(
-        GLib.PRIORITY_DEFAULT,
-        POLL_INTERVAL,
-        () => {
-          pollTimeoutId = null;
-          poll();
-          return GLib.SOURCE_REMOVE;
-        },
-      ) as any;
-    };
-    poll();
+    // Polling disabled - using file monitor instead
+    console.log("File monitor mode enabled, polling disabled");
   };
   let monitorActive = false;
   let fileMonitor: any = null;
@@ -145,11 +139,15 @@ export default function WallpaperPicker() {
     monitorActive = true;
     console.log(`File monitor active for: ${WALLPAPER_DIR}`);
   } catch (e) {
-    console.error(`File monitor failed, using polling: ${e}`);
+    console.error(`File monitor failed: ${e}`);
   }
+
+  // Only use polling as fallback if monitor failed
   if (!monitorActive) {
-    console.log(`Starting polling mode (every ${POLL_INTERVAL}ms)`);
+    console.log(`Starting polling fallback mode (every ${POLL_INTERVAL}ms)`);
+    startPolling();
   }
+
   onCleanup(() => {
     if (pollTimeoutId) {
       GLib.source_remove(pollTimeoutId);
