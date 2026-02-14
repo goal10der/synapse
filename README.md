@@ -142,7 +142,7 @@ $codekb = Super, C
 
 ```bash
 # In ~/.config/hypr/custom/variables.conf
-$term = alacritty
+$term = foot
 ```
 
 **Add custom keybind:**
@@ -172,6 +172,7 @@ $sensitivity = 0.5
 | `Super + Q`      | Kill Active Window  |
 | `Super` (tap)    | Toggle App Launcher |
 | `Super + N`      | Toggle Sidebar      |
+| `Super + M`      | Toggle Mpris popup  |
 
 ### Window Management
 
@@ -197,15 +198,6 @@ $sensitivity = 0.5
 | `Super + Shift + R`        | Restart AGS Shell          |
 | `Super + Ctrl + Shift + K` | Exit Hyprland (logout)     |
 
-### Media Keys
-
-| Keybind                 | Action              |
-| ----------------------- | ------------------- |
-| `XF86AudioRaiseVolume`  | Increase Volume     |
-| `XF86AudioLowerVolume`  | Decrease Volume     |
-| `XF86AudioMute`         | Toggle Mute         |
-| `XF86MonBrightnessUp`   | Increase Brightness |
-| `XF86MonBrightnessDown` | Decrease Brightness |
 
 ## Wallpapers
 
