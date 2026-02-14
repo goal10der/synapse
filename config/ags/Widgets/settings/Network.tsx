@@ -118,7 +118,7 @@ export default function NetworkPage() {
         )
           continue;
         const connected = line.trim().startsWith(">");
-        const cleanLine = line.replace(">", "").trim();
+        const cleanLine = line.replace(/>/g, "").trim();
         const parts = cleanLine.split(/\s{2,}/);
         if (parts.length >= 2) {
           foundNetworks.push({
