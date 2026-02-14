@@ -11,6 +11,7 @@ import Applauncher from "./Widgets/Applauncher";
 import NotificationPopups from "./Widgets/Notificationpopup";
 import Sidebar from "./Widgets/RightSidebar";
 import PowerMenu from "./Widgets/PowerMenu";
+import MusicPopup from "./Widgets/BottomPopup";
 import { toggleEditMode, editMode } from "./State";
 
 const configDir = `${GLib.get_user_config_dir()}/ags`;
@@ -48,6 +49,11 @@ app.start({
       return res(
         `ok - edit mode is now ${editMode.get() ? "enabled" : "disabled"}`,
       );
+    }
+    if (argv[0] === "music-popup") {
+      const monitors = app.get_monitors();
+      monitors.forEach((m) => app.toggle_window(`music-popup-${m.connector}`));
+      return res("ok");
     }
 
     return res("unknown command");
@@ -89,6 +95,7 @@ app.start({
             <NotificationPopups />
             <Sidebar gdkmonitor={gdkmonitor} />
             <PowerMenu gdkmonitor={gdkmonitor} />
+            <MusicPopup gdkmonitor={gdkmonitor} />
           </This>
         )}
       </For>

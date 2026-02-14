@@ -7,7 +7,7 @@ import GdkPixbuf from "gi://GdkPixbuf?version=2.0";
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import Gio from "gi://Gio";
-import Pango from "gi://Pango"; // <--- Added Pango
+import Pango from "gi://Pango";
 import { onCleanup } from "ags";
 import { editMode, toggleEditMode } from "../State";
 import NetworkPage from "./settings/Network";
