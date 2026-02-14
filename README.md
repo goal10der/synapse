@@ -9,7 +9,11 @@ A modern Hyprland configuration with dynamic Material You theming and a custom A
 
 
 
-https://github.com/user-attachments/assets/0b587393-734a-49eb-a4b8-6a41c256d283
+
+
+https://github.com/user-attachments/assets/c50ffe09-1f80-4413-a94d-0b0469d538c4
+
+
 
 
 
