@@ -17,7 +17,7 @@ export default function Clock({
   return (
     <box cssClasses={["clock"]} heightRequest={24} valign={Gtk.Align.CENTER}>
       <box spacing={8} valign={Gtk.Align.CENTER}>
-        <label label={time} />
+        <label cssClasses={["clock-label"]} label={time} />
       </box>
     </box>
   );

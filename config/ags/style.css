@@ -14,7 +14,7 @@ window,
   padding: 12px;
   color: var(--on_surface);
   margin: 8px;
-  min-width: 380px; /* increase from 350px */
+  min-width: 380px;
   transition: all 0.2s ease;
 }
 * {
@@ -23,15 +23,15 @@ window,
 }
 
 image {
-  -gtk-icon-size: 14px;
+  -gtk-icon-size: 16px;
   color: var(--primary);
 }
 
 /* === BAR === */
 .bar {
   background-color: transparent;
-  padding: 0 8px;
-  margin-top: 8px;
+  padding: 0;
+  margin-top: 0px;
 }
 .bar-button-image {
   color: var(--primary);
@@ -58,15 +58,15 @@ image {
   transition: all 0.2s ease;
 }
 
-.clock box,
+.clock,
 .clock label,
 .clock image,
-#settings-button box,
-#notification-button box,
-.battery button box,
-.audio-output button box,
-.tray-item button box,
-.wireless button box,
+#settings-button,
+#notification-button,
+.battery button,
+.audio-output button,
+.tray-item button,
+.wireless button,
 #settings-button label,
 #notification-button label,
 .battery button label,
@@ -80,8 +80,10 @@ image {
 .tray-item button image,
 .wireless button image {
   color: var(--primary);
-  margin: 0;
-  padding: 0;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 .clock:hover image,
@@ -910,7 +912,8 @@ spinner {
   border-radius: 24px 0 0 24px;
   border-right: none;
   padding: 20px;
-  margin: 0;
+  margin-top: 15px;
+  margin-bottom: 15px;
   min-width: 380px;
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
 }
