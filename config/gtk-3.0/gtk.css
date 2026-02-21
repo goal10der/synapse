@@ -6,24 +6,24 @@
    Adwaita-dark (GTK3) reads these names. Overriding them here recolours
    Thunar and every other GTK3 app with the current wallpaper palette.      */
 
-@define-color accent_color              #c3c7c7;
-@define-color theme_fg_color            #e5e2e1;
-@define-color theme_bg_color            #131313;
-@define-color theme_base_color          #1c1b1b;
-@define-color theme_text_color          #e5e2e1;
-@define-color theme_selected_bg_color   #000101;
-@define-color theme_selected_fg_color   #929797;
-@define-color theme_tooltip_bg_color    #2a2a2a;
-@define-color theme_tooltip_fg_color    #e5e2e1;
-@define-color insensitive_bg_color      #201f1f;
-@define-color insensitive_fg_color      #c3c7c6;
-@define-color borders                   #434847;
-@define-color warning_color             #c8c5ca;
+@define-color accent_color              #f6bc63;
+@define-color theme_fg_color            #dbe4e6;
+@define-color theme_bg_color            #0c1517;
+@define-color theme_base_color          #141d1f;
+@define-color theme_text_color          #dbe4e6;
+@define-color theme_selected_bg_color   #614000;
+@define-color theme_selected_fg_color   #ffddb0;
+@define-color theme_tooltip_bg_color    #232b2d;
+@define-color theme_tooltip_fg_color    #dbe4e6;
+@define-color insensitive_bg_color      #182123;
+@define-color insensitive_fg_color      #b8cacd;
+@define-color borders                   #3a494d;
+@define-color warning_color             #8ed1de;
 @define-color error_color               #ffb4ab;
-@define-color success_color             #c6c6c6;
+@define-color success_color             #c5c3ea;
 
 /* Force symbolic icons to use the primary color */
-@define-color symbolic_fg_color        #c3c7c7;
+@define-color symbolic_fg_color        #f6bc63;
 
 /* ── Base ────────────────────────────────────────────────────────────────── */
 
@@ -34,58 +34,58 @@
 
 window,
 .background {
-  background-color: #131313;
-  color: #e5e2e1;
+  background-color: #0c1517;
+  color: #dbe4e6;
 }
 
 /* Fix for white background when window is not in focus */
 window:backdrop,
 .background:backdrop {
-  background-color: #131313 !important;
-  color: #c3c7c6;
+  background-color: #0c1517 !important;
+  color: #b8cacd;
 }
 
 /* ── Icons ───────────────────────────────────────────────────────────────── */
 
 image.symbolic,
 .symbolic {
-  color: #c3c7c7 !important;
+  color: #f6bc63 !important;
 }
 
 *:selected image.symbolic,
 *:selected .symbolic {
-  color: #929797 !important;
+  color: #ffddb0 !important;
 }
 
 /* ── Menubar ─────────────────────────────────────────────────────────────── */
 
 menubar {
-  background-color: #201f1f;
-  color: #e5e2e1;
-  border-bottom: 1px solid #434847;
+  background-color: #182123;
+  color: #dbe4e6;
+  border-bottom: 1px solid #3a494d;
   padding: 2px;
 }
 
 menubar:backdrop {
-  background-color: #201f1f !important;
-  color: #c3c7c6;
-  border-bottom: 1px solid #434847;
+  background-color: #182123 !important;
+  color: #b8cacd;
+  border-bottom: 1px solid #3a494d;
 }
 
 menubar > item {
   border-radius: 4px;
   padding: 4px 8px;
-  color: #e5e2e1;
+  color: #dbe4e6;
 }
 
 menubar > item:hover,
 menubar > item:active {
-  background-color: #2a2a2a;
-  color: #e5e2e1;
+  background-color: #232b2d;
+  color: #dbe4e6;
 }
 
 menubar > item:backdrop {
-  color: #c3c7c6;
+  color: #b8cacd;
 }
 
 /* ── Headerbar ───────────────────────────────────────────────────────────── */
@@ -93,9 +93,9 @@ menubar > item:backdrop {
 headerbar,
 .titlebar,
 .header-bar {
-  background-color: #201f1f;
-  color: #e5e2e1;
-  border-bottom: 1px solid #434847;
+  background-color: #182123;
+  color: #dbe4e6;
+  border-bottom: 1px solid #3a494d;
   box-shadow: none;
   padding: 4px 8px;
 }
@@ -106,7 +106,7 @@ headerbar button,
   background-color: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
-  color: #e5e2e1;
+  color: #dbe4e6;
   box-shadow: none;
   padding: 4px 8px;
   transition: all 0.12s ease;
@@ -115,17 +115,17 @@ headerbar button,
 headerbar button:hover,
 .titlebar button:hover,
 .header-bar button:hover {
-  background-color: #2a2a2a;
-  border-color: #434847;
+  background-color: #232b2d;
+  border-color: #3a494d;
 }
 
 /* ── Sidebar / places ────────────────────────────────────────────────────── */
 
 .sidebar,
 placessidebar {
-  background-color: #1c1b1b;
-  color: #e5e2e1;
-  border-right: 1px solid #434847;
+  background-color: #141d1f;
+  color: #dbe4e6;
+  border-right: 1px solid #3a494d;
 }
 
 .sidebar row,
@@ -133,26 +133,26 @@ placessidebar row {
   border-radius: 6px;
   margin: 1px 6px;
   padding: 2px 0;
-  color: #e5e2e1;
+  color: #dbe4e6;
   transition: background 0.12s ease;
 }
 
 .sidebar row:hover,
 placessidebar row:hover {
-  background-color: #201f1f;
+  background-color: #182123;
 }
 
 .sidebar row:selected,
 placessidebar row:selected {
-  background-color: #000101;
-  color: #929797;
+  background-color: #614000;
+  color: #ffddb0;
 }
 
 .sidebar row:selected label,
 .sidebar row:selected image,
 placessidebar row:selected label,
 placessidebar row:selected image {
-  color: #929797;
+  color: #ffddb0;
 }
 
 /* ── File views ──────────────────────────────────────────────────────────── */
@@ -160,31 +160,31 @@ placessidebar row:selected image {
 .view,
 GtkIconView,
 GtkTreeView {
-  background-color: #1c1b1b;
-  color: #e5e2e1;
+  background-color: #141d1f;
+  color: #dbe4e6;
 }
 
 .view:selected,
 GtkIconView:selected,
 GtkTreeView row:selected {
-  background-color: #000101;
-  color: #929797;
+  background-color: #614000;
+  color: #ffddb0;
 }
 
 GtkTreeView row:nth-child(odd) {
-  background-color: #1c1b1b;
+  background-color: #141d1f;
 }
 
 GtkTreeView row:nth-child(even) {
-  background-color: #131313;
+  background-color: #0c1517;
 }
 
 /* ── Rubberband (Drag & Select) ──────────────────────────────────────────── */
 
 .rubberband,
 rubberband {
-  background-color: rgba(195, 199, 199, 0.2);
-  border: 1px solid #c3c7c7;
+  background-color: rgba(246, 188, 99, 0.2);
+  border: 1px solid #f6bc63;
   border-radius: 2px;
 }
 
@@ -192,8 +192,8 @@ rubberband {
 
 toolbar,
 .toolbar {
-  background-color: #201f1f;
-  border-bottom: 1px solid #434847;
+  background-color: #182123;
+  border-bottom: 1px solid #3a494d;
   padding: 4px;
   box-shadow: none;
 }
@@ -203,7 +203,7 @@ toolbar button,
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
-  color: #e5e2e1;
+  color: #dbe4e6;
   box-shadow: none;
   padding: 4px 8px;
   transition: all 0.12s ease;
@@ -211,41 +211,41 @@ toolbar button,
 
 toolbar button:hover,
 .toolbar button:hover {
-  background-color: #2a2a2a;
-  border-color: #434847;
+  background-color: #232b2d;
+  border-color: #3a494d;
 }
 
 toolbar button:active,
 toolbar button:checked,
 .toolbar button:active,
 .toolbar button:checked {
-  background-color: #000101;
-  color: #929797;
+  background-color: #614000;
+  color: #ffddb0;
 }
 
 /* ── Notebook tabs ───────────────────────────────────────────────────────── */
 
 notebook > header {
-  background-color: #201f1f;
-  border-bottom: 1px solid #434847;
+  background-color: #182123;
+  border-bottom: 1px solid #3a494d;
 }
 
 notebook > header > tabs > tab {
   background: transparent;
   border: none;
-  color: #c3c7c6;
+  color: #b8cacd;
   padding: 6px 12px;
   transition: all 0.12s ease;
 }
 
 notebook > header > tabs > tab:hover {
-  background-color: #2a2a2a;
-  color: #e5e2e1;
+  background-color: #232b2d;
+  color: #dbe4e6;
 }
 
 notebook > header > tabs > tab:checked {
-  background-color: #353534;
-  color: #c3c7c7;
+  background-color: #2d3638;
+  color: #f6bc63;
 }
 
 /* ── Context menus ───────────────────────────────────────────────────────── */
@@ -253,12 +253,12 @@ notebook > header > tabs > tab:checked {
 menu,
 .menu,
 .context-menu {
-  background-color: #2a2a2a;
-  border: 1px solid #434847;
+  background-color: #232b2d;
+  border: 1px solid #3a494d;
   border-radius: 10px;
   padding: 4px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-  color: #e5e2e1;
+  color: #dbe4e6;
 }
 
 menuitem {
@@ -268,17 +268,17 @@ menuitem {
 }
 
 menuitem:hover {
-  background-color: #000101;
-  color: #929797;
+  background-color: #614000;
+  color: #ffddb0;
 }
 
 menuitem:disabled {
-  color: #c3c7c6;
+  color: #b8cacd;
   opacity: 0.4;
 }
 
 menu separator {
-  background-color: #434847;
+  background-color: #3a494d;
   margin: 3px 8px;
   min-height: 1px;
 }
@@ -286,10 +286,10 @@ menu separator {
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
 
 button {
-  background-color: #201f1f;
-  border: 1px solid #434847;
+  background-color: #182123;
+  border: 1px solid #3a494d;
   border-radius: 8px;
-  color: #e5e2e1;
+  color: #dbe4e6;
   box-shadow: none;
   text-shadow: none;
   padding: 6px 12px;
@@ -297,21 +297,21 @@ button {
 }
 
 button:hover {
-  background-color: #000101;
-  border-color: #c3c7c7;
-  color: #929797;
+  background-color: #614000;
+  border-color: #f6bc63;
+  color: #ffddb0;
 }
 
 button.suggested-action {
-  background-color: #c3c7c7;
-  border-color: #c3c7c7;
-  color: #2c3131;
+  background-color: #f6bc63;
+  border-color: #f6bc63;
+  color: #442c00;
   font-weight: 700;
 }
 
 button.suggested-action:hover {
-  background-color: #000101;
-  color: #929797;
+  background-color: #614000;
+  color: #ffddb0;
 }
 
 button.destructive-action {
@@ -328,18 +328,18 @@ button.destructive-action:hover {
 /* ── Entries ─────────────────────────────────────────────────────────────── */
 
 entry {
-  background-color: #353534;
-  border: 1px solid #434847;
+  background-color: #2d3638;
+  border: 1px solid #3a494d;
   border-radius: 8px;
-  color: #e5e2e1;
-  caret-color: #c3c7c7;
+  color: #dbe4e6;
+  caret-color: #f6bc63;
   box-shadow: none;
   padding: 6px 10px;
   transition: border-color 0.12s ease;
 }
 
 entry:focus {
-  border-color: #c3c7c7;
+  border-color: #f6bc63;
 }
 
 /* ── Scrollbars ──────────────────────────────────────────────────────────── */
@@ -349,7 +349,7 @@ scrollbar {
 }
 
 scrollbar slider {
-  background-color: #434847;
+  background-color: #3a494d;
   border-radius: 20px;
   min-width: 4px;
   min-height: 20px;
@@ -357,28 +357,28 @@ scrollbar slider {
 }
 
 scrollbar slider:hover {
-  background-color: #c3c7c7;
+  background-color: #f6bc63;
 }
 
 /* ── Status bar ──────────────────────────────────────────────────────────── */
 
 statusbar {
-  background-color: #1c1b1b;
-  color: #c3c7c6;
+  background-color: #141d1f;
+  color: #b8cacd;
   font-size: 11px;
-  border-top: 1px solid #434847;
+  border-top: 1px solid #3a494d;
   padding: 2px 8px;
 }
 
 /* ── Progress bar ────────────────────────────────────────────────────────── */
 
 progressbar trough {
-  background-color: #353534;
+  background-color: #2d3638;
   border-radius: 10px;
   min-height: 6px;
 }
 
 progressbar progress {
-  background-color: #c3c7c7;
+  background-color: #f6bc63;
   border-radius: 10px;
 }
