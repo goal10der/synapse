@@ -157,7 +157,7 @@ backup_config() {
     local BACKUP_DIR="$HOME/config_backup_$DATE"
     mkdir -p "$BACKUP_DIR"
     
-    local targets=(ags btop fish foot hypr matugen starship.toml)
+    local targets=(ags btop fish foot hypr matugen starship.toml gtk-3.0 gtk-4.0)
     local backed_up=0
     
     for item in "${targets[@]}"; do
@@ -188,7 +188,7 @@ install_pacman_packages() {
         wl-clipboard swappy wireplumber polkit-gnome hypridle 
         xdg-desktop-portal-hyprland qt6ct qt5ct blueman geoclue 
         btop starship fish gvfs nss meson vala valadoc 
-        gobject-introspection libnotify hyprlock grim
+        gobject-introspection libnotify hyprlock grim tumbler
     )
 
     echo -e "\033[0;34m[→] Installing Pacman packages\033[0m"
