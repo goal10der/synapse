@@ -357,6 +357,8 @@ This project is a learning experience, and contributions are greatly appreciated
 - **AGS** - Aylur
 - **Matugen** - InioX
 - **awww** - zjeffer
+- **Wallpaper in photo** https://wallhaven.cc/w/rq2v8j
+- **Default wallapers** me!
 
 ## License
 
