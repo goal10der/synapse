@@ -1,3 +1,4 @@
+// @ts-ignore
 import app from "ags/gtk4/app";
 import Astal from "gi://Astal?version=4.0";
 import Gdk from "gi://Gdk?version=4.0";

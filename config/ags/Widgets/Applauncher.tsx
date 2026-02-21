@@ -1,3 +1,4 @@
+// @ts-ignore
 import { For, createState, onCleanup } from "ags";
 import Astal from "gi://Astal?version=4.0";
 import Gtk from "gi://Gtk?version=4.0";
