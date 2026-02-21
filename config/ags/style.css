@@ -153,7 +153,7 @@ window,
 
 * {
   font-family: "JetBrains";
-  font-size: 13px;
+  font-size: 14px;
 }
 
 image {
@@ -167,7 +167,7 @@ image {
 
 .bar {
   background-color: transparent;
-  padding: 0;
+  padding: 0px;
 }
 
 .clock,
@@ -193,20 +193,27 @@ image {
 }
 
 .clock,
-.clock label,
-.clock image,
 #settings-button,
 #notification-button,
 .battery button,
 .audio-output button,
 .tray-item button,
-.wireless button,
+.wireless button {
+  color: var(--primary);
+  padding-top: 2px;
+}
+
+.clock label,
 #settings-button label,
 #notification-button label,
 .battery button label,
 .audio-output button label,
 .tray-item button label,
-.wireless button label,
+.wireless button label {
+  color: var(--primary);
+}
+
+.clock image,
 #settings-button image,
 #notification-button image,
 .battery button image,
@@ -214,10 +221,6 @@ image {
 .tray-item button image,
 .wireless button image {
   color: var(--primary);
-  margin-top: 5px;
-  margin-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
 }
 
 /* =============================================================================

@@ -145,8 +145,6 @@ export default function RightSidebar({
     </box>
   );
 
-  // ── Notification center ───────────────────────────────────────────────────
-
   const NotificationCenter = () => (
     <box
       orientation={Gtk.Orientation.VERTICAL}
@@ -162,10 +160,8 @@ export default function RightSidebar({
         <box hexpand />
         <button
           cssClasses={["clear-all"]}
-          $={(self) =>
-            self.connect("clicked", () =>
-              notifd.get_notifications()?.forEach((n) => n.dismiss()),
-            )
+          onClicked={() =>
+            notifd.get_notifications()?.forEach((n) => n.dismiss())
           }
         >
           <label label="Clear All" />
@@ -190,66 +186,66 @@ export default function RightSidebar({
 
               const list = notifd.get_notifications();
               if (!list?.length) {
-                self.append(
-                  (
-                    <box cssClasses={["no-notifications"]}>
-                      <label label="No notifications" />
-                    </box>
-                  ) as Gtk.Widget,
-                );
+                const empty = new Gtk.Box({
+                  css_classes: ["no-notifications"],
+                });
+                empty.append(new Gtk.Label({ label: "No notifications" }));
+                self.append(empty);
                 return;
               }
 
               list.forEach((notif) => {
-                const item = (
-                  <box
-                    cssClasses={["notification-item"]}
-                    orientation={Gtk.Orientation.HORIZONTAL}
-                    spacing={8}
-                  >
-                    {notif.image ? makeNotifImageBox(notif.image) : null}
-                    <box
-                      orientation={Gtk.Orientation.VERTICAL}
-                      spacing={3}
-                      hexpand
-                    >
-                      <box spacing={6}>
-                        <label
-                          label={notif.summary}
-                          halign={Gtk.Align.START}
-                          hexpand
-                          cssClasses={["notification-summary"]}
-                          ellipsize={Pango.EllipsizeMode.END}
-                          maxWidthChars={22}
-                        />
-                        <button
-                          cssClasses={["dismiss-button"]}
-                          $={(b) => b.connect("clicked", () => notif.dismiss())}
-                        >
-                          <label label="×" />
-                        </button>
-                      </box>
-                      {notif.body && (
-                        <label
-                          label={notif.body}
-                          halign={Gtk.Align.START}
-                          wrap
-                          useMarkup
-                          cssClasses={["notification-body"]}
-                          ellipsize={Pango.EllipsizeMode.END}
-                          lines={2}
-                        />
-                      )}
-                      {notif.appName && (
-                        <label
-                          label={notif.appName}
-                          halign={Gtk.Align.START}
-                          cssClasses={["notification-app"]}
-                        />
-                      )}
-                    </box>
-                  </box>
-                ) as Gtk.Widget;
+                // Manual GTK construction to avoid "out of tracking context"
+                const item = new Gtk.Box({
+                  css_classes: ["notification-item"],
+                  orientation: Gtk.Orientation.HORIZONTAL,
+                  spacing: 8,
+                });
+
+                if (notif.image) {
+                  item.append(makeNotifImageBox(notif.image));
+                }
+
+                const contentBox = new Gtk.Box({
+                  orientation: Gtk.Orientation.VERTICAL,
+                  spacing: 3,
+                  hexpand: true,
+                });
+
+                const titleRow = new Gtk.Box({ spacing: 6 });
+                const summary = new Gtk.Label({
+                  label: notif.summary,
+                  halign: Gtk.Align.START,
+                  hexpand: true,
+                  css_classes: ["notification-summary"],
+                  ellipsize: Pango.EllipsizeMode.END,
+                  max_width_chars: 22,
+                });
+
+                const closeBtn = new Gtk.Button({
+                  css_classes: ["dismiss-button"],
+                });
+                closeBtn.set_child(new Gtk.Label({ label: "×" }));
+                closeBtn.connect("clicked", () => notif.dismiss());
+
+                titleRow.append(summary);
+                titleRow.append(closeBtn);
+                contentBox.append(titleRow);
+
+                if (notif.body) {
+                  const body = new Gtk.Label({
+                    label: notif.body,
+                    halign: Gtk.Align.START,
+                    wrap: true,
+                    use_markup: true,
+                    css_classes: ["notification-body"],
+                    ellipsize: Pango.EllipsizeMode.END,
+                    lines: 2,
+                  });
+                  contentBox.append(body);
+                }
+
+                item.append(contentBox);
                 self.append(item);
               });
             };
@@ -266,7 +262,6 @@ export default function RightSidebar({
       </Gtk.ScrolledWindow>
     </box>
   );
-
   // ── Main page ─────────────────────────────────────────────────────────────
   // Built as a function so the CalendarWidget receives `getWin` which lazily
   // resolves to `win` after the window has been constructed.

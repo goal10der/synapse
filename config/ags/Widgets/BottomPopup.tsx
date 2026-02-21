@@ -209,8 +209,6 @@ export default function MusicPopup({
   const updateVisibility = () => {
     window.visible = mpris.get_players().length > 0;
   };
-  mpris.connect("notify::players", updateVisibility);
-  updateVisibility();
 
   return window;
 }

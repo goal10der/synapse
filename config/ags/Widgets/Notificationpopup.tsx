@@ -8,174 +8,159 @@ import app from "ags/gtk4/app";
 import GLib from "gi://GLib";
 import { notificationTimeout } from "./settings/Appearance";
 
-function Notification({ notification }: { notification: Notifd.Notification }) {
+const escapeMarkup = (str: string) =>
+  str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+function Notification({
+  notification,
+  onClose,
+}: {
+  notification: Notifd.Notification;
+  onClose: () => void;
+}) {
   let timeoutId: number | null = null;
 
-  const scheduleAutoDismiss = () => {
-    if (timeoutId !== null) {
-      GLib.source_remove(timeoutId);
-    }
+  const scheduleAutoHide = () => {
+    if (timeoutId !== null) GLib.source_remove(timeoutId);
     timeoutId = GLib.timeout_add(
       GLib.PRIORITY_DEFAULT,
       notificationTimeout.get(),
       () => {
-        notification.dismiss();
+        onClose();
         timeoutId = null;
         return false;
       },
     );
   };
 
-  scheduleAutoDismiss();
-
-  const unsubTimeout = notificationTimeout.subscribe(() => {
-    scheduleAutoDismiss();
-  });
-
+  scheduleAutoHide();
+  const unsub = notificationTimeout.subscribe(scheduleAutoHide);
   notification.connect("resolved", () => {
-    unsubTimeout();
-    if (timeoutId !== null) {
-      GLib.source_remove(timeoutId);
-      timeoutId = null;
-    }
+    unsub();
+    if (timeoutId !== null) GLib.source_remove(timeoutId);
   });
 
-  // Create notification image box if image exists
-  let notificationImageBox: Gtk.Box | null = null;
+  // 1. HARD LIMITS: Fixed height and width
+  const box = new Gtk.Box({
+    css_classes: ["notification-popup"],
+    spacing: 10,
+    width_request: 400,
+    height_request: 90, // Keeps it consistent
+  });
 
   if (notification.image) {
-    notificationImageBox = new Gtk.Box();
-    notificationImageBox.set_css_classes(["notification-popup-image-wrapper"]);
-    notificationImageBox.set_size_request(70, 70);
-    notificationImageBox.set_hexpand(false);
-    notificationImageBox.set_vexpand(false);
-    notificationImageBox.set_halign(Gtk.Align.CENTER);
-    notificationImageBox.set_valign(Gtk.Align.CENTER);
-
-    // Use CSS provider for the image (like WallpaperPicker and BottomPopup)
-    const imageProvider = new Gtk.CssProvider();
-    const imageUrl = notification.image.startsWith("file://")
-      ? notification.image
-      : notification.image.startsWith("/")
-        ? `file://${notification.image}`
-        : notification.image;
-
-    imageProvider.load_from_data(
-      `
-      * {
-        background-image: url('${imageUrl}');
-        background-size: cover;
-        background-position: center;
-        border-radius: 4px;
-      }
-      `,
+    const img = new Gtk.Box({
+      css_classes: ["notification-popup-image-wrapper"],
+    });
+    img.set_size_request(60, 60);
+    img.set_valign(Gtk.Align.CENTER);
+    const provider = new Gtk.CssProvider();
+    const url = notification.image.startsWith("/")
+      ? `file://${notification.image}`
+      : notification.image;
+    provider.load_from_data(
+      `* { background-image: url('${url}'); background-size: cover; border-radius: 4px; }`,
       -1,
     );
-
-    notificationImageBox
+    img
       .get_style_context()
-      .add_provider(imageProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+      .add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+    box.append(img);
   }
 
-  return (
-    <box
-      cssClasses={["notification-popup"]}
-      orientation={Gtk.Orientation.HORIZONTAL}
-      spacing={10}
-      heightRequest={64}
-      widthRequest={400}
-    >
-      {notificationImageBox}
+  const content = new Gtk.Box({
+    orientation: Gtk.Orientation.VERTICAL,
+    hexpand: true,
+    valign: Gtk.Align.CENTER,
+    css_classes: ["notification-content-box"],
+  });
 
-      <box orientation={Gtk.Orientation.VERTICAL} spacing={4} hexpand>
-        <box cssClasses={["notification-popup-header"]}>
-          <label
-            label={notification.summary}
-            halign={Gtk.Align.START}
-            cssClasses={["notification-popup-summary"]}
-            hexpand
-            ellipsize={Pango.EllipsizeMode.END}
-            maxWidthChars={20}
-          />
-          <button
-            $={(self) => {
-              self.connect("clicked", () => {
-                notification.dismiss();
-              });
-            }}
-            cssClasses={["notification-popup-close"]}
-          >
-            <label label="×" />
-          </button>
-        </box>
-
-        {notification.body && (
-          <label
-            label={notification.body}
-            halign={Gtk.Align.START}
-            wrap
-            useMarkup
-            cssClasses={["notification-popup-body"]}
-            ellipsize={Pango.EllipsizeMode.END}
-            lines={2}
-          />
-        )}
-
-        {notification.appName && (
-          <label
-            label={notification.appName}
-            halign={Gtk.Align.START}
-            cssClasses={["notification-popup-app"]}
-          />
-        )}
-      </box>
-    </box>
+  const header = new Gtk.Box({ spacing: 6 });
+  header.append(
+    new Gtk.Label({
+      label: notification.summary,
+      hexpand: true,
+      halign: Gtk.Align.START,
+      css_classes: ["notification-popup-summary"],
+      ellipsize: Pango.EllipsizeMode.END,
+      max_width_chars: 25, // Force ellipsis on title
+    }),
   );
+
+  const closeBtn = new Gtk.Button({
+    css_classes: ["notification-popup-close"],
+    valign: Gtk.Align.START,
+  });
+  closeBtn.set_child(new Gtk.Label({ label: "×" }));
+  closeBtn.connect("clicked", () => notification.dismiss());
+  header.append(closeBtn);
+  content.append(header);
+
+  if (notification.body) {
+    const body = new Gtk.Label({
+      label: escapeMarkup(notification.body),
+      wrap: true,
+      use_markup: true,
+      halign: Gtk.Align.START,
+      css_classes: ["notification-popup-body"],
+      lines: 2, // Max 2 lines of text
+      ellipsize: Pango.EllipsizeMode.END,
+      max_width_chars: 40, // HARD LIMIT to prevent horizontal expansion
+    });
+    content.append(body);
+  }
+
+  box.append(content);
+  return box;
 }
 
 export default function NotificationPopups() {
   const monitors = createBinding(app, "monitors");
   const notifd = Notifd.get_default();
-
   const [notifications, setNotifications] = createState(
     new Array<Notifd.Notification>(),
   );
 
-  const notifiedHandler = notifd.connect("notified", (_, id, replaced) => {
-    const notification = notifd.get_notification(id);
-    if (replaced && notifications.get().some((n) => n.id === id)) {
-      setNotifications((ns) => ns.map((n) => (n.id === id ? notification : n)));
-    } else {
-      setNotifications((ns) => [notification, ...ns]);
-    }
+  const id1 = notifd.connect("notified", (_, id) => {
+    const n = notifd.get_notification(id);
+    n.ignoreTimeout = true;
+    setNotifications((ns) => [n, ...ns.filter((i) => i.id !== id)]);
   });
 
-  const resolvedHandler = notifd.connect("resolved", (_, id) => {
+  const id2 = notifd.connect("resolved", (_, id) => {
     setNotifications((ns) => ns.filter((n) => n.id !== id));
   });
 
   onCleanup(() => {
-    notifd.disconnect(notifiedHandler);
-    notifd.disconnect(resolvedHandler);
+    notifd.disconnect(id1);
+    notifd.disconnect(id2);
   });
 
   return (
     <For each={monitors}>
       {(monitor) => (
         <window
-          $={(self) => onCleanup(() => self.destroy())}
-          cssClasses={["notification-popups"]}
           namespace="notification-popups"
-          name={`notification-popups-${monitor.connector}`}
           gdkmonitor={monitor}
           visible={notifications((ns) => ns.length > 0)}
-          exclusivity={Astal.Exclusivity.NORMAL}
           anchor={Astal.WindowAnchor.TOP | Astal.WindowAnchor.RIGHT}
           application={app}
+          layer={Astal.Layer.OVERLAY}
         >
-          <box orientation={Gtk.Orientation.VERTICAL}>
+          <box
+            orientation={Gtk.Orientation.VERTICAL}
+            spacing={10}
+            cssClasses={["popups-container"]}
+          >
             <For each={notifications}>
-              {(notification) => <Notification notification={notification} />}
+              {(n) => (
+                <Notification
+                  notification={n}
+                  onClose={() =>
+                    setNotifications((ns) => ns.filter((i) => i.id !== n.id))
+                  }
+                />
+              )}
             </For>
           </box>
         </window>
