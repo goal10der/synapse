@@ -5,7 +5,6 @@ import { createPoll } from "ags/time";
 
 export default function Clock({
   format = "%I:%M %p %m/%d",
-  gdkmonitor,
 }: {
   format?: string;
   gdkmonitor: Gdk.Monitor;

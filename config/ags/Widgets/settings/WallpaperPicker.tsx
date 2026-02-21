@@ -48,12 +48,21 @@ export default function WallpaperPicker() {
   let monitorSignalId: number | null = null;
 
   const applyWallpaper = (path: string) => {
+    const name = path.split("/").pop() ?? "wallpaper";
     const cmd = `bash -c 'awww img "${path}" -t wipe --transition-duration 3 --transition-bezier .17,.67,.48,1.01 --transition-fps 60 && matugen image --type ${matugenState.currentTonalSpot} "${path}"'`;
     execAsync(cmd)
-      .then(() =>
-        console.log(`Wallpaper applied with ${matugenState.currentTonalSpot}`),
-      )
-      .catch(console.error);
+      .then(() => {
+        console.log(`Wallpaper applied with ${matugenState.currentTonalSpot}`);
+        GLib.spawn_command_line_async(
+          `notify-send "Wallpaper Changed" "${name}" -i "${path}" -t 3000`,
+        );
+      })
+      .catch((err) => {
+        console.error(err);
+        GLib.spawn_command_line_async(
+          `notify-send "Wallpaper Error" "Failed to apply wallpaper" -i dialog-error-symbolic -t 3000`,
+        );
+      });
   };
 
   const createWallpaperButton = (path: string): Gtk.Button => {

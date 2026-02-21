@@ -1,22 +1,156 @@
 @import url("file:///home/tim/.cache/matugen/colors.css");
 
-/* === RESET & GLOBAL === */
+/* =============================================================================
+   SHARED HOVER PATTERNS
+   Selectors that produce identical output are grouped here once instead of
+   being repeated throughout the file.
+   ============================================================================= */
+
+/* Primary fill: bg + border + text → primary colours */
+.clock:hover image,
+#settings-button:hover,
+#notification-button:hover,
+.notification-button:hover,
+.battery button:hover,
+.audio-output button:hover,
+.tray-item button:hover,
+.wireless button:hover,
+.bar-button:hover,
+.tonal-dropdown:hover,
+dropdown:hover,
+combobox:hover,
+button:hover,
+#app-item:hover,
+#app-item:focus,
+.sidebar-tab:hover,
+.sidebar-tab.active,
+.network-item:hover,
+.bt-row:hover,
+.power-profile-button:hover,
+.power-profile-button.active,
+.cal-today-btn:hover,
+.cal-open-day-btn:hover,
+.control-button:hover {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: var(--on_primary);
+}
+
+/* on_primary text for child elements inside primary-filled containers */
+.clock:hover image,
+#settings-button:hover image,
+#notification-button:hover image,
+.notification-button:hover image,
+.battery button:hover image,
+.audio-output button:hover image,
+.tray-item button:hover image,
+.wireless button:hover image,
+.tonal-dropdown:hover label,
+.tonal-dropdown:hover arrow,
+dropdown:hover label,
+dropdown:hover arrow,
+combobox:hover label,
+combobox:hover arrow,
+button:hover label,
+button:hover image,
+popover listview row:hover modelbutton,
+popover listview row:selected modelbutton,
+popover listview row:checked modelbutton,
+popover listview row:hover label,
+popover listview row:selected label,
+popover listview row:checked label,
+popover listview row:hover image,
+popover listview row:selected image,
+popover listview row:checked image,
+#app-item:hover label,
+#app-item:focus label,
+#app-item:hover image,
+#app-item:focus image,
+.sidebar-tab:hover image,
+.sidebar-tab.active image,
+.network-item:hover label,
+.network-item:hover image,
+.bt-row:hover .bt-device-name,
+.bt-row:hover image,
+.bt-row:hover .bt-icon-btn image,
+.notification-item:hover label,
+.notification-item:hover .notification-body,
+.notification-item:hover .notification-app,
+.qs-tile:hover label,
+.qs-tile:hover image,
+.control-button:hover label,
+.control-button.play-pause:hover label,
+.cal-today-btn:hover label,
+.cal-open-day-btn:hover label {
+  color: var(--on_primary);
+}
+
+/* qs-tile + play-pause: only bg+border fill (text handled by :hover label above) */
+.qs-tile:hover,
+.control-button.play-pause:hover {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Error fill: bg + border + text → error colours */
+.danger-button:hover,
+.settings-close-btn:hover,
+.notification-center .clear-all:hover,
+.dismiss-button:hover,
+.notification-popup-close:hover,
+.sidebar-close-btn:hover,
+.clear-all:hover,
+.cal-dlg-danger:hover {
+  background-color: var(--error);
+  border-color: var(--error);
+  color: var(--on_error);
+}
+
+.bt-danger:hover image,
+.clear-all:hover label {
+  color: var(--on_error);
+}
+
+/* primary_container fill on hover */
+.cal-nav-btn:hover,
+.cal-dlg-save:hover,
+.cal-browse-btn:hover {
+  background: var(--primary_container);
+  border-color: var(--primary);
+  color: var(--on_primary_container);
+}
+
+/* surface_container_high on hover */
+.back-button:hover,
+.cal-cell:hover,
+.cal-icon-btn:hover {
+  background: var(--surface_container_high);
+}
+
+/* surface_container + primary border on hover */
+.cal-ev-row:hover,
+.dv-ev-card:hover {
+  background: var(--surface_container);
+  border-color: var(--primary);
+}
+
+/* surface_container_low on hover */
+.cal-ev-chip:hover,
+.dv-slot:hover {
+  background: var(--surface_container_low);
+}
+
+/* =============================================================================
+   GLOBAL
+   ============================================================================= */
+
 window,
 #sidebar,
 #launcher,
 .notification-popups {
   background-color: transparent;
 }
-.notification-popup {
-  background-color: var(--surface);
-  border: 1.5px solid var(--primary);
-  border-radius: 12px;
-  padding: 12px;
-  color: var(--on_surface);
-  margin: 8px;
-  min-width: 380px;
-  transition: all 0.2s ease;
-}
+
 * {
   font-family: "JetBrains";
   font-size: 13px;
@@ -27,15 +161,15 @@ image {
   color: var(--primary);
 }
 
-/* === BAR === */
+/* =============================================================================
+   BAR
+   ============================================================================= */
+
 .bar {
   background-color: transparent;
   padding: 0;
-  margin-top: 0px;
 }
-.bar-button-image {
-  color: var(--primary);
-}
+
 .clock,
 #settings-button,
 #notification-button,
@@ -86,37 +220,10 @@ image {
   padding-right: 5px;
 }
 
-.clock:hover image,
-#settings-button:hover,
-#notification-button:hover,
-.notification-button:hover,
-.battery button:hover,
-.audio-output button:hover,
-.tray-item button:hover,
-.wireless button:hover,
-.bar-button:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--on_primary);
-}
+/* =============================================================================
+   WORKSPACES
+   ============================================================================= */
 
-.clock:hover image,
-#settings-button:hover image,
-#notification-button:hover image,
-.notification-button:hover image,
-.battery button:hover image,
-.audio-output button:hover image,
-.tray-item button:hover image,
-.wireless button:hover image {
-  color: var(--on_primary);
-}
-
-#notification-button image,
-.notification-button image {
-  color: var(--primary);
-}
-
-/* === WORKSPACES === */
 .workspaces-container {
   min-height: 24px;
 }
@@ -137,19 +244,41 @@ image {
   opacity: 1;
 }
 
-/* === VOLUME POPUP === */
-.VolumePopup .container {
-  background-color: var(--surface);
-  border: 1.5px solid var(--primary);
-  border-radius: 20px;
-  padding: 16px 24px;
-  margin-bottom: 48px;
+/* =============================================================================
+   FORM ELEMENTS
+   ============================================================================= */
+
+entry {
+  background-color: var(--surface_container_highest);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: var(--on_surface);
+  caret-color: var(--primary);
 }
 
-.VolumePopup image {
-  color: var(--primary);
-  -gtk-icon-size: 20px;
-  margin-right: 12px;
+entry:focus {
+  border-color: var(--primary);
+}
+
+scale trough {
+  background-color: var(--surface_container_highest);
+  border-radius: 10px;
+  min-height: 8px;
+}
+
+scale highlight {
+  background-color: var(--primary);
+  border-radius: 10px;
+}
+
+scale slider {
+  background-color: var(--surface_container_highest);
+  border: 2px solid var(--primary);
+  border-radius: 100%;
+  min-width: 16px;
+  min-height: 16px;
+  margin: -4px;
 }
 
 levelbar {
@@ -174,7 +303,274 @@ levelbar block.empty {
   background-color: transparent;
 }
 
-/* === SETTINGS WINDOW === */
+switch {
+  border-radius: 20px;
+  outline: none;
+}
+
+switch:checked {
+  background-color: var(--primary);
+}
+
+.tonal-dropdown,
+dropdown,
+combobox {
+  background: var(--surface_container);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 8px;
+  padding: 0;
+  min-height: 20px;
+  color: var(--primary);
+  font-size: 11px;
+  transition: all 0.2s ease;
+}
+
+.tonal-dropdown label,
+dropdown label,
+combobox label {
+  color: var(--primary);
+  font-size: 11px;
+}
+
+.tonal-dropdown > button,
+dropdown > button,
+combobox > button {
+  background: transparent;
+  border: none;
+  padding: 0 6px;
+  min-height: 20px;
+  color: var(--primary);
+  box-shadow: none;
+}
+
+.tonal-dropdown arrow,
+dropdown arrow,
+combobox arrow {
+  color: var(--primary);
+  -gtk-icon-size: 10px;
+}
+
+/* =============================================================================
+   BUTTONS
+   ============================================================================= */
+
+button,
+button.flat,
+.primary-button,
+.secondary-button,
+.icon-button {
+  background: var(--surface_container_low);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--primary);
+  box-shadow: none;
+  text-shadow: none;
+  transition: all 0.2s ease;
+}
+
+button label,
+button image {
+  color: var(--on_surface);
+}
+
+.danger-button {
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 8px;
+  color: var(--error);
+  transition: all 0.2s ease;
+}
+
+/* =============================================================================
+   SCROLLBAR
+   ============================================================================= */
+
+scrollbar {
+  background: transparent;
+}
+
+scrollbar slider {
+  background: var(--outline_variant);
+  border-radius: 20px;
+  min-width: 4px;
+  min-height: 20px;
+  margin: 2px;
+}
+
+scrollbar slider:hover {
+  background-color: var(--primary);
+}
+
+/* =============================================================================
+   SPINNER
+   ============================================================================= */
+
+spinner {
+  color: var(--primary);
+  margin-right: 8px;
+  -gtk-icon-size: 16px;
+}
+
+/* =============================================================================
+   POPOVERS
+   ============================================================================= */
+
+popover > contents {
+  background-color: var(--surface);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+popover slider {
+  margin: 10px;
+}
+
+.popover-box {
+  padding: 12px;
+  min-width: 200px;
+}
+
+.popover-box .title {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+
+.power-profile-button {
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 12px;
+  color: var(--on_surface);
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
+}
+
+.power-profile-button.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on_primary);
+}
+
+popover listview {
+  background-color: var(--surface_container);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 12px;
+  padding: 8px;
+}
+
+popover listview row {
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  margin: 6px 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+popover listview row modelbutton {
+  background: transparent;
+  border-radius: 9px;
+  padding: 0 12px;
+  min-height: 40px;
+  color: var(--on_surface);
+}
+
+popover listview row:hover,
+popover listview row:selected,
+popover listview row:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+  transform: translateX(4px);
+}
+
+popover listview row label {
+  font-weight: 600;
+  text-shadow: none;
+}
+
+popover listview row image.selection-mode {
+  padding-left: 8px;
+}
+
+/* =============================================================================
+   VOLUME POPUP
+   ============================================================================= */
+
+.VolumePopup .container {
+  background-color: var(--surface);
+  border: 1.5px solid var(--primary);
+  border-radius: 20px;
+  padding: 16px 24px;
+  margin-bottom: 48px;
+}
+
+.VolumePopup image {
+  color: var(--primary);
+  -gtk-icon-size: 20px;
+  margin-right: 12px;
+}
+
+/* =============================================================================
+   LAUNCHER
+   ============================================================================= */
+
+#launcher-content {
+  background-color: var(--surface);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 50px;
+  min-width: 500px;
+}
+
+#search-entry {
+  background-color: var(--surface_container_high);
+  border: 1.5px solid var(--outline);
+  border-radius: 10px;
+  padding: 12px 15px;
+  color: var(--on_surface);
+  font-size: 14px;
+}
+
+#results-container {
+  margin-top: 8px;
+}
+
+#results-container separator {
+  background-color: transparent;
+  min-height: 0;
+  margin: 0;
+}
+
+#app-item {
+  background-color: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 12px;
+  color: var(--on_surface);
+  transition: all 0.2s ease;
+}
+
+#app-item label {
+  font-weight: 500;
+  color: var(--primary);
+}
+
+#app-item image {
+  -gtk-icon-size: 32px;
+  margin-right: 12px;
+  color: var(--primary);
+}
+
+/* =============================================================================
+   SETTINGS WINDOW
+   ============================================================================= */
+
 .SettingsWindow {
   background-color: transparent;
 }
@@ -210,25 +606,8 @@ levelbar block.empty {
   transition: all 0.2s ease;
 }
 
-.sidebar-tab:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--on_primary);
-}
-
-.sidebar-tab:hover image,
 .sidebar-tab.active {
-  color: var(--on_primary);
-}
-
-.sidebar-tab.active {
-  background-color: var(--primary);
-  border-color: var(--primary);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.sidebar-tab.active image {
-  color: var(--on_primary);
 }
 
 .settings-main-content {
@@ -282,311 +661,10 @@ levelbar block.empty {
   transition: all 0.2s ease;
 }
 
-.settings-close-btn:hover {
-  background-color: var(--error);
-  border-color: var(--error);
-  color: var(--on_error);
-}
+/* =============================================================================
+   NETWORK & BLUETOOTH
+   ============================================================================= */
 
-/* === LAUNCHER === */
-#launcher-content {
-  background-color: var(--surface);
-  border: 1.5px solid var(--outline_variant);
-  border-radius: 16px;
-  padding: 16px;
-  margin-top: 50px;
-  min-width: 500px;
-}
-
-#search-entry {
-  background-color: var(--surface_container_high);
-  border: 1.5px solid var(--outline);
-  border-radius: 10px;
-  padding: 12px 15px;
-  color: var(--on_surface);
-  font-size: 14px;
-}
-
-#results-container {
-  margin-top: 8px;
-}
-
-#results-container separator {
-  background-color: transparent;
-  min-height: 0;
-  margin: 0;
-}
-
-#app-item {
-  background-color: transparent;
-  border: 1.5px solid transparent;
-  border-radius: 10px;
-  padding: 12px;
-  color: var(--on_surface);
-  transition: all 0.2s ease;
-}
-
-#app-item:hover,
-#app-item:focus {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--on_primary);
-}
-
-#app-item:hover label,
-#app-item:focus label,
-#app-item:hover image,
-#app-item:focus image {
-  color: var(--on_primary);
-}
-
-#app-item label {
-  font-weight: 500;
-  color: var(--primary);
-}
-
-#app-item image {
-  -gtk-icon-size: 32px;
-  margin-right: 12px;
-  color: var(--primary);
-}
-
-/* === FORM ELEMENTS === */
-.tonal-dropdown,
-dropdown,
-combobox {
-  background: var(--surface_container);
-  border: 1.5px solid var(--outline_variant);
-  border-radius: 8px;
-  padding: 0;
-  min-height: 20px;
-  color: var(--primary);
-  font-size: 11px;
-  transition: all 0.2s ease;
-}
-
-.tonal-dropdown:hover,
-dropdown:hover,
-combobox:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--on_primary);
-}
-
-.tonal-dropdown:hover label,
-.tonal-dropdown:hover arrow,
-dropdown:hover label,
-dropdown:hover arrow,
-combobox:hover label,
-combobox:hover arrow {
-  color: var(--on_primary);
-}
-
-.tonal-dropdown label,
-dropdown label,
-combobox label {
-  color: var(--primary);
-  font-size: 11px;
-}
-
-.tonal-dropdown > button,
-dropdown > button,
-combobox > button {
-  background: transparent;
-  border: none;
-  padding: 0 6px;
-  min-height: 20px;
-  color: var(--primary);
-  box-shadow: none;
-}
-
-.tonal-dropdown arrow,
-dropdown arrow,
-combobox arrow {
-  color: var(--primary);
-  -gtk-icon-size: 10px;
-}
-
-scale trough {
-  background-color: var(--surface_container_highest);
-  border-radius: 10px;
-  min-height: 8px;
-}
-
-scale highlight {
-  background-color: var(--primary);
-  border-radius: 10px;
-}
-
-scale slider {
-  background-color: var(--surface_container_highest);
-  border: 2px solid var(--primary);
-  border-radius: 100%;
-  min-width: 16px;
-  min-height: 16px;
-  margin: -4px;
-}
-
-entry {
-  background-color: var(--surface_container_highest);
-  border: 1.5px solid var(--outline_variant);
-  border-radius: 10px;
-  padding: 8px 12px;
-  color: var(--on_surface);
-  caret-color: var(--primary);
-}
-
-entry:focus {
-  border-color: var(--primary);
-}
-
-/* === BUTTONS === */
-button,
-button.flat,
-.primary-button,
-.secondary-button,
-.icon-button {
-  background: var(--surface_container_low);
-  border: 1.5px solid var(--outline_variant);
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: var(--primary);
-  box-shadow: none;
-  text-shadow: none;
-  transition: all 0.2s ease;
-}
-
-button label,
-button image {
-  color: var(--on_surface);
-}
-
-button:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--on_primary);
-}
-
-button:hover label,
-button:hover image {
-  color: var(--on_primary);
-}
-
-.danger-button {
-  background: transparent;
-  border: 1.5px solid transparent;
-  border-radius: 8px;
-  padding: 8px;
-  color: var(--error);
-  transition: all 0.2s ease;
-}
-
-.danger-button:hover {
-  background-color: var(--error);
-  border-color: var(--error);
-  color: var(--on_error);
-}
-
-/* === POPOVERS === */
-popover > contents {
-  background-color: var(--surface);
-  border: 1.5px solid var(--outline_variant);
-  border-radius: 16px;
-  padding: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}
-
-popover slider {
-  margin: 10px;
-}
-
-.popover-box {
-  padding: 12px;
-  min-width: 200px;
-}
-
-.popover-box .title {
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--primary);
-  margin-bottom: 8px;
-}
-
-.power-profile-button {
-  background: transparent;
-  border: 1.5px solid transparent;
-  border-radius: 8px;
-  padding: 12px;
-  color: var(--on_surface);
-  margin-bottom: 4px;
-  transition: all 0.2s ease;
-}
-
-.power-profile-button:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--on_primary);
-}
-
-.power-profile-button.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--on_primary);
-}
-
-popover listview {
-  background-color: var(--surface_container);
-  border: 1.5px solid var(--outline_variant);
-  border-radius: 12px;
-  padding: 8px;
-}
-
-popover listview row {
-  background: transparent;
-  border: 1.5px solid transparent;
-  border-radius: 10px;
-  margin: 6px 0;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-popover listview row modelbutton {
-  background: transparent;
-  border-radius: 9px;
-  padding: 0 12px;
-  min-height: 40px;
-  color: var(--on_surface);
-}
-
-popover listview row:hover,
-popover listview row:selected,
-popover listview row:checked {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  transform: translateX(4px);
-}
-
-popover listview row:hover modelbutton,
-popover listview row:selected modelbutton,
-popover listview row:checked modelbutton,
-popover listview row:hover label,
-popover listview row:selected label,
-popover listview row:checked label,
-popover listview row:hover image,
-popover listview row:selected image,
-popover listview row:checked image {
-  color: var(--on_primary);
-}
-
-popover listview row label {
-  font-weight: 600;
-  text-shadow: none;
-}
-
-popover listview row image.selection-mode {
-  padding-left: 8px;
-}
-
-/* === NETWORK === */
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -606,20 +684,6 @@ popover listview row image.selection-mode {
   color: var(--on_surface);
   margin-bottom: 4px;
   transition: all 0.2s ease;
-}
-
-.network-item:hover,
-.bt-row:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--on_primary);
-}
-
-.network-item:hover label,
-.network-item:hover image,
-.bt-row:hover .bt-device-name,
-.bt-row:hover image {
-  color: var(--on_primary);
 }
 
 .network-item.connected,
@@ -647,7 +711,6 @@ popover listview row image.selection-mode {
   margin-right: 8px;
 }
 
-/* === BLUETOOTH === */
 .bt-connect-btn {
   background: var(--surface_container_highest);
   border: 1.5px solid var(--outline);
@@ -668,10 +731,6 @@ popover listview row image.selection-mode {
   color: var(--primary);
 }
 
-.bt-connect-btn:hover label {
-  color: var(--primary);
-}
-
 .bt-row.bt-connected .bt-connect-btn {
   background-color: var(--primary);
   border-color: var(--primary);
@@ -688,11 +747,6 @@ popover listview row image.selection-mode {
   padding: 4px;
 }
 
-.bt-icon-btn image {
-  color: var(--primary);
-  -gtk-icon-size: 16px;
-}
-
 .bt-row:hover .bt-icon-btn image {
   color: var(--on_primary);
 }
@@ -702,11 +756,10 @@ popover listview row image.selection-mode {
   border-color: var(--error);
 }
 
-.bt-danger:hover image {
-  color: var(--on_error);
-}
+/* =============================================================================
+   WALLPAPER
+   ============================================================================= */
 
-/* === WALLPAPER === */
 .wallpaper-grid {
   padding: 12px;
   min-height: 400px;
@@ -732,31 +785,30 @@ popover listview row image.selection-mode {
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* === SCROLLBAR === */
-scrollbar {
-  background: transparent;
+/* =============================================================================
+   NOTIFICATIONS
+   ============================================================================= */
+
+.notification-popup {
+  background-color: var(--surface);
+  border: 1.5px solid var(--primary);
+  border-radius: 12px;
+  padding: 12px;
+  color: var(--on_surface);
+  margin: 8px;
+  min-width: 380px;
+  transition: all 0.2s ease;
 }
 
-scrollbar slider {
-  background: var(--outline_variant);
-  border-radius: 20px;
-  min-width: 4px;
-  min-height: 20px;
-  margin: 2px;
+.notification-popup:hover {
+  background-color: var(--surface_container_high);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
-scrollbar slider:hover {
-  background-color: var(--primary);
+.notification-popup-header {
+  margin-bottom: 6px;
 }
 
-/* === SPINNER === */
-spinner {
-  color: var(--primary);
-  margin-right: 8px;
-  -gtk-icon-size: 16px;
-}
-
-/* === NOTIFICATIONS === */
 .notification-center {
   background-color: transparent;
 }
@@ -793,12 +845,6 @@ spinner {
   transition: all 0.2s ease;
 }
 
-.notification-center .clear-all:hover {
-  background-color: var(--error);
-  border-color: var(--error);
-  color: var(--on_error);
-}
-
 .notification-list {
   min-height: 200px;
 }
@@ -818,12 +864,6 @@ spinner {
   border-color: var(--primary);
   color: var(--on_primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.notification-item:hover label,
-.notification-item:hover .notification-body,
-.notification-item:hover .notification-app {
-  color: var(--on_primary);
 }
 
 .notification-summary,
@@ -863,13 +903,6 @@ spinner {
   transition: all 0.2s ease;
 }
 
-.dismiss-button:hover,
-.notification-popup-close:hover {
-  background-color: var(--error);
-  border-color: var(--error);
-  color: var(--on_error);
-}
-
 .no-notifications {
   padding: 60px 20px;
 }
@@ -880,28 +913,40 @@ spinner {
   color: var(--on_surface_variant);
 }
 
-/* === NOTIFICATION POPUPS === */
-.notification-popup {
-  background-color: var(--surface);
-  border: 1.5px solid var(--primary);
-  border-radius: 12px;
-  padding: 12px;
-  color: var(--on_surface);
-  margin: 8px;
-  min-width: 350px;
-  transition: all 0.2s ease;
+.notification-image-wrapper {
+  border-radius: 9999px;
+  min-width: 48px;
+  min-height: 48px;
+  background-color: var(--surface_container);
+  border: 1px solid var(--outline_variant);
+  padding: 0;
 }
 
-.notification-popup:hover {
-  background-color: var(--surface_container_high);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+.notification-image-wrapper picture {
+  border-radius: 100%;
+  min-width: 48px;
+  min-height: 48px;
 }
 
-.notification-popup-header {
-  margin-bottom: 6px;
+.notification-popup-image-wrapper {
+  border-radius: 100%;
+  min-width: 44px;
+  min-height: 44px;
+  background-color: var(--surface_container);
+  border: 1px solid var(--outline_variant);
+  padding: 0;
 }
 
-/* === SIDEBAR === */
+.notification-popup-image-wrapper picture {
+  border-radius: 100%;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* =============================================================================
+   SIDEBAR
+   ============================================================================= */
+
 .sidebar {
   background-color: transparent;
 }
@@ -941,12 +986,6 @@ spinner {
   transition: all 0.2s ease;
 }
 
-.sidebar-close-btn:hover {
-  background-color: var(--error);
-  border-color: var(--error);
-  color: var(--on_error);
-}
-
 .sidebar-content {
   padding: 12px 8px;
 }
@@ -955,23 +994,12 @@ spinner {
   padding-right: 8px;
 }
 
-/* === QUICK SETTINGS === */
 .qs-tile {
   background-color: var(--surface_container_low);
   border: 1.5px solid var(--outline_variant);
   border-radius: 16px;
   padding: 20px;
   transition: all 0.2s ease;
-}
-
-.qs-tile:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-}
-
-.qs-tile:hover label,
-.qs-tile:hover image {
-  color: var(--on_primary);
 }
 
 .sliders-container {
@@ -981,57 +1009,48 @@ spinner {
   padding: 20px;
 }
 
-/* === MISC === */
-.menu-item {
-  background-color: transparent;
-  padding: 10px;
-  border-radius: 10px;
-  transition: all 0.2s ease;
+.notification-section {
+  margin-bottom: 2px;
 }
 
-.menu-item:hover {
-  background-color: var(--surface_container_high);
+.notification-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on_surface);
 }
 
-.back-btn {
-  border-radius: 50%;
-  padding: 8px;
+.clear-all {
+  background: transparent;
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 6px;
+  padding: 2px 8px;
+  min-height: 22px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--on_surface_variant);
+  transition: all 0.15s ease;
 }
 
-.power-button {
-  background-color: var(--error_container);
-  border: 1.5px solid var(--error);
-  border-radius: 16px;
-  padding: 14px;
-  color: var(--on_error_container);
+.qs-slider-container {
+  background: var(--surface_container_low);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 12px;
+  padding: 10px 14px;
 }
 
-.power-button:hover {
-  background-color: var(--error);
-  color: var(--on_error);
-}
-
-switch {
-  border-radius: 20px;
-  outline: none;
-}
-
-switch:checked {
-  background-color: var(--primary);
-}
-
-.powermenu-toggle {
-  background: rgba(255, 255, 255, 0.05);
+.back-button {
+  background: transparent;
+  border: 1.5px solid var(--outline_variant);
   border-radius: 8px;
   padding: 6px 10px;
+  color: var(--on_surface);
+  transition: all 0.15s ease;
 }
 
-.powermenu-toggle:hover {
-  background: #e54b4b;
-  color: white;
-}
+/* =============================================================================
+   POWER MENU
+   ============================================================================= */
 
-/* === POWER MENU === */
 .powermenu-fullscreen-bg {
   background-color: rgba(0, 0, 0, 0.85);
 }
@@ -1108,126 +1127,34 @@ switch:checked {
   color: var(--on_error_container);
 }
 
-.powermenu-card:active {
-  transform: scale(0.95);
-}
-/* Drop zone styling */
-.drop-zone {
-  min-width: 60px;
-  min-height: 24px;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
+.powermenu-toggle {
   background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 6px 10px;
 }
 
-.drop-zone-active {
-  border-color: #9d9d9d;
-  background: rgba(60, 60, 60, 0.1);
-}
-
-.drop-zone-label {
-  font-size: 10px;
-  opacity: 0.6;
-  padding: 0 8px;
-}
-/* Drag icon styling */
-.drag-icon {
-  background: rgba(0, 0, 0, 0.8);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
-  padding: 4px 12px;
-  min-height: 24px;
-}
-
-.drag-label {
+.powermenu-toggle:hover {
+  background: #e54b4b;
   color: white;
-  font-weight: bold;
-  font-size: 12px;
 }
 
-/* Widget being dragged */
-.draggable-widget.dragging {
-  opacity: 0.5;
+.power-button {
+  background-color: var(--error_container);
+  border: 1.5px solid var(--error);
+  border-radius: 16px;
+  padding: 14px;
+  color: var(--on_error_container);
 }
 
-/* Existing styles */
-.bar-edit-mode {
-  background: rgba(0, 0, 0, 0.2);
-  padding: 0px 0px;
+.power-button:hover {
+  background-color: var(--error);
+  color: var(--on_error);
 }
 
-.draggable-widget.edit-mode {
-  border: 2px dashed transparent;
-  border-radius: 4px;
-  transition: all 200ms;
-}
+/* =============================================================================
+   MUSIC POPUP
+   ============================================================================= */
 
-.draggable-widget.edit-mode:hover {
-  border-color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.draggable-widget.drop-before {
-  border-left-color: #ffffff;
-  border-left-style: solid;
-  border-left-width: 3px;
-}
-
-.draggable-widget.drop-after {
-  border-right-color: #ffffff;
-  border-right-style: solid;
-  border-right-width: 3px;
-}
-
-/* Drop zone styling */
-.drop-zone {
-  min-width: 80px;
-  min-height: 24px;
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.drop-zone-active {
-  border-color: #ffffff;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.drop-zone-label {
-  font-size: 10px;
-  opacity: 0.6;
-  padding: 0 8px;
-}
-.notification-image-wrapper {
-  border-radius: 9999px;
-  min-width: 48px;
-  min-height: 48px;
-  background-color: var(--surface_container);
-  border: 1px solid var(--outline_variant);
-  padding: 0;
-}
-
-.notification-image-wrapper picture {
-  border-radius: 100%;
-  min-width: 48px;
-  min-height: 48px;
-}
-
-.notification-popup-image-wrapper {
-  border-radius: 100%;
-  min-width: 44px;
-  min-height: 44px;
-  background-color: var(--surface_container);
-  border: 1px solid var(--outline_variant);
-  padding: 0;
-}
-
-.notification-popup-image-wrapper picture {
-  border-radius: 100%;
-  min-width: 44px;
-  min-height: 44px;
-}
-/* === MUSIC POPUP === */
 .music-popup-window {
   background-color: transparent;
 }
@@ -1277,16 +1204,7 @@ switch:checked {
   transition: all 200ms ease;
 }
 
-.control-button:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--on_primary);
-}
-
-.control-button:hover label {
-  color: var(--on_primary);
-}
-
+.powermenu-card:active,
 .control-button:active {
   transform: scale(0.95);
 }
@@ -1303,11 +1221,509 @@ switch:checked {
   color: var(--on_primary_container);
 }
 
-.control-button.play-pause:hover {
-  background-color: var(--primary);
-  border-color: var(--primary);
+/* =============================================================================
+   DRAG & DROP
+   ============================================================================= */
+
+.bar-edit-mode {
+  background: rgba(0, 0, 0, 0.2);
 }
 
-.control-button.play-pause:hover label {
+.draggable-widget.dragging {
+  opacity: 0.5;
+}
+
+.draggable-widget.edit-mode {
+  border: 2px dashed transparent;
+  border-radius: 4px;
+  transition: all 200ms;
+}
+
+.draggable-widget.edit-mode:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.draggable-widget.drop-before {
+  border-left: 3px solid #ffffff;
+}
+
+.draggable-widget.drop-after {
+  border-right: 3px solid #ffffff;
+}
+
+.drop-zone {
+  min-width: 80px;
+  min-height: 24px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.drop-zone-active {
+  border-color: #ffffff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.drop-zone-label {
+  font-size: 10px;
+  opacity: 0.6;
+  padding: 0 8px;
+}
+
+.drag-icon {
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  padding: 4px 12px;
+  min-height: 24px;
+}
+
+.drag-label {
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* =============================================================================
+   MISC
+   ============================================================================= */
+
+.menu-item {
+  background-color: transparent;
+  padding: 10px;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background-color: var(--surface_container_high);
+}
+
+.back-btn {
+  border-radius: 50%;
+  padding: 8px;
+}
+
+/* =============================================================================
+   CALENDAR WIDGET
+   ============================================================================= */
+
+.cal-widget {
+  padding: 4px 0 8px 0;
+}
+
+.cal-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.cal-nav {
+  margin-bottom: 4px;
+}
+
+.cal-month-lbl {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--on_surface);
+}
+
+.cal-nav-btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 4px;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 6px;
+  color: var(--primary);
+}
+
+.cal-nav-btn image {
+  color: var(--primary);
+  -gtk-icon-size: 14px;
+}
+
+/* .cal-today-btn and .cal-open-day-btn share the same base shape */
+.cal-today-btn,
+.cal-open-day-btn {
+  background: transparent;
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 6px;
+  padding: 2px 8px;
+  min-height: 22px;
+  font-size: 11px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.bar-button-image,
+#notification-button image,
+.notification-button image,
+.bt-connect-btn:hover label,
+.cal-open-day-btn {
+  color: var(--primary);
+}
+
+.cal-today-btn {
+  color: var(--on_surface_variant);
+}
+
+.cal-dow-row {
+  margin-bottom: 2px;
+}
+
+.cal-dow {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--on_surface_variant);
+  opacity: 0.6;
+  text-transform: uppercase;
+  min-width: 32px;
+  padding: 2px 0;
+}
+
+.cal-grid {
+  margin-bottom: 4px;
+}
+
+.cal-cell,
+.cal-cell-blank {
+  min-width: 32px;
+  min-height: 34px;
+}
+
+.cal-cell {
+  border-radius: 8px;
+  padding: 2px 4px;
+  transition: background 0.12s ease;
+}
+
+.cal-day-num {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--on_surface);
+  min-width: 24px;
+}
+
+.cal-today {
+  background: var(--surface_container_high);
+  border: 1.5px solid var(--primary);
+}
+
+.cal-today .cal-day-num {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.cal-sel,
+.cal-sel:hover {
+  background: var(--primary);
+}
+
+.cal-sel .cal-day-num {
   color: var(--on_primary);
+  font-weight: 700;
+}
+
+.cal-event-list {
+  margin-top: 2px;
+}
+
+.cal-day-heading {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  margin-bottom: 2px;
+}
+
+.cal-ev-row {
+  background: var(--surface_container_low);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 10px;
+  padding: 8px 10px;
+  transition: background 0.15s ease;
+}
+
+/* Shared text styles across mini-list and day view */
+.cal-ev-title,
+.dv-ev-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--on_surface);
+}
+
+.cal-ev-desc,
+.dv-ev-desc {
+  font-size: 11px;
+  color: var(--on_surface_variant);
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.cal-ev-meta {
+  font-size: 11px;
+  color: var(--on_surface_variant);
+  opacity: 0.75;
+}
+
+.cal-empty {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--on_surface_variant);
+  opacity: 0.6;
+  padding: 4px 0;
+}
+
+.cal-ev-chip {
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background 0.1s ease;
+}
+
+.cal-ev-chip-label {
+  font-size: 12px;
+  color: var(--on_surface);
+}
+
+.cal-sub-header {
+  margin-top: 6px;
+}
+
+.cal-sub-row {
+  background: var(--surface_container_low);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 4px;
+}
+
+.cal-sub-row:hover {
+  background: var(--surface_container);
+}
+
+.cal-icon-btn {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 4px;
+  border-radius: 6px;
+  min-width: 24px;
+  min-height: 24px;
+  color: var(--primary);
+}
+
+.cal-icon-btn image {
+  color: var(--primary);
+  -gtk-icon-size: 14px;
+}
+
+.cal-icon-btn:hover {
+  border-color: transparent;
+}
+
+.cal-danger:hover {
+  background: var(--error_container);
+  border-color: transparent;
+}
+
+.cal-danger:hover image {
+  color: var(--error);
+}
+
+.cal-dialog {
+  background: var(--surface);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 16px;
+}
+
+.cal-dlg-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--on_surface_variant);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-top: 4px;
+}
+
+.cal-dlg-save {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on_primary);
+  font-weight: 700;
+}
+
+.cal-dlg-save label {
+  color: var(--on_primary);
+}
+
+.cal-dlg-danger {
+  background: transparent;
+  border: 1.5px solid var(--error);
+  color: var(--error);
+}
+
+.cal-dlg-status {
+  font-size: 11px;
+  color: var(--on_surface_variant);
+  font-style: italic;
+}
+
+.cal-tab-row {
+  background: var(--surface_container_high);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.cal-tab {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-radius: 6px;
+  padding: 5px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on_surface_variant);
+  transition: all 0.15s ease;
+}
+
+.cal-tab label {
+  color: inherit;
+}
+
+.cal-tab:hover {
+  background: var(--surface_container_highest);
+  border-color: transparent;
+  color: var(--on_surface);
+}
+
+.cal-tab.cal-tab-active,
+.cal-tab.cal-tab-active:hover {
+  background: var(--surface);
+  border-color: transparent;
+  color: var(--primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.cal-browse-btn {
+  background: var(--surface_container_high);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--on_surface);
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+/* =============================================================================
+   DAY VIEW
+   ============================================================================= */
+
+.dv-root {
+  background: var(--surface);
+}
+
+.dv-header {
+  padding: 14px 16px 10px 16px;
+  border-bottom: 1.5px solid var(--outline_variant);
+}
+
+.dv-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.dv-allday-strip {
+  padding: 8px 16px;
+  background: var(--surface_container_low);
+}
+
+.dv-allday-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--on_surface_variant);
+  opacity: 0.7;
+  margin-bottom: 2px;
+}
+
+.dv-allday-row {
+  padding: 4px 0;
+}
+
+.dv-allday-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--on_surface);
+}
+
+.dv-hour-grid {
+  padding: 0 0 16px 0;
+}
+
+.dv-slot {
+  min-height: 48px;
+  padding: 4px 0;
+  transition: background 0.1s ease;
+}
+
+.dv-slot-now {
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+}
+
+.dv-slot-now:hover {
+  background: color-mix(in srgb, var(--primary) 14%, transparent);
+}
+
+.dv-time-lbl {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--on_surface_variant);
+  opacity: 0.6;
+  padding: 4px 8px 0 12px;
+  min-width: 44px;
+}
+
+.dv-slot-now .dv-time-lbl {
+  color: var(--primary);
+  opacity: 1;
+  font-weight: 700;
+}
+
+.dv-vdiv {
+  min-width: 1px;
+  background: var(--outline_variant);
+  opacity: 0.4;
+  margin: 4px 0;
+}
+
+.dv-ev-col {
+  padding: 3px 10px 3px 8px;
+}
+
+.dv-half-line {
+  background: var(--outline_variant);
+  opacity: 0.2;
+  min-height: 1px;
+  margin-left: 52px;
+}
+
+.dv-ev-card {
+  background: var(--surface_container_low);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 8px;
+  padding: 6px 8px;
+  transition: background 0.12s ease;
+}
+
+.dv-ev-time {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--primary);
 }

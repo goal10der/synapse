@@ -1,34 +1,32 @@
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import Gio from "gi://Gio";
+import { Variable } from "../../utils/Variable";
 
-class Variable<T> {
-  private value: T;
-  private subscribers: Set<(value: T) => void> = new Set();
+// ── types ─────────────────────────────────────────────────────────────────────
 
-  constructor(initialValue: T) {
-    this.value = initialValue;
-  }
+type Backend = "nmcli" | "iwctl";
 
-  get(): T {
-    return this.value;
-  }
-
-  set(newValue: T) {
-    if (this.value === newValue) return;
-    this.value = newValue;
-    this.subscribers.forEach((callback) => callback(this.value));
-  }
-
-  subscribe(callback: (value: T) => void) {
-    this.subscribers.add(callback);
-    callback(this.value);
-    return () => this.subscribers.delete(callback);
-  }
+interface WifiNetwork {
+  name: string;
+  connected: boolean;
+  security: string;
+  signal: string;
 }
+
+// ── shell helpers ─────────────────────────────────────────────────────────────
 
 function stripAnsi(str: string): string {
   return str.replace(/\u001b\[[0-9;]*m/g, "");
+}
+
+function execSync(cmd: string): string {
+  try {
+    const [success, stdout] = GLib.spawn_command_line_sync(cmd);
+    if (success && stdout)
+      return stripAnsi(new TextDecoder().decode(stdout).trim());
+  } catch (_) {}
+  return "";
 }
 
 async function execAsync(cmd: string): Promise<string> {
@@ -41,53 +39,161 @@ async function execAsync(cmd: string): Promise<string> {
     return new Promise((resolve, reject) => {
       proc.communicate_utf8_async(null, null, (p, res) => {
         try {
-          const [_, stdout] = p!.communicate_utf8_finish(res);
+          const [, stdout] = p!.communicate_utf8_finish(res);
           resolve(stdout ? stripAnsi(stdout.trim()) : "");
         } catch (e) {
           reject(e);
         }
       });
     });
-  } catch (e) {
+  } catch (_) {
     return "";
   }
 }
 
-function execSync(cmd: string): string {
-  try {
-    const [success, stdout] = GLib.spawn_command_line_sync(cmd);
-    if (success && stdout) {
-      return stripAnsi(new TextDecoder().decode(stdout).trim());
-    }
-  } catch (err) {
-    console.error(`Failed to execute: ${cmd}`, err);
+function commandExists(cmd: string): boolean {
+  return execSync(`which ${cmd}`) !== "";
+}
+
+// ── backend detection ─────────────────────────────────────────────────────────
+
+function detectBackend(): Backend {
+  if (commandExists("nmcli")) {
+    const state = execSync("nmcli -t -f STATE general");
+    if (state && state !== "unmanaged") return "nmcli";
+  }
+  return "iwctl";
+}
+
+// ── nmcli ─────────────────────────────────────────────────────────────────────
+
+function nmcliGetDevice(): string {
+  const out = execSync("nmcli -t -f DEVICE,TYPE device");
+  for (const line of out.split("\n")) {
+    const [device, type] = line.split(":");
+    if (type?.trim() === "wifi") return device.trim();
   }
   return "";
 }
 
-interface WifiNetwork {
-  name: string;
-  connected: boolean;
-  security: string;
-  signal: string;
+async function nmcliScanAndList(device: string): Promise<WifiNetwork[]> {
+  await execAsync(`nmcli device wifi rescan ifname ${device}`).catch(() => {});
+  await new Promise((r) =>
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
+      r(null);
+      return GLib.SOURCE_REMOVE;
+    }),
+  );
+
+  const out = await execAsync(
+    "nmcli -t -f IN-USE,SSID,SECURITY,SIGNAL device wifi list",
+  );
+
+  const seen = new Map<string, WifiNetwork>();
+  for (const line of out.split("\n")) {
+    if (!line.trim()) continue;
+    const parts = line.split(":");
+    if (parts.length < 4) continue;
+    const connected = parts[0].trim() === "*";
+    const name = parts[1].trim();
+    const security = parts[2].trim() || "open";
+    const signal = parts[3].trim();
+    if (!name) continue;
+    const existing = seen.get(name);
+    if (!existing || Number(signal) > Number(existing.signal))
+      seen.set(name, { name, connected, security, signal });
+  }
+
+  return [...seen.values()].sort(
+    (a, b) =>
+      Number(b.connected) - Number(a.connected) ||
+      Number(b.signal) - Number(a.signal),
+  );
 }
 
-function getWifiDevice(): string {
-  const output = execSync("iwctl device list");
-  const lines = output.split("\n");
-  for (const line of lines) {
-    if (line.includes("station")) {
-      const parts = line.trim().split(/\s+/);
-      for (const part of parts) {
-        if (part.match(/^(wlan|wlp|wlo)\w*/)) return part;
-      }
+async function nmcliConnect(
+  device: string,
+  network: WifiNetwork,
+  password?: string,
+): Promise<void> {
+  if (password) {
+    await execAsync(
+      `nmcli device wifi connect "${network.name}" password "${password}" ifname ${device}`,
+    );
+  } else {
+    await execAsync(`nmcli connection up "${network.name}"`);
+  }
+}
+
+async function nmcliDisconnect(device: string): Promise<void> {
+  await execAsync(`nmcli device disconnect ${device}`);
+}
+
+// ── iwctl ─────────────────────────────────────────────────────────────────────
+
+function iwctlGetDevice(): string {
+  const out = execSync("iwctl device list");
+  for (const line of out.split("\n")) {
+    if (!line.includes("station")) continue;
+    for (const part of line.trim().split(/\s+/)) {
+      if (/^(wlan|wlp|wlo)\w*/.test(part)) return part;
     }
   }
   return "wlan0";
 }
 
+async function iwctlScanAndList(device: string): Promise<WifiNetwork[]> {
+  await execAsync(`iwctl station ${device} scan`);
+  await new Promise((r) =>
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+      r(null);
+      return GLib.SOURCE_REMOVE;
+    }),
+  );
+
+  const out = await execAsync(`iwctl station ${device} get-networks`);
+  const networks: WifiNetwork[] = [];
+
+  for (const line of out.split("\n")) {
+    if (line.includes("Network name") || line.includes("----") || !line.trim())
+      continue;
+    const connected = line.trim().startsWith(">");
+    const clean = line.replace(/>/g, "").trim();
+    const parts = clean.split(/\s{2,}/);
+    if (parts.length >= 2) {
+      networks.push({
+        name: parts[0].trim(),
+        connected,
+        security: parts[1]?.trim() || "unknown",
+        signal: parts[2]?.trim() || "****",
+      });
+    }
+  }
+
+  return networks.sort((a, b) => Number(b.connected) - Number(a.connected));
+}
+
+async function iwctlConnect(
+  device: string,
+  network: WifiNetwork,
+  password?: string,
+): Promise<void> {
+  const cmd = password
+    ? `iwctl station ${device} connect "${network.name}" --passphrase "${password}"`
+    : `iwctl station ${device} connect "${network.name}"`;
+  await execAsync(cmd);
+}
+
+async function iwctlDisconnect(device: string): Promise<void> {
+  await execAsync(`iwctl station ${device} disconnect`);
+}
+
+// ── component ─────────────────────────────────────────────────────────────────
+
 export default function NetworkPage() {
-  const device = getWifiDevice();
+  const backend = detectBackend();
+  const device = backend === "nmcli" ? nmcliGetDevice() : iwctlGetDevice();
+
   const networks = new Variable<WifiNetwork[]>([]);
   const isScanning = new Variable(false);
   const expandedNetwork = new Variable<string>("");
@@ -95,45 +201,14 @@ export default function NetworkPage() {
   const refreshNetworks = async () => {
     if (isScanning.get()) return;
     isScanning.set(true);
-
     try {
-      await execAsync(`iwctl station ${device} scan`);
-
-      await new Promise((resolve) =>
-        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
-          resolve(null);
-          return GLib.SOURCE_REMOVE;
-        }),
-      );
-
-      const output = await execAsync(`iwctl station ${device} get-networks`);
-      const lines = output.split("\n");
-      const foundNetworks: WifiNetwork[] = [];
-
-      for (const line of lines) {
-        if (
-          line.includes("Network name") ||
-          line.includes("----") ||
-          !line.trim()
-        )
-          continue;
-        const connected = line.trim().startsWith(">");
-        const cleanLine = line.replace(/>/g, "").trim();
-        const parts = cleanLine.split(/\s{2,}/);
-        if (parts.length >= 2) {
-          foundNetworks.push({
-            name: parts[0].trim(),
-            connected,
-            security: parts[1]?.trim() || "unknown",
-            signal: parts[2]?.trim() || "****",
-          });
-        }
-      }
-      networks.set(
-        foundNetworks.sort((a, b) => Number(b.connected) - Number(a.connected)),
-      );
+      const list =
+        backend === "nmcli"
+          ? await nmcliScanAndList(device)
+          : await iwctlScanAndList(device);
+      networks.set(list);
     } catch (e) {
-      console.error("WiFi Scan Error:", e);
+      console.error("Scan error:", e);
     } finally {
       isScanning.set(false);
     }
@@ -141,25 +216,37 @@ export default function NetworkPage() {
 
   const handleConnect = async (network: WifiNetwork, password?: string) => {
     expandedNetwork.set("");
-    const cmd = password
-      ? `iwctl station ${device} connect "${network.name}" --passphrase "${password}"`
-      : `iwctl station ${device} connect "${network.name}"`;
-    await execAsync(cmd);
+    try {
+      if (backend === "nmcli") await nmcliConnect(device, network, password);
+      else await iwctlConnect(device, network, password);
+    } catch (e) {
+      console.error("Connect error:", e);
+    }
     GLib.timeout_add(GLib.PRIORITY_DEFAULT, 2000, () => {
       refreshNetworks();
       return GLib.SOURCE_REMOVE;
     });
   };
 
+  const handleDisconnect = async () => {
+    try {
+      if (backend === "nmcli") await nmcliDisconnect(device);
+      else await iwctlDisconnect(device);
+    } catch (e) {
+      console.error("Disconnect error:", e);
+    }
+    refreshNetworks();
+  };
+
   const handleNetworkClick = (network: WifiNetwork) => {
     if (network.connected) {
-      execAsync(`iwctl station ${device} disconnect`).then(() =>
-        refreshNetworks(),
-      );
-    } else if (network.security === "open") {
+      handleDisconnect();
+    } else if (["open", "--", ""].includes(network.security)) {
       handleConnect(network);
     } else {
-      expandedNetwork.set(network.name);
+      expandedNetwork.set(
+        expandedNetwork.get() === network.name ? "" : network.name,
+      );
     }
   };
 
@@ -173,6 +260,7 @@ export default function NetworkPage() {
     >
       <Gtk.Label label="Network" xalign={0} cssClasses={["page-title"]} />
 
+      {/* Device info card */}
       <Gtk.Box
         orientation={Gtk.Orientation.VERTICAL}
         cssClasses={["settings-card"]}
@@ -185,7 +273,11 @@ export default function NetworkPage() {
               xalign={0}
               cssClasses={["section-title"]}
             />
-            <Gtk.Label label={device} xalign={0} cssClasses={["dim-label"]} />
+            <Gtk.Label
+              label={`${device}  (${backend})`}
+              xalign={0}
+              cssClasses={["dim-label"]}
+            />
           </Gtk.Box>
           <Gtk.Button
             iconName="view-refresh-symbolic"
@@ -204,6 +296,7 @@ export default function NetworkPage() {
         </Gtk.Box>
       </Gtk.Box>
 
+      {/* Network list card */}
       <Gtk.Box
         orientation={Gtk.Orientation.VERTICAL}
         cssClasses={["settings-card"]}
@@ -246,8 +339,8 @@ export default function NetworkPage() {
                 });
                 if (network.connected)
                   ssidLabel.add_css_class("connected-label");
-
                 buttonBox.append(ssidLabel);
+
                 if (network.connected)
                   buttonBox.append(
                     new Gtk.Label({
@@ -255,10 +348,12 @@ export default function NetworkPage() {
                       cssClasses: ["connected-status-pill"],
                     }),
                   );
+
                 buttonBox.append(
                   new Gtk.Label({
                     label: network.signal,
                     cssClasses: ["dim-label"],
+                    tooltipText: network.security,
                   }),
                 );
 
@@ -268,15 +363,15 @@ export default function NetworkPage() {
                     ? ["network-item", "connected"]
                     : ["network-item"],
                 });
-
                 const clickId = button.connect("clicked", () =>
                   handleNetworkClick(network),
                 );
                 container.append(button);
 
                 let subUnsub: (() => void) | null = null;
+                const isOpen = ["open", "--", ""].includes(network.security);
 
-                if (network.security !== "open" && !network.connected) {
+                if (!isOpen && !network.connected) {
                   const passwordBox = new Gtk.Box({
                     orientation: Gtk.Orientation.HORIZONTAL,
                     spacing: 8,
@@ -301,7 +396,6 @@ export default function NetworkPage() {
                     if (passwordEntry.text)
                       handleConnect(network, passwordEntry.text);
                   };
-
                   passwordEntry.connect("activate", onConn);
                   connectBtn.connect("clicked", onConn);
                   cancelBtn.connect("clicked", () => expandedNetwork.set(""));
@@ -321,6 +415,7 @@ export default function NetworkPage() {
 
                   container.append(revealer);
                 }
+
                 container.connect("destroy", () => {
                   if (subUnsub) subUnsub();
                   button.disconnect(clickId);

@@ -20,8 +20,11 @@ export class Variable<T> {
   subscribe(callback: (value: T) => void): () => void {
     this.subscribers.add(callback);
     callback(this.value);
-    return () => {
-      this.subscribers.delete(callback);
-    };
+    return () => this.subscribers.delete(callback);
+  }
+
+  /** Explicit unsubscribe – used in Settings.tsx tab switching pattern */
+  unsubscribe(callback: (value: T) => void): void {
+    this.subscribers.delete(callback);
   }
 }

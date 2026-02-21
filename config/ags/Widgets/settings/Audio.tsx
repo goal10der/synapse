@@ -1,38 +1,13 @@
 import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import AstalWp from "gi://AstalWp";
-class Variable<T> {
-  private value: T;
-  private subscribers: Array<(value: T) => void> = [];
-
-  constructor(initialValue: T) {
-    this.value = initialValue;
-  }
-
-  get(): T {
-    return this.value;
-  }
-
-  set(newValue: T) {
-    this.value = newValue;
-    this.subscribers.forEach((callback) => callback(this.value));
-  }
-
-  subscribe(callback: (value: T) => void) {
-    this.subscribers.push(callback);
-    callback(this.value);
-    return () => {
-      this.subscribers = this.subscribers.filter((sub) => sub !== callback);
-    };
-  }
-}
+// Use the shared Variable from utils instead of a local duplicate.
+import { Variable } from "../../utils/Variable";
 
 function execSync(cmd: string): string {
   try {
     const [success, stdout] = GLib.spawn_command_line_sync(cmd);
-    if (success && stdout) {
-      return new TextDecoder().decode(stdout).trim();
-    }
+    if (success && stdout) return new TextDecoder().decode(stdout).trim();
   } catch (err) {
     console.error(`Failed to execute: ${cmd}`, err);
   }
@@ -51,9 +26,7 @@ function readKeybindsFile(): string {
   const configPath = `${GLib.get_home_dir()}/.config/hypr/hyprland/keybinds.conf`;
   try {
     const [success, contents] = GLib.file_get_contents(configPath);
-    if (success) {
-      return new TextDecoder().decode(contents);
-    }
+    if (success) return new TextDecoder().decode(contents);
   } catch (err) {
     console.error("Failed to read keybinds.conf:", err);
   }
@@ -61,26 +34,21 @@ function readKeybindsFile(): string {
 }
 
 function getCurrentLimit(): number {
-  const contents = readKeybindsFile();
-  const match = contents.match(/--limit=([\d.]+)/);
-  if (match) {
-    return parseFloat(match[1]);
-  }
-  return 1.0;
+  const match = readKeybindsFile().match(/--limit=([\d.]+)/);
+  return match ? parseFloat(match[1]) : 1.0;
 }
 
 function updateKeybindsLimit(newLimit: number): boolean {
   const configPath = `${GLib.get_home_dir()}/.config/hypr/hyprland/keybinds.conf`;
   const contents = readKeybindsFile();
-
   if (!contents) return false;
-  const updatedContents = contents.replace(
+
+  const updated = contents.replace(
     /--limit=([\d.]+)/,
     `--limit=${newLimit.toFixed(1)}`,
   );
-
   try {
-    GLib.file_set_contents(configPath, updatedContents);
+    GLib.file_set_contents(configPath, updated);
     execAsyncNoWait("hyprctl reload");
     return true;
   } catch (err) {
@@ -106,7 +74,6 @@ export default function AudioPage() {
 
   const setMaxVolume = (decimal: number) => {
     if (decimal < 0.01 || decimal > 5.0) return;
-
     if (updateKeybindsLimit(decimal)) {
       maxVolume.set(decimal);
       execAsyncNoWait(
@@ -116,12 +83,9 @@ export default function AudioPage() {
   };
 
   const applyMaxVolume = () => {
-    if (maxVolumeEntry) {
-      const percent = parseInt(maxVolumeEntry.get_text());
-      if (!isNaN(percent)) {
-        setMaxVolume(percent / 100);
-      }
-    }
+    if (!maxVolumeEntry) return;
+    const percent = parseInt(maxVolumeEntry.get_text());
+    if (!isNaN(percent)) setMaxVolume(percent / 100);
   };
 
   return (
@@ -131,6 +95,8 @@ export default function AudioPage() {
       cssClasses={["page-container"]}
     >
       <Gtk.Label label="Audio" xalign={0} cssClasses={["page-title"]} />
+
+      {/* Current volume */}
       <Gtk.Box
         orientation={Gtk.Orientation.VERTICAL}
         cssClasses={["settings-card"]}
@@ -145,18 +111,11 @@ export default function AudioPage() {
             />
             <Gtk.Label
               $={(self: any) => {
-                const updateVolume = () => {
-                  const percent = Math.round(speaker.volume * 100);
-                  self.set_label(`${percent}%`);
-                };
-                const signalId = speaker.connect(
-                  "notify::volume",
-                  updateVolume,
-                );
-                updateVolume();
-                self.connect("destroy", () => {
-                  speaker.disconnect(signalId);
-                });
+                const update = () =>
+                  self.set_label(`${Math.round(speaker.volume * 100)}%`);
+                const id = speaker.connect("notify::volume", update);
+                update();
+                self.connect("destroy", () => speaker.disconnect(id));
               }}
               xalign={0}
               cssClasses={["dim-label"]}
@@ -164,18 +123,17 @@ export default function AudioPage() {
           </Gtk.Box>
           <Gtk.Button
             $={(self: any) => {
-              const updateMuteIcon = () => {
-                const icon = speaker.mute
-                  ? "audio-volume-muted-symbolic"
-                  : "audio-volume-high-symbolic";
-                self.set_icon_name(icon);
+              const update = () => {
+                self.set_icon_name(
+                  speaker.mute
+                    ? "audio-volume-muted-symbolic"
+                    : "audio-volume-high-symbolic",
+                );
                 self.set_tooltip_text(speaker.mute ? "Unmute" : "Mute");
               };
-              const signalId = speaker.connect("notify::mute", updateMuteIcon);
-              updateMuteIcon();
-              self.connect("destroy", () => {
-                speaker.disconnect(signalId);
-              });
+              const id = speaker.connect("notify::mute", update);
+              update();
+              self.connect("destroy", () => speaker.disconnect(id));
             }}
             onClicked={() => speaker.set_mute(!speaker.mute)}
             cssClasses={["icon-button"]}
@@ -183,7 +141,7 @@ export default function AudioPage() {
         </Gtk.Box>
       </Gtk.Box>
 
-      {/* Max Volume Limit */}
+      {/* Max volume limit */}
       <Gtk.Box
         orientation={Gtk.Orientation.VERTICAL}
         cssClasses={["settings-card"]}
@@ -199,10 +157,9 @@ export default function AudioPage() {
             label="Updates Hyprland keybind --limit flag (1-500%)"
             xalign={0}
             cssClasses={["dim-label"]}
-            wrap={true}
+            wrap
           />
         </Gtk.Box>
-
         <Gtk.Box
           orientation={Gtk.Orientation.HORIZONTAL}
           spacing={12}
@@ -213,14 +170,13 @@ export default function AudioPage() {
             placeholderText="100"
             $={(self: any) => {
               maxVolumeEntry = self;
-              const unsub = maxVolume.subscribe((max) => {
-                self.set_text(Math.round(max * 100).toString());
-              });
-              const signalId = self.connect("activate", applyMaxVolume);
-
+              const unsub = maxVolume.subscribe((max) =>
+                self.set_text(Math.round(max * 100).toString()),
+              );
+              const id = self.connect("activate", applyMaxVolume);
               self.connect("destroy", () => {
                 unsub();
-                self.disconnect(signalId);
+                self.disconnect(id);
               });
             }}
           />
@@ -231,19 +187,17 @@ export default function AudioPage() {
           />
           <Gtk.Button label="Apply" onClicked={applyMaxVolume} />
         </Gtk.Box>
-
         <Gtk.Box orientation={Gtk.Orientation.HORIZONTAL} spacing={12}>
           {[100, 125, 150, 175, 200].map((percent) => (
             <Gtk.Button
               label={`${percent}%`}
               $={(self: any) => {
                 const unsub = maxVolume.subscribe((max) => {
-                  const currentPercent = Math.round(max * 100);
-                  const classes =
-                    currentPercent === percent
+                  self.set_css_classes(
+                    Math.round(max * 100) === percent
                       ? ["volume-preset-btn", "active"]
-                      : ["volume-preset-btn"];
-                  self.set_css_classes(classes);
+                      : ["volume-preset-btn"],
+                  );
                 });
                 self.connect("destroy", unsub);
               }}
@@ -252,6 +206,8 @@ export default function AudioPage() {
           ))}
         </Gtk.Box>
       </Gtk.Box>
+
+      {/* Device info */}
       <Gtk.Box
         orientation={Gtk.Orientation.VERTICAL}
         cssClasses={["settings-card"]}
@@ -264,19 +220,13 @@ export default function AudioPage() {
         />
         <Gtk.Label
           $={(self: any) => {
-            const updateDevice = () => {
+            const update = () =>
               self.set_label(
                 `Active Output: ${speaker.description || "Unknown Device"}`,
               );
-            };
-            const signalId = speaker.connect(
-              "notify::description",
-              updateDevice,
-            );
-            updateDevice();
-            self.connect("destroy", () => {
-              speaker.disconnect(signalId);
-            });
+            const id = speaker.connect("notify::description", update);
+            update();
+            self.connect("destroy", () => speaker.disconnect(id));
           }}
           xalign={0}
           cssClasses={["dim-label"]}

@@ -56,10 +56,13 @@ export function execAsync(cmd: string): Promise<void> {
   });
 }
 
-export const matugenState = { currentTonalSpot: "scheme-tonal-spot" };
+export const matugenState = {
+  currentTonalSpot: loadSavedValue("tonalSpot", "scheme-tonal-spot") as string,
+};
 
 export const runMatugen = (spot: string, imagePath?: string) => {
   matugenState.currentTonalSpot = spot;
+  saveToDisk("tonalSpot", spot);
 
   const targetImage = imagePath
     ? `"${imagePath}"`

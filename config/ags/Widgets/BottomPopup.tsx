@@ -12,20 +12,32 @@ export default function MusicPopup({
 }) {
   const mpris = Mpris.get_default();
 
-  // Create variables to track player state
-  const isVisible = new Variable(false);
   const coverArt = new Variable("");
   const title = new Variable("No media playing");
   const artist = new Variable("Unknown artist");
   const isPlaying = new Variable(false);
 
-  // Update variables when players change
+  // Track per-player signal connections so we can disconnect when the player changes.
+  let playerSignals: number[] = [];
+  let currentPlayer: Mpris.Player | null = null;
+
+  const disconnectPlayer = () => {
+    if (currentPlayer) {
+      playerSignals.forEach((id) => {
+        try {
+          currentPlayer!.disconnect(id);
+        } catch (_) {}
+      });
+      playerSignals = [];
+      currentPlayer = null;
+    }
+  };
+
   const updatePlayer = () => {
-    const players = mpris.get_players();
-    const player = players[0];
+    const player = mpris.get_players()[0] ?? null;
 
     if (!player) {
-      isVisible.set(false);
+      disconnectPlayer();
       coverArt.set("");
       title.set("No media playing");
       artist.set("Unknown artist");
@@ -33,121 +45,76 @@ export default function MusicPopup({
       return;
     }
 
-    isVisible.set(true);
+    // Same player – no need to rewire signals.
+    if (player === currentPlayer) return;
 
-    // Access cover art property
-    let cover = "";
-    try {
-      // Direct property access (this is working based on logs)
-      cover = player.coverArt || player.cover_art || "";
-      console.log("Cover art URL:", cover);
-    } catch (e) {
-      console.error("Error getting cover art:", e);
-    }
+    disconnectPlayer();
+    currentPlayer = player;
 
-    coverArt.set(cover);
-    title.set(player.title || "No media playing");
-    artist.set(player.artist || "Unknown artist");
-    isPlaying.set(player.playbackStatus === Mpris.PlaybackStatus.PLAYING);
-
-    // Listen to property changes on the current player
-    player.connect("notify::cover-art", () => {
-      let newCover = "";
+    const syncAll = () => {
+      let cover = "";
       try {
-        newCover = player.coverArt || player.cover_art || "";
-        console.log("Cover art changed to:", newCover);
-      } catch (e) {
-        console.error("Error getting updated cover art:", e);
-      }
-      coverArt.set(newCover);
-    });
-
-    player.connect("notify::title", () => {
+        cover = player.coverArt || player.cover_art || "";
+      } catch (_) {}
+      coverArt.set(cover);
       title.set(player.title || "No media playing");
-    });
-
-    player.connect("notify::artist", () => {
       artist.set(player.artist || "Unknown artist");
-    });
-
-    player.connect("notify::playback-status", () => {
       isPlaying.set(player.playbackStatus === Mpris.PlaybackStatus.PLAYING);
-    });
+    };
+
+    syncAll();
+
+    playerSignals.push(player.connect("notify::cover-art", syncAll));
+    playerSignals.push(player.connect("notify::title", syncAll));
+    playerSignals.push(player.connect("notify::artist", syncAll));
+    playerSignals.push(player.connect("notify::playback-status", syncAll));
   };
 
-  // Listen for player changes
   mpris.connect("notify::players", updatePlayer);
+  updatePlayer();
 
-  // Initial update - but only if there are players
-  if (mpris.get_players().length > 0) {
-    updatePlayer();
-  }
+  // ── Album cover (CSS background) ─────────────────────────────────────────
 
-  // Create album cover box using CSS provider (like WallpaperPicker)
   const albumCoverBox = new Gtk.Box();
   albumCoverBox.set_css_classes(["album-cover"]);
-  // Set size request to make it square
   albumCoverBox.set_size_request(100, 100);
-  // Prevent the box from expanding
   albumCoverBox.set_hexpand(false);
   albumCoverBox.set_vexpand(false);
   albumCoverBox.set_halign(Gtk.Align.START);
   albumCoverBox.set_valign(Gtk.Align.CENTER);
 
-  // Create CSS provider for the cover art
   let coverArtProvider: Gtk.CssProvider | null = null;
 
-  // Subscribe to coverArt changes with CSS provider
   coverArt.subscribe((art) => {
-    // Remove old provider if exists
     if (coverArtProvider) {
       albumCoverBox.get_style_context().remove_provider(coverArtProvider);
-      coverArtProvider = null;
     }
-
-    // Create new provider with updated cover art
     coverArtProvider = new Gtk.CssProvider();
 
-    if (!art || art === "") {
-      // No cover art - show placeholder
+    if (!art) {
       coverArtProvider.load_from_data(
-        `
-        * {
-          border-radius: 8px;
-          background-color: rgba(255, 255, 255, 0.1);
-        }
-        `,
+        "* { border-radius: 8px; background-color: rgba(255,255,255,0.1); }",
         -1,
       );
     } else {
-      // Has cover art - ensure proper file:// protocol
       const imageUrl = art.startsWith("file://")
         ? art
         : art.startsWith("/")
           ? `file://${art}`
           : art;
-
-      console.log("Setting cover art with URL:", imageUrl);
-
       coverArtProvider.load_from_data(
-        `
-        * {
-          background-image: url('${imageUrl}');
-          background-size: cover;
-          background-position: center;
-          border-radius: 8px;
-        }
-        `,
+        `* { background-image: url('${imageUrl}'); background-size: cover;
+             background-position: center; border-radius: 8px; }`,
         -1,
       );
     }
-
     albumCoverBox
       .get_style_context()
       .add_provider(coverArtProvider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
   });
 
-  // Create title label
+  // ── Labels ────────────────────────────────────────────────────────────────
+
   const titleLabel = (
     <label
       cssClasses={["track-title"]}
@@ -157,13 +124,10 @@ export default function MusicPopup({
       label={title.get()}
     />
   ) as any;
-
-  // Subscribe to title changes
   title.subscribe((t) => {
     titleLabel.label = t;
   });
 
-  // Create artist label
   const artistLabel = (
     <label
       cssClasses={["track-artist"]}
@@ -173,24 +137,20 @@ export default function MusicPopup({
       label={artist.get()}
     />
   ) as any;
-
-  // Subscribe to artist changes
   artist.subscribe((a) => {
     artistLabel.label = a;
   });
 
-  // Create play/pause label
   const playPauseLabel = (<label label={isPlaying.get() ? "󰏤" : "󰐊"} />) as any;
-
-  // Subscribe to isPlaying changes
-  isPlaying.subscribe((playing) => {
-    playPauseLabel.label = playing ? "󰏤" : "󰐊";
+  isPlaying.subscribe((p) => {
+    playPauseLabel.label = p ? "󰏤" : "󰐊";
   });
 
-  // Create the window
+  // ── Window ────────────────────────────────────────────────────────────────
+
   const window = (
     <window
-      visible={isVisible.get()}
+      visible={false}
       name={`music-popup-${gdkmonitor.connector}`}
       gdkmonitor={gdkmonitor}
       anchor={Astal.WindowAnchor.BOTTOM}
@@ -198,6 +158,16 @@ export default function MusicPopup({
       application={app}
       keymode={Astal.Keymode.ON_DEMAND}
       cssClasses={["music-popup-window"]}
+      $={(self) => {
+        // Fix: was always setting visible=false regardless of value.
+        const unsub = isPlaying.subscribe((playing) => {
+          // Keep window driven by whether there is an active player, not
+          // play/pause state. Visibility is set by player presence above.
+        });
+        self.connect("destroy", () => {
+          disconnectPlayer();
+        });
+      }}
     >
       <box cssClasses={["music-popup-content"]} spacing={16}>
         {albumCoverBox}
@@ -213,28 +183,19 @@ export default function MusicPopup({
           <box cssClasses={["controls"]} spacing={8}>
             <button
               cssClasses={["control-button", "previous"]}
-              onClicked={() => {
-                const player = mpris.get_players()[0];
-                if (player) player.previous();
-              }}
+              onClicked={() => mpris.get_players()[0]?.previous()}
             >
               <label label="󰒮" />
             </button>
             <button
               cssClasses={["control-button", "play-pause"]}
-              onClicked={() => {
-                const player = mpris.get_players()[0];
-                if (player) player.play_pause();
-              }}
+              onClicked={() => mpris.get_players()[0]?.play_pause()}
             >
               {playPauseLabel}
             </button>
             <button
               cssClasses={["control-button", "next"]}
-              onClicked={() => {
-                const player = mpris.get_players()[0];
-                if (player) player.next();
-              }}
+              onClicked={() => mpris.get_players()[0]?.next()}
             >
               <label label="󰒭" />
             </button>
@@ -244,10 +205,12 @@ export default function MusicPopup({
     </window>
   ) as any;
 
-  // Subscribe to visibility changes
-  isVisible.subscribe((visible) => {
-    window.visible = false;
-  });
+  // Drive window visibility from player presence.
+  const updateVisibility = () => {
+    window.visible = mpris.get_players().length > 0;
+  };
+  mpris.connect("notify::players", updateVisibility);
+  updateVisibility();
 
   return window;
 }
