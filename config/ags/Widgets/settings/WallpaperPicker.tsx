@@ -22,7 +22,7 @@ export default function WallpaperPicker() {
 
     // We add '&' at the end of the matugen command so it doesn't block
     // and use 'nohup' or similar logic to let it finish in the background
-    const cmd = `bash -c 'awww img "${path}" -t wipe --transition-duration 3 && matugen image --type ${matugenState.currentTonalSpot} "${path}" &'`;
+    const cmd = `bash -c 'awww img "${path}" -t wipe --transition-duration 3 --transition-fps 60 && matugen image --type ${matugenState.currentTonalSpot} "${path}" &'`;
 
     execAsync(cmd)
       .then(() => {
