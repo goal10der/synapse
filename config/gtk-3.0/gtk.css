@@ -11395,3 +11395,110 @@ geary-conversation-viewer#conversation_viewer searchbar > revealer > box {
 .budgie-panel.vertical #tasklist-button {
   min-height: 32px;
 }
+
+/* ============================================================
+
+/* ============================================================
+ * GLOBAL BUTTON RESET
+ * Overrides gtk-contained-dark.css base theme background-image
+ * injection on all buttons. Uses background shorthand (resets
+ * background-image in one declaration, same pattern as AGS shell).
+ * ============================================================ */
+
+button {
+  background: @window_bg_color;
+  color: @window_fg_color;
+  border-color: alpha(@window_fg_color, 0.12);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+button:hover {
+  background: alpha(@window_fg_color, 0.08);
+}
+
+button:active,
+button:checked {
+  background: alpha(@window_fg_color, 0.14);
+  box-shadow: none;
+}
+
+button:disabled {
+  background: alpha(@window_bg_color, 0.6);
+  color: alpha(@window_fg_color, 0.35);
+}
+
+button:backdrop {
+  background: @window_bg_color;
+}
+
+/* Flat buttons */
+button.flat {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+button.flat:hover {
+  background: alpha(@window_fg_color, 0.08);
+  border-color: transparent;
+}
+
+button.flat:active,
+button.flat:checked {
+  background: alpha(@window_fg_color, 0.14);
+}
+
+/* Suggested-action (Open / Select Folder / OK etc.) */
+button.suggested-action {
+  background: @accent_bg_color;
+  color: @accent_fg_color;
+  border-color: alpha(@accent_bg_color, 0.8);
+}
+
+button.suggested-action:hover {
+  background: mix(black, @accent_bg_color, 0.12);
+  color: @accent_fg_color;
+}
+
+button.suggested-action:active {
+  background: mix(black, @accent_bg_color, 0.22);
+  color: @accent_fg_color;
+}
+
+button.suggested-action:disabled {
+  background: mix(@accent_bg_color, @window_bg_color, 0.5);
+  color: alpha(@accent_fg_color, 0.5);
+}
+
+/* Destructive-action (Delete / Remove etc.) */
+button.destructive-action {
+  background: @destructive_bg_color;
+  color: @destructive_fg_color;
+  border-color: alpha(@destructive_bg_color, 0.8);
+}
+
+button.destructive-action:hover {
+  background: mix(black, @destructive_bg_color, 0.12);
+}
+
+button.destructive-action:disabled {
+  background: mix(@destructive_bg_color, @window_bg_color, 0.5);
+  color: alpha(@destructive_fg_color, 0.5);
+}
+
+/* Toggle buttons */
+button.toggle:checked,
+button.toggle.active {
+  background: @accent_bg_color;
+  color: @accent_fg_color;
+  border-color: alpha(@accent_bg_color, 0.8);
+}
+
+/* ============================================================
+ * GLOBAL FONT OVERRIDE — JetBrains Mono
+ * ============================================================ */
+
+* {
+  font-family: "JetBrains Mono", "JetBrainsMono Nerd Font", monospace;
+}
