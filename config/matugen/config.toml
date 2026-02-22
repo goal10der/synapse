@@ -27,3 +27,4 @@ post_hook = "pkill -f xdg-desktop-portal-gtk; sleep 1 && /usr/lib/xdg-desktop-po
 [templates.vesktop]
 input_path  = "~/.config/matugen/templates/synapse.css"
 output_path = "~/.config/vesktop/themes/synapse.css"
+post_hook = "pkill -f xdg-desktop-portal-gtk; sleep 1 && /usr/lib/xdg-desktop-portal-gtk &"
