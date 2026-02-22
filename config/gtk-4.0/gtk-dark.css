@@ -1,20 +1,1241 @@
-:root {
-  --standalone-color-oklab: max(l, 0.85) a b;
-  --accent-color: oklab(
-    from var(--accent-bg-color) var(--standalone-color-oklab)
-  );
-  --destructive-color: oklab(
-    from var(--destructive-bg-color) var(--standalone-color-oklab)
-  );
-  --success-color: oklab(
-    from var(--success-bg-color) var(--standalone-color-oklab)
-  );
-  --warning-color: oklab(
-    from var(--warning-bg-color) var(--standalone-color-oklab)
-  );
-  --error-color: oklab(
-    from var(--error-bg-color) var(--standalone-color-oklab)
+@define-color blue_1 #99c1f1;
+@define-color blue_2 #62a0ea;
+@define-color blue_3 #3584e4;
+@define-color blue_4 #1c71d8;
+@define-color blue_5 #1a5fb4;
+@define-color green_1 #8ff0a4;
+@define-color green_2 #57e389;
+@define-color green_3 #33d17a;
+@define-color green_4 #2ec27e;
+@define-color green_5 #26a269;
+@define-color yellow_1 #f9f06b;
+@define-color yellow_2 #f8e45c;
+@define-color yellow_3 #f6d32d;
+@define-color yellow_4 #f5c211;
+@define-color yellow_5 #e5a50a;
+@define-color orange_1 #ffbe6f;
+@define-color orange_2 #ffa348;
+@define-color orange_3 #ff7800;
+@define-color orange_4 #e66100;
+@define-color orange_5 #c64600;
+@define-color red_1 #f66151;
+@define-color red_2 #ed333b;
+@define-color red_3 #e01b24;
+@define-color red_4 #c01c28;
+@define-color red_5 #a51d2d;
+@define-color purple_1 #dc8add;
+@define-color purple_2 #c061cb;
+@define-color purple_3 #9141ac;
+@define-color purple_4 #813d9c;
+@define-color purple_5 #613583;
+@define-color brown_1 #cdab8f;
+@define-color brown_2 #b5835a;
+@define-color brown_3 #986a44;
+@define-color brown_4 #865e3c;
+@define-color brown_5 #63452c;
+@define-color light_1 #ffffff;
+@define-color light_2 #f6f5f4;
+@define-color light_3 #deddda;
+@define-color light_4 #c0bfbc;
+@define-color light_5 #9a9996;
+@define-color dark_1 #77767b;
+@define-color dark_2 #5e5c64;
+@define-color dark_3 #3d3846;
+@define-color dark_4 #241f31;
+@define-color dark_5 #000000;
+
+@define-color accent_bg_color @blue_3;
+@define-color accent_fg_color white;
+@define-color accent_color #78aeed;
+@define-color destructive_bg_color @red_4;
+@define-color destructive_fg_color white;
+@define-color destructive_color #ff7b63;
+@define-color success_bg_color @green_5;
+@define-color success_fg_color white;
+@define-color success_color @green_1;
+@define-color warning_bg_color #cd9309;
+@define-color warning_fg_color rgba(0, 0, 0, 0.8);
+@define-color warning_color @yellow_2;
+@define-color error_bg_color @red_4;
+@define-color error_fg_color white;
+@define-color error_color #ff7b63;
+@define-color window_bg_color #242424;
+@define-color window_fg_color white;
+@define-color view_bg_color #1e1e1e;
+@define-color view_fg_color white;
+@define-color headerbar_bg_color #303030;
+@define-color headerbar_fg_color white;
+@define-color headerbar_border_color white;
+@define-color headerbar_backdrop_color @window_bg_color;
+@define-color headerbar_shade_color rgba(0, 0, 0, 0.36);
+@define-color headerbar_darker_shade_color rgba(0, 0, 0, 0.9);
+@define-color sidebar_bg_color #303030;
+@define-color sidebar_fg_color white;
+@define-color sidebar_backdrop_color #2a2a2a;
+@define-color sidebar_shade_color rgba(0, 0, 0, 0.25);
+@define-color sidebar_border_color rgba(0, 0, 0, 0.36);
+@define-color card_bg_color rgba(255, 255, 255, 0.08);
+@define-color card_fg_color white;
+@define-color card_shade_color rgba(0, 0, 0, 0.36);
+@define-color dialog_bg_color #383838;
+@define-color dialog_fg_color white;
+@define-color popover_bg_color #383838;
+@define-color popover_fg_color white;
+@define-color popover_shade_color rgba(0, 0, 0, 0.25);
+@define-color thumbnail_bg_color #383838;
+@define-color thumbnail_fg_color white;
+@define-color shade_color rgba(0, 0, 0, 0.25);
+@define-color scrollbar_outline_color rgba(0, 0, 0, 0.5);
+@define-color incognito_bg_color #1c2438;
+@define-color new_title_bg_color #303030;
+
+@import "./colors.css";
+
+/* GTK4 Theme Base & Resets */
+* {
+  padding: 0;
+  outline-color: alpha(currentColor, 0.3);
+  outline-style: dashed;
+  outline-offset: -3px;
+  outline-width: 1px;
+  -gtk-secondary-caret-color: @accent_bg_color;
+  /* Removed deprecated GTK3 specific node resets like -gtktoolbutton-icon-spacing */
+}
+
+.background {
+  color: @window_fg_color;
+  background-color: @window_bg_color;
+}
+
+.background:backdrop {
+  text-shadow: none;
+}
+
+/* GTK4 Handles effects via standard CSS filters now */
+*:disabled {
+  filter: opacity(0.5);
+}
+
+.view,
+iconview,
+.view text,
+iconview text,
+textview text {
+  color: @view_fg_color;
+  caret-color: shade(@view_fg_color, 0.97);
+  background-color: @view_bg_color;
+}
+
+.view:disabled,
+iconview:disabled,
+.view text:disabled,
+iconview text:disabled,
+textview text:disabled {
+  color: mix(@window_fg_color, @window_bg_color, 0.5);
+  background-color: mix(@window_bg_color, @view_bg_color, 0.4);
+}
+
+.view:selected:focus,
+.view:selected,
+iconview:selected,
+.view text:selected,
+iconview text:selected,
+textview text:selected {
+  background-color: alpha(@accent_bg_color, 0.25);
+  border-radius: 6px;
+}
+
+textview border {
+  background-color: mix(@window_bg_color, @view_bg_color, 0.5);
+}
+
+.rubberband,
+rubberband,
+flowbox rubberband {
+  border: 1px solid @accent_color;
+  background-color: alpha(@accent_color, 0.2);
+}
+
+label {
+  caret-color: currentColor;
+}
+
+label selection {
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+}
+
+label:disabled {
+  color: mix(@window_fg_color, @window_bg_color, 0.5);
+}
+
+label.error {
+  color: @error_bg_color;
+}
+
+/* Typography */
+.large-title {
+  font-weight: 300;
+  font-size: 24pt;
+}
+.title-1 {
+  font-weight: 800;
+  font-size: 20pt;
+}
+.title-2 {
+  font-weight: 800;
+  font-size: 15pt;
+}
+.title-3 {
+  font-weight: 700;
+  font-size: 15pt;
+}
+.title-4 {
+  font-weight: 700;
+  font-size: 13pt;
+}
+.heading {
+  font-weight: 700;
+  font-size: 11pt;
+}
+.body {
+  font-weight: 400;
+  font-size: 11pt;
+}
+.caption-heading {
+  font-weight: 700;
+  font-size: 9pt;
+}
+.caption {
+  font-weight: 400;
+  font-size: 9pt;
+}
+
+/* Spinbuttons and Entries */
+spinbutton:not(.vertical),
+entry {
+  min-height: 34px;
+  padding-left: 8px;
+  padding-right: 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  color: @view_fg_color;
+  background-color: mix(currentColor, @window_bg_color, 0.903);
+  box-shadow: inset 0 0 0 1px alpha(alpha(@accent_color, 0.5), 0);
+}
+
+spinbutton:focus:not(.vertical),
+entry:focus {
+  box-shadow: inset 0 0 0 1px alpha(@accent_color, 0.5);
+  border-color: alpha(@accent_color, 0.5);
+  transition: 300ms ease-in-out;
+}
+
+spinbutton:disabled:not(.vertical),
+entry:disabled {
+  color: mix(@window_fg_color, @window_bg_color, 0.5);
+  background-color: mix(currentColor, @window_bg_color, 0.9);
+}
+
+/* Buttons */
+button {
+  min-height: 24px;
+  min-width: 16px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  font-weight: bold;
+  color: @window_fg_color;
+  outline-color: alpha(@accent_color, 0.5);
+  background-color: mix(currentColor, @window_bg_color, 0.903);
+}
+
+button:hover {
+  color: @window_fg_color;
+  background-color: mix(currentColor, @window_bg_color, 0.85);
+  filter: brightness(1.1); /* Replaces -gtk-icon-effect: highlight */
+}
+
+button:active,
+button:checked {
+  color: @window_fg_color;
+  background-color: mix(currentColor, @window_bg_color, 0.703);
+}
+
+button:disabled {
+  color: mix(@window_fg_color, @window_bg_color, 0.5);
+  background-color: mix(currentColor, @window_bg_color, 0.9);
+}
+
+button.suggested-action {
+  color: white;
+  outline-color: alpha(@accent_color, 0.5);
+  background-color: mix(currentColor, @accent_bg_color, 0.903);
+}
+
+button.suggested-action:hover {
+  background-color: mix(currentColor, @accent_bg_color, 0.85);
+}
+
+button.destructive-action {
+  color: white;
+  outline-color: alpha(@accent_color, 0.5);
+  background-color: mix(currentColor, @destructive_bg_color, 0.903);
+}
+
+button.destructive-action:hover {
+  background-color: mix(currentColor, @destructive_bg_color, 0.85);
+}
+
+/* Headerbar */
+headerbar {
+  padding: 0 6px;
+  min-height: 46px;
+  border-width: 0 0 1px;
+  border-style: solid;
+  border-color: @headerbar_shade_color;
+  border-radius: 0;
+  background: @headerbar_bg_color
+    linear-gradient(to top, @headerbar_bg_color, @headerbar_bg_color);
+}
+
+headerbar:backdrop {
+  background-color: @headerbar_backdrop_color;
+  background-image: none;
+  transition: 200ms ease-out;
+}
+
+windowcontrols button {
+  border-radius: 100%;
+  background-color: alpha(currentColor, 0.1);
+  min-height: 24px;
+  min-width: 24px;
+  margin: 0 4px 0 4px;
+  padding: 0;
+  transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+windowcontrols button:hover {
+  background-color: alpha(currentColor, 0.15);
+}
+
+windowcontrols button:active {
+  background-color: alpha(currentColor, 0.3);
+}
+/* ========================================================
+   Popovers & Menus (Replaces legacy GtkMenu)
+   GTK4 uses popover.menu for almost all dropdowns
+======================================================== */
+popover > contents {
+  padding: 2px;
+  background-color: @popover_bg_color;
+  background-clip: padding-box;
+  box-shadow:
+    0 1px 5px 1px rgba(0, 0, 0, 0.09),
+    0 2px 8px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid mix(currentColor, @window_bg_color, 0.85);
+  border-radius: 12px;
+}
+
+popover.menu > contents {
+  padding: 6px;
+}
+
+popover separator {
+  margin: 6px 0;
+}
+
+popover > arrow {
+  background-color: @popover_bg_color;
+  border: 1px solid mix(currentColor, @window_bg_color, 0.85);
+}
+
+/* Popover Menu Items */
+popover.menu > contents > item {
+  min-height: 16px;
+  min-width: 40px;
+  padding: 4px 6px;
+  font-weight: normal;
+  border-radius: 6px;
+}
+
+popover.menu > contents > item:hover {
+  color: @window_fg_color;
+  background-color: alpha(currentColor, 0.1);
+}
+
+popover.menu > contents > item:disabled {
+  color: mix(@window_fg_color, @window_bg_color, 0.5);
+}
+
+/* ========================================================
+   Notebooks (Tabs)
+======================================================== */
+notebook {
+  border: none;
+}
+
+notebook > header {
+  padding: 6px;
+  background-color: @window_bg_color;
+  border-color: transparent;
+}
+
+notebook > header.top,
+notebook > header.bottom,
+notebook > header.left,
+notebook > header.right {
+  border-bottom: 1px solid mix(currentColor, @window_bg_color, 0.85);
+}
+
+notebook > header > tabs > tab {
+  min-height: 30px;
+  min-width: 30px;
+  padding: 3px 12px;
+  color: @window_fg_color;
+  font-weight: normal;
+  border-radius: 6px;
+  border: none;
+  background-color: transparent;
+  transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+notebook > header > tabs > tab:hover {
+  background-color: alpha(currentColor, 0.07);
+}
+
+notebook > header > tabs > tab:checked {
+  background-color: alpha(currentColor, 0.1);
+}
+
+notebook > header > tabs > tab:checked:hover {
+  background-color: alpha(currentColor, 0.13);
+}
+
+notebook > stack:not(:only-child) {
+  background-color: @window_bg_color;
+}
+
+/* ========================================================
+   Scrollbars
+======================================================== */
+scrollbar {
+  background-color: @view_bg_color;
+  transition: all 200ms linear;
+}
+
+scrollbar > range > trough > slider {
+  color: @window_fg_color;
+  min-width: 8px;
+  min-height: 8px;
+  margin: -1px;
+  border: 4px solid transparent;
+  border-radius: 10px;
+  background-clip: padding-box;
+  background-color: alpha(currentColor, 0.2);
+  transition: all 200ms linear;
+}
+
+scrollbar > range > trough > slider:hover {
+  background-color: alpha(currentColor, 0.4);
+}
+
+scrollbar > range > trough > slider:active {
+  background-color: alpha(currentColor, 0.6);
+}
+
+scrollbar > range > trough > slider:disabled {
+  background-color: transparent;
+}
+
+/* Overlay scrollbars */
+scrollbar.overlay-indicator:not(.dragging):not(.hovering)
+  > range
+  > trough
+  > slider {
+  margin: 0;
+  min-width: 3px;
+  min-height: 3px;
+  background-color: @window_fg_color;
+  border: 1px solid black;
+}
+
+/* ========================================================
+   Switches
+======================================================== */
+switch {
+  padding: 3px;
+  border-radius: 14px;
+  color: @window_fg_color;
+  background-color: alpha(currentColor, 0.15);
+  border: 1px solid transparent;
+}
+
+switch:hover:not(:checked) {
+  background-color: alpha(currentColor, 0.2);
+}
+
+switch:checked {
+  color: @accent_fg_color;
+  background-color: @accent_bg_color;
+}
+
+switch:disabled {
+  color: mix(@window_fg_color, @window_bg_color, 0.5);
+  background-color: mix(
+    mix(currentColor, @window_bg_color, 0.73),
+    @window_bg_color,
+    0.3
   );
 }
 
-@import "./colors.css";
+switch > slider {
+  margin: 0;
+  min-width: 20px;
+  min-height: 20px;
+  background-color: mix(white, @view_bg_color, 0.2);
+  border: 1px solid transparent;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+switch:hover > slider,
+switch:checked > slider {
+  background-color: white;
+}
+
+switch:disabled > slider {
+  background-color: mix(@view_bg_color, mix(white, @view_bg_color, 0.2), 0.5);
+  box-shadow: none;
+}
+
+/* ========================================================
+   Checkbuttons and Radiobuttons
+======================================================== */
+checkbutton {
+  border-spacing: 4px;
+}
+
+checkbutton > .check,
+checkbutton > .radio {
+  margin: 0 4px;
+  min-height: 14px;
+  min-width: 14px;
+  border: 2px solid;
+  padding: 1px;
+  background-clip: padding-box;
+  border-color: alpha(currentColor, 0.15);
+  color: @window_fg_color;
+}
+
+checkbutton > .check {
+  border-radius: 6px;
+}
+
+checkbutton > .radio {
+  border-radius: 100%;
+}
+
+checkbutton > .check:hover:not(:checked):not(:indeterminate),
+checkbutton > .radio:hover:not(:checked):not(:indeterminate) {
+  border-color: alpha(currentColor, 0.2);
+}
+
+checkbutton > .check:checked,
+checkbutton > .radio:checked {
+  background-color: @accent_bg_color;
+  border-color: @accent_bg_color;
+  color: @accent_fg_color;
+}
+
+checkbutton > .check:disabled,
+checkbutton > .radio:disabled {
+  color: alpha(@window_fg_color, 0.5);
+  border-color: alpha(currentColor, 0.15);
+}
+
+checkbutton > .check:checked:disabled,
+checkbutton > .radio:checked:disabled {
+  background-color: mix(@accent_bg_color, @window_bg_color, 0.5);
+  border-color: mix(@accent_bg_color, @window_bg_color, 0.5);
+}
+
+/* ========================================================
+   Progressbars & Scales
+======================================================== */
+progressbar > trough,
+scale > trough {
+  border-radius: 6px;
+  background-color: alpha(currentColor, 0.15);
+}
+
+progressbar > trough:disabled,
+scale > trough:disabled {
+  background-color: alpha(alpha(currentColor, 0.15), 0.5);
+}
+
+progressbar > trough > progress,
+scale > trough > highlight {
+  border-radius: 6px;
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+}
+
+progressbar > trough > progress:disabled,
+scale > trough > highlight:disabled {
+  background-color: mix(@accent_bg_color, @view_bg_color, 0.5);
+}
+
+scale > trough > slider {
+  min-height: 18px;
+  min-width: 18px;
+  margin: -9px;
+  background-color: mix(white, @view_bg_color, 0.2);
+  box-shadow: 0 1px 2px 1px rgba(0, 0, 0, 0.25);
+  border: 1px solid transparent;
+  border-radius: 100%;
+  transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+scale > trough > slider:hover {
+  background-color: white;
+}
+
+scale > trough > slider:disabled {
+  background-color: mix(@view_bg_color, mix(white, @view_bg_color, 0.2), 0.5);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+/* ========================================================
+   Scrolled Windows
+   GTK4 simplifies the viewport/canvas relationship
+======================================================== */
+scrolledwindow {
+  padding: 0;
+}
+
+scrolledwindow viewport {
+  background-color: transparent;
+}
+
+/* The junction is the small square where two scrollbars meet */
+scrolledwindow junction {
+  background-color: transparent;
+  border: none;
+}
+
+/* ========================================================
+   List Boxes and Flow Boxes
+   These are the primary layout containers for GTK4 apps
+======================================================== */
+list,
+flowbox {
+  background-color: @view_bg_color;
+  color: @view_fg_color;
+}
+
+row {
+  transition: all 200ms ease;
+  padding: 2px;
+}
+
+row:selected {
+  background-color: alpha(@accent_bg_color, 0.3);
+  color: @window_fg_color;
+}
+
+row:hover {
+  background-color: alpha(currentColor, 0.07);
+}
+
+row:selected:hover {
+  background-color: alpha(@accent_bg_color, 0.4);
+}
+
+/* Specific styling for sidebar lists (Settings, Files, etc.) */
+.navigation-sidebar row {
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 6px;
+  margin: 2px 4px;
+}
+
+/* ColumnView (The GTK4 replacement for TreeView) */
+columnview {
+  background-color: @view_bg_color;
+}
+
+columnview > listview > row {
+  padding: 0;
+  border-bottom: 1px solid alpha(currentColor, 0.05);
+}
+
+columnview header button {
+  padding: 8px;
+  background-color: @window_bg_color;
+  border: none;
+  border-right: 1px solid alpha(currentColor, 0.1);
+  border-bottom: 1px solid alpha(currentColor, 0.1);
+  border-radius: 0;
+  font-weight: bold;
+}
+
+columnview header button:hover {
+  background-color: alpha(currentColor, 0.05);
+}
+
+/* ========================================================
+   Separators
+======================================================== */
+separator {
+  background-color: alpha(currentColor, 0.1);
+  min-width: 1px;
+  min-height: 1px;
+}
+
+/* Horizontal vs Vertical margins */
+separator.horizontal {
+  margin: 4px 0;
+}
+
+separator.vertical {
+  margin: 0 4px;
+}
+
+/* ========================================================
+   Tooltips
+======================================================== */
+tooltip {
+  background-color: @dark_4;
+  color: white;
+  border: 1px solid @dark_1;
+  border-radius: 8px;
+  padding: 4px 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+tooltip label {
+  font-weight: normal;
+  font-size: 10pt;
+}
+
+/* ========================================================
+   Expanders
+======================================================== */
+expander > title {
+  padding: 4px;
+  border-radius: 6px;
+  transition: background-color 200ms ease;
+}
+
+expander > title:hover {
+  background-color: alpha(currentColor, 0.05);
+}
+
+/* The arrow node */
+expander > title > arrow {
+  min-width: 16px;
+  min-height: 16px;
+  -gtk-icon-source: -gtk-icontheme("pan-down-symbolic");
+  transition: transform 200ms ease-in-out;
+}
+
+expander:checked > title > arrow {
+  transform: rotate(0deg); /* Adjust based on asset orientation */
+}
+
+expander:not(:checked) > title > arrow {
+  transform: rotate(-90deg);
+}
+
+/* ========================================================
+   Infobars
+======================================================== */
+infobar {
+  border-style: solid;
+  border-width: 0 0 1px;
+  padding: 8px;
+}
+
+infobar.info {
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+  border-color: darken(@accent_bg_color, 10%);
+}
+
+infobar.question {
+  background-color: @blue_4;
+  color: white;
+}
+
+infobar.warning {
+  background-color: @warning_bg_color;
+  color: @warning_fg_color;
+}
+
+infobar.error {
+  background-color: @error_bg_color;
+  color: @error_fg_color;
+}
+
+/* ========================================================
+   Calendars
+======================================================== */
+calendar {
+  background-color: @view_bg_color;
+  color: @view_fg_color;
+  border: 1px solid alpha(currentColor, 0.1);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+calendar > header {
+  border-bottom: 1px solid alpha(currentColor, 0.1);
+  padding-bottom: 4px;
+}
+
+calendar > grid > label.day-name {
+  font-weight: bold;
+  padding: 4px;
+}
+
+calendar:selected {
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+  border-radius: 4px;
+}
+
+calendar.highlight {
+  color: @accent_color;
+  font-weight: bold;
+}
+
+calendar:disabled {
+  color: alpha(currentColor, 0.3);
+}
+/* ========================================================
+   Headerbars & Titlebars
+   GTK4 uses .titlebar as the container and headerbar as the widget
+======================================================== */
+headerbar {
+  padding: 0 6px;
+  min-height: 46px;
+  background-color: @headerbar_bg_color;
+  color: @headerbar_fg_color;
+  border-bottom: 1px solid @headerbar_shade_color;
+}
+
+headerbar:backdrop {
+  background-color: @headerbar_backdrop_color;
+  color: alpha(@headerbar_fg_color, 0.5);
+  transition: 200ms ease-out;
+}
+
+/* Titles and Subtitles */
+headerbar .title {
+  font-weight: bold;
+  padding: 0 12px;
+}
+
+/* GTK4/Libadwaita handles subtitles as separate labels or via AdwWindowTitle */
+headerbar .subtitle {
+  font-size: smaller;
+  opacity: 0.65;
+}
+
+/* Selection Mode (e.g., when selecting files or emails) */
+headerbar.selection-mode {
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+  border-color: darken(@accent_bg_color, 15%);
+}
+
+headerbar.selection-mode button {
+  color: @accent_fg_color;
+  background-color: alpha(currentColor, 0.1);
+}
+
+headerbar.selection-mode button:hover {
+  background-color: alpha(currentColor, 0.2);
+}
+
+/* ========================================================
+   Sidebars (Navigation Sidebars)
+======================================================== */
+.navigation-sidebar {
+  background-color: @sidebar_bg_color;
+  color: @sidebar_fg_color;
+}
+
+.navigation-sidebar:backdrop {
+  background-color: @sidebar_backdrop_color;
+}
+
+/* Sidebar separators usually divide the side pane from the content */
+.navigation-sidebar separator {
+  background-color: @sidebar_border_color;
+}
+
+/* ========================================================
+   Dialogs & Message Dialogs
+======================================================== */
+dialog,
+messagedialog {
+  background-color: @dialog_bg_color;
+  color: @dialog_fg_color;
+}
+
+/* Dialog content padding */
+dialog > box.vertical {
+  padding: 12px;
+}
+
+/* Action areas (where OK/Cancel buttons live) */
+.dialog-action-area {
+  padding: 8px;
+  border-top: 1px solid alpha(currentColor, 0.1);
+}
+
+/* Message Dialog specific styling */
+messagedialog .titlebar {
+  min-height: 20px;
+  background-color: @dialog_bg_color;
+  border: none;
+}
+
+/* ========================================================
+   Window Decorations (Shadows & Corners)
+======================================================== */
+window {
+  border-radius: 12px;
+}
+
+window.maximized,
+window.fullscreen {
+  border-radius: 0;
+}
+
+/* The 'decoration' node handles the drop shadow */
+window > decoration {
+  box-shadow:
+    0 3px 12px 1px rgba(0, 0, 0, 0.3),
+    0 0 0 1px alpha(currentColor, 0.1);
+  margin: 10px;
+}
+
+window > decoration:backdrop {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+}
+
+/* ========================================================
+   Modern Libadwaita / Layout Widgets
+   (Leaflets, Flaps, Avatars, etc.)
+======================================================== */
+/* AdwLeaflet and AdwFlap replace many custom GTK3 paned layouts */
+leaflet > shadow.left,
+flap > shadow.left {
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1), transparent);
+}
+
+leaflet > shadow.right,
+flap > shadow.right {
+  background-image: linear-gradient(to left, rgba(0, 0, 0, 0.1), transparent);
+}
+
+/* Avatars (Common in Contacts/Chat apps) */
+avatar {
+  border-radius: 9999px;
+  font-weight: bold;
+}
+
+avatar.image {
+  background: none;
+}
+
+/* Preference pages (AdwPreferencesPage) */
+preferencespage > scrolledwindow > viewport > clamp {
+  margin: 24px 12px;
+}
+
+/* Level Bars */
+levelbar block {
+  min-height: 8px;
+  border-radius: 4px;
+}
+
+levelbar block.low {
+  background-color: @warning_bg_color;
+}
+
+levelbar block.high {
+  background-color: @success_bg_color;
+}
+
+levelbar block.full {
+  background-color: @blue_3;
+}
+/* ========================================================
+   Searchbars and Actionbars
+   In GTK4, these are often children of a 'revealer' node
+======================================================== */
+searchbar > revealer > box {
+  padding: 6px;
+  background-color: @window_bg_color;
+  border-bottom: 1px solid alpha(currentColor, 0.1);
+  /* Ensuring the searchbar blends with the window background */
+}
+
+actionbar > revealer > box {
+  padding: 6px;
+  background-color: @window_bg_color;
+  border-top: 1px solid alpha(currentColor, 0.1);
+}
+
+/* ========================================================
+   Toolbars (Legacy and Modern .toolbar class)
+======================================================== */
+toolbar,
+.toolbar {
+  padding: 4px;
+  background-color: @window_bg_color;
+  -gtkwidget-window-dragging: true;
+}
+
+/* Inline toolbars often used below lists or in dialogs */
+.inline-toolbar {
+  background-color: @window_bg_color;
+  border: 1px solid alpha(currentColor, 0.1);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  padding: 3px;
+}
+
+/* ========================================================
+   Paned (Split Views / Handles)
+======================================================== */
+paned > separator {
+  min-width: 1px;
+  min-height: 1px;
+  background-color: alpha(currentColor, 0.1);
+  /* The 'handle' is the interactive part of the separator */
+}
+
+paned > separator:hover {
+  background-color: @accent_bg_color;
+}
+
+/* Wide handles for easier touch interaction */
+paned.wide > separator {
+  min-width: 8px;
+  min-height: 8px;
+  background-color: transparent;
+  background-image: image(alpha(currentColor, 0.1));
+  background-size: 1px 1px;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* ========================================================
+   SpinButtons (Horizontal and Vertical)
+======================================================== */
+spinbutton {
+  padding: 0;
+}
+
+spinbutton.vertical {
+  border-radius: 6px;
+}
+
+spinbutton.vertical entry {
+  border-radius: 0;
+  border-style: none solid;
+}
+
+spinbutton.vertical button {
+  min-height: 24px;
+  min-width: 32px;
+  padding: 0;
+}
+
+spinbutton.vertical button.up {
+  border-radius: 6px 6px 0 0;
+  border-bottom: 1px solid alpha(currentColor, 0.05);
+}
+
+spinbutton.vertical button.down {
+  border-radius: 0 0 6px 6px;
+  border-top: 1px solid alpha(currentColor, 0.05);
+}
+
+/* ========================================================
+   Tab Bars (Modern AdwTabBar / GTK4)
+======================================================== */
+tabbar {
+  background-color: @headerbar_bg_color;
+}
+
+tabbar tab {
+  padding: 6px 12px;
+  border-right: 1px solid alpha(currentColor, 0.05);
+  transition: background-color 200ms ease;
+}
+
+tabbar tab:checked {
+  background-color: @view_bg_color;
+  box-shadow: inset 0 -2px 0 @accent_bg_color;
+}
+
+tabbar tab:hover:not(:checked) {
+  background-color: alpha(currentColor, 0.05);
+}
+
+/* Close buttons inside tabs */
+tabbar tab .tab-close-button {
+  border-radius: 99px;
+  padding: 4px;
+  margin-left: 4px;
+}
+
+/* ========================================================
+   Color Chooser / Color Swatches
+======================================================== */
+colorswatch {
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+colorswatch overlay {
+  border-radius: 5px;
+  border: 1px solid alpha(black, 0.1);
+}
+
+colorswatch:selected overlay {
+  box-shadow: inset 0 0 0 2px white;
+}
+/* ========================================================
+   Legacy TreeViews (GtkTreeView)
+   Still commonly used in complex file managers and IDEs
+======================================================== */
+treeview.view {
+  border-left-color: alpha(currentColor, 0.1);
+  border-top-color: alpha(currentColor, 0.1);
+}
+
+treeview.view:hover {
+  background-color: alpha(currentColor, 0.03);
+}
+
+treeview.view header button {
+  padding: 4px 8px;
+  background-color: @window_bg_color;
+  border: none;
+  border-right: 1px solid alpha(currentColor, 0.1);
+  border-bottom: 1px solid alpha(currentColor, 0.1);
+  border-radius: 0;
+}
+
+/* The small arrow for expanding rows */
+treeview.view.expander {
+  -gtk-icon-source: -gtk-icontheme("pan-down-symbolic");
+  color: alpha(currentColor, 0.5);
+}
+
+treeview.view.expander:checked {
+  transform: rotate(0deg);
+}
+
+/* ========================================================
+   Media Controls (GtkVideo / GtkMediaControls)
+======================================================== */
+video {
+  background-color: black;
+}
+
+.video-controls {
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 8px;
+  border-radius: 8px;
+  margin: 12px;
+}
+
+/* Media control buttons are typically flat OSD buttons */
+.video-controls button {
+  padding: 8px;
+  border-radius: 99px;
+  background-color: transparent;
+  color: white;
+}
+
+.video-controls button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ========================================================
+   App-Specific Overrides (Geary, Nemo, Caja)
+   Converted from the end of your gtk-dark.css file
+======================================================== */
+
+/* Geary Email Client */
+.geary-main-window leaflet > box:first-child > .titlebar button:backdrop {
+  background-color: transparent;
+}
+
+.geary-main-window leaflet > box:first-child > .titlebar button:backdrop:hover {
+  background-color: alpha(currentColor, 0.15);
+}
+
+.geary-main-window leaflet > box:not(:first-child) > .titlebar {
+  border-bottom: 1px solid transparent;
+  box-shadow: none;
+}
+
+.geary-main-window leaflet > box:not(:first-child) > .titlebar:backdrop {
+  background-image: none;
+  background-color: @new_title_bg_color;
+}
+
+.geary-main-window separator.sidebar {
+  background-color: alpha(currentColor, 0.15);
+}
+
+.geary-folder .sidebar.view:selected,
+.geary-folder iconview.sidebar:selected {
+  background-color: alpha(currentColor, 0.1);
+}
+
+/* Nemo & Caja File Managers */
+/* These often use desktop-specific classes that don't change much in GTK4 */
+.nemo-window .sidebar .view,
+.caja-navigation-window .sidebar .view {
+  background-color: @sidebar_bg_color;
+}
+
+.nemo-window .sidebar row:selected,
+.caja-navigation-window .sidebar row:selected {
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+}
+
+/* Specific fix for the 'Storage Bar' in Nemo */
+.storage-bar trough {
+  min-height: 8px;
+  border-radius: 4px;
+  background-color: alpha(currentColor, 0.1);
+}
+
+.storage-bar progress {
+  border-radius: 4px;
+  background-color: @accent_bg_color;
+}
+
+/* ========================================================
+   Final Global Tweaks
+======================================================== */
+.osd {
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  border-radius: 12px;
+  padding: 8px;
+}
