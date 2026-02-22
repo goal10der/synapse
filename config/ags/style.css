@@ -7,6 +7,24 @@
    ============================================================================= */
 
 /* Primary fill: bg + border + text → primary colours */
+* {
+  outline: none;
+}
+/* Targets the container you added */
+.dropdown {
+  margin-top: 4px;
+}
+
+/* Forces the hidden popover to respect the clean look */
+.tonal-dropdown popover contents {
+  padding: 0;
+  margin: 0;
+  border-radius: 12px;
+}
+
+.tonal-dropdown popover listview {
+  padding: 4px;
+}
 .clock:hover image,
 #settings-button:hover,
 #notification-button:hover,
@@ -152,7 +170,6 @@ window,
 }
 
 * {
-  font-family: "JetBrains";
   font-size: 14px;
 }
 
@@ -357,26 +374,6 @@ combobox arrow {
    BUTTONS
    ============================================================================= */
 
-button,
-button.flat,
-.primary-button,
-.secondary-button,
-.icon-button {
-  background: var(--surface_container_low);
-  border: 1.5px solid var(--outline_variant);
-  border-radius: 8px;
-  padding: 8px 12px;
-  color: var(--primary);
-  box-shadow: none;
-  text-shadow: none;
-  transition: all 0.2s ease;
-}
-
-button label,
-button image {
-  color: var(--on_surface);
-}
-
 .danger-button {
   background: transparent;
   border: 1.5px solid transparent;
@@ -417,89 +414,61 @@ spinner {
 }
 
 /* =============================================================================
-   POPOVERS
+   POPOVERS (Ultra Slim & Clean)
    ============================================================================= */
 
 popover > contents {
   background-color: var(--surface);
-  border: 1.5px solid var(--outline_variant);
-  border-radius: 16px;
-  padding: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--outline_variant);
+  border-radius: 12px;
+  padding: 0; /* Removed padding to stop the 'huge box' effect */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  margin: 4px;
 }
 
-popover slider {
-  margin: 10px;
-}
-
+/* This targets the container specifically used in your dropdowns */
 .popover-box {
-  padding: 12px;
-  min-width: 200px;
-}
-
-.popover-box .title {
-  font-size: 14px;
-  font-weight: bold;
-  color: var(--primary);
-  margin-bottom: 8px;
-}
-
-.power-profile-button {
-  background: transparent;
-  border: 1.5px solid transparent;
-  border-radius: 8px;
-  padding: 12px;
-  color: var(--on_surface);
-  margin-bottom: 4px;
-  transition: all 0.2s ease;
-}
-
-.power-profile-button.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--on_primary);
+  padding: 4px; /* Minimal padding inside the box */
+  min-width: 180px;
 }
 
 popover listview {
-  background-color: var(--surface_container);
-  border: 1.5px solid var(--outline_variant);
-  border-radius: 12px;
-  padding: 8px;
+  background-color: transparent;
+  border: none;
 }
 
 popover listview row {
   background: transparent;
-  border: 1.5px solid transparent;
-  border-radius: 10px;
-  margin: 6px 0;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 6px;
+  margin: 1px 0;
+  padding: 6px 10px;
+  color: var(--on_surface); /* Explicitly set base color */
+  transition: background 0.15s ease;
+}
+
+/* Selected/Hovered items */
+popover listview row:hover {
+  background-color: var(--surface_container_highest);
+}
+
+popover listview row:selected,
+popover listview row:checked {
+  background-color: var(--primary);
+  color: var(--on_primary);
+}
+
+/* Ensure the label inside the row respects the selection color */
+popover listview row:selected label,
+popover listview row:checked label,
+popover listview row:hover label {
+  color: inherit; /* This makes it take the row's color */
 }
 
 popover listview row modelbutton {
   background: transparent;
-  border-radius: 9px;
-  padding: 0 12px;
-  min-height: 40px;
-  color: var(--on_surface);
+  padding: 0;
+  min-height: 28px;
 }
-
-popover listview row:hover,
-popover listview row:selected,
-popover listview row:checked {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  transform: translateX(4px);
-}
-
-popover listview row label {
-  font-weight: 600;
-  text-shadow: none;
-}
-
-popover listview row image.selection-mode {
-  padding-left: 8px;
-}
-
 /* =============================================================================
    VOLUME POPUP
    ============================================================================= */

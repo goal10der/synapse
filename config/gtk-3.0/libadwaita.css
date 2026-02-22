@@ -144,6 +144,7 @@
   --shade-color: @shade_color;
   --scrollbar-outline-color: @scrollbar_outline_color;
 }
+@import "./colors.css";
 
 :root {
   --border-color: color-mix(

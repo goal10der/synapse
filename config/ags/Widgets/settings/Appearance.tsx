@@ -1,4 +1,5 @@
 import Gtk from "gi://Gtk?version=4.0";
+import GLib from "gi://GLib";
 import WallpaperPicker from "./WallpaperPicker";
 import { matugenState, runMatugen } from "../Settings";
 import Notifd from "gi://AstalNotifd";
@@ -13,6 +14,9 @@ export default function AppearancePage({
   scaleFactor: number;
 }) {
   const notifd = Notifd.get_default();
+
+  // Debounce timer ID for Matugen
+  let matugenTimeoutId: number | null = null;
 
   const tonalSpots = [
     "scheme-content",
@@ -97,6 +101,8 @@ export default function AppearancePage({
           />
         </Gtk.Box>
       </Gtk.Box>
+
+      {/* WORKSPACES Section */}
       <Gtk.Box orientation={Gtk.Orientation.VERTICAL} spacing={8}>
         <Gtk.Label
           label="WORKSPACES"
@@ -158,6 +164,8 @@ export default function AppearancePage({
           </Gtk.Box>
         </Gtk.Box>
       </Gtk.Box>
+
+      {/* MATUGEN Section with Debounce */}
       <Gtk.Box orientation={Gtk.Orientation.VERTICAL} spacing={8}>
         <Gtk.Label
           label="MATUGEN TONAL SPOT"
@@ -176,14 +184,31 @@ export default function AppearancePage({
               if (btn) btn.add_css_class("tonal-main-btn");
 
               self.selected = tonalSpots.indexOf(matugenState.currentTonalSpot);
+
               self.connect("notify::selected", () => {
                 const selected = tonalSpots[self.selected];
-                runMatugen(selected);
+
+                // Remove existing timeout if user changes selection again quickly
+                if (matugenTimeoutId !== null) {
+                  GLib.source_remove(matugenTimeoutId);
+                }
+
+                // Debounce: wait 500ms before running the heavy Matugen script
+                matugenTimeoutId = GLib.timeout_add(
+                  GLib.PRIORITY_DEFAULT,
+                  500,
+                  () => {
+                    runMatugen(selected);
+                    matugenTimeoutId = null;
+                    return GLib.SOURCE_REMOVE;
+                  },
+                );
               });
             }}
           />
         </Gtk.Box>
       </Gtk.Box>
+
       <Gtk.Label label="WALLPAPERS" xalign={0} cssClasses={["section-title"]} />
       <WallpaperPicker />
     </Gtk.Box>

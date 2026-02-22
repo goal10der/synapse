@@ -1,3 +1,16 @@
+/* Legacy GTK3 variables (Used by the File Picker) */
+@define-color theme_bg_color #181210;
+@define-color theme_fg_color #eedfdb;
+@define-color theme_base_color #181210;
+@define-color theme_text_color #eedfdb;
+@define-color theme_selected_bg_color #ffb59a;
+@define-color theme_selected_fg_color #552009;
+@define-color theme_unfocused_bg_color @theme_bg_color;
+@define-color theme_unfocused_fg_color @theme_fg_color;
+@define-color theme_unfocused_base_color @theme_base_color;
+@define-color theme_unfocused_text_color @theme_text_color;
+
+/* Modern Libadwaita variables */
 @define-color accent_color #ffb59a;
 @define-color accent_fg_color #380d00;
 @define-color accent_bg_color #ffb59a;
@@ -16,6 +29,6 @@
 @define-color sidebar_border_color @window_bg_color;
 @define-color sidebar_backdrop_color @window_bg_color;
 
-.navigation-sidebar {
-    background-color: #211a18;
-}
+/* Picker Specific Tweaks */
+filechooser .sidebar { background-color: #211a18; }
+.navigation-sidebar { background-color: #211a18; }

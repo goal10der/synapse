@@ -5,63 +5,41 @@ import { onCleanup } from "ags";
 import { matugenState, execAsync } from "../Settings";
 
 const WALLPAPER_DIR = `${GLib.get_home_dir()}/Wallpapers`;
-const POLL_INTERVAL = 2000;
-
-const loadWallpapers = () => {
-  const wallpapers: string[] = [];
-  let dir: any = null;
-  try {
-    dir = GLib.Dir.open(WALLPAPER_DIR, 0);
-    let name: string | null;
-    while ((name = dir.read_name()) !== null) {
-      if (
-        name.endsWith(".jpg") ||
-        name.endsWith(".png") ||
-        name.endsWith(".jpeg") ||
-        name.endsWith(".gif") ||
-        name.endsWith(".JPG") ||
-        name.endsWith(".PNG") ||
-        name.endsWith(".JPEG") ||
-        name.endsWith(".GIF")
-      ) {
-        wallpapers.push(`${WALLPAPER_DIR}/${name}`);
-      }
-    }
-  } catch (e) {
-    console.error(`Wallpaper Directory Error: ${e}`);
-  } finally {
-    if (dir) {
-      try {
-        dir.close();
-      } catch (e) {
-        console.error(`Failed to close directory: ${e}`);
-      }
-    }
-  }
-  return wallpapers.sort();
-};
 
 export default function WallpaperPicker() {
   let flowBoxRef: Gtk.FlowBox | null = null;
   let currentWallpapers: string[] = [];
-  let pollTimeoutId: number | null = null;
   let monitorSignalId: number | null = null;
 
+  // Debounce lock to prevent multiple simultaneous heavy reloads
+  let isApplying = false;
+
   const applyWallpaper = (path: string) => {
+    if (isApplying) return;
+    isApplying = true;
+
     const name = path.split("/").pop() ?? "wallpaper";
-    const cmd = `bash -c 'awww img "${path}" -t wipe --transition-duration 3 --transition-bezier .17,.67,.48,1.01 --transition-fps 60 && matugen image --type ${matugenState.currentTonalSpot} "${path}"'`;
+
+    // We add '&' at the end of the matugen command so it doesn't block
+    // and use 'nohup' or similar logic to let it finish in the background
+    const cmd = `bash -c 'awww img "${path}" -t wipe --transition-duration 3 && matugen image --type ${matugenState.currentTonalSpot} "${path}" &'`;
+
     execAsync(cmd)
       .then(() => {
-        console.log(`Wallpaper applied with ${matugenState.currentTonalSpot}`);
+        console.log(`Wallpaper application started...`);
         GLib.spawn_command_line_async(
-          `notify-send "Wallpaper Changed" "${name}" -i "${path}" -t 3000`,
+          `notify-send "Theming Started" "Applying ${name}..." -i "${path}" -t 2000`,
         );
       })
       .catch((err) => {
         console.error(err);
-        GLib.spawn_command_line_async(
-          `notify-send "Wallpaper Error" "Failed to apply wallpaper" -i dialog-error-symbolic -t 3000`,
-        );
+      })
+      .finally(() => {
+        // Release the lock after a short delay to prevent spamming
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+          isApplying = false;
+          return GLib.SOURCE_REMOVE;
+        });
       });
   };
 
@@ -75,16 +53,14 @@ export default function WallpaperPicker() {
 
     const provider = new Gtk.CssProvider();
     provider.load_from_data(
-      `
-      * { 
+      `* { 
         background-image: url('file://${path}');
         background-size: cover;
         background-position: center;
         min-width: 160px;
         min-height: 150px;
         border-radius: 10px;
-      }
-      `,
+      }`,
       -1,
     );
     box
@@ -95,47 +71,51 @@ export default function WallpaperPicker() {
     return button;
   };
 
+  const loadWallpapers = () => {
+    const wallpapers: string[] = [];
+    let dir: any = null;
+    try {
+      dir = GLib.Dir.open(WALLPAPER_DIR, 0);
+      let name: string | null;
+      while ((name = dir.read_name()) !== null) {
+        if (/\.(jpg|jpeg|png|gif|JPG|PNG|JPEG|GIF)$/.test(name)) {
+          wallpapers.push(`${WALLPAPER_DIR}/${name}`);
+        }
+      }
+    } catch (e) {
+      console.error(`Wallpaper Directory Error: ${e}`);
+    } finally {
+      if (dir) dir.close();
+    }
+    return wallpapers.sort();
+  };
+
   const updateGrid = () => {
     if (!flowBoxRef) return;
-
     const newWallpapers = loadWallpapers();
-    if (JSON.stringify(currentWallpapers) === JSON.stringify(newWallpapers)) {
+    if (JSON.stringify(currentWallpapers) === JSON.stringify(newWallpapers))
       return;
-    }
 
-    console.log(
-      `Wallpapers changed: ${currentWallpapers.length} -> ${newWallpapers.length}`,
-    );
     currentWallpapers = newWallpapers;
     while (flowBoxRef.get_first_child()) {
-      const child = flowBoxRef.get_first_child();
-      if (child) {
-        flowBoxRef.remove(child);
-      }
+      flowBoxRef.remove(flowBoxRef.get_first_child()!);
     }
     newWallpapers.forEach((path) => {
       flowBoxRef!.append(createWallpaperButton(path));
     });
   };
 
-  const startPolling = () => {
-    // Polling disabled - using file monitor instead
-    console.log("File monitor mode enabled, polling disabled");
-  };
-  let monitorActive = false;
+  // File Monitor Setup
   let fileMonitor: any = null;
   try {
     const file = Gio.File.new_for_path(WALLPAPER_DIR);
     fileMonitor = file.monitor_directory(Gio.FileMonitorFlags.NONE, null);
     monitorSignalId = fileMonitor.connect(
       "changed",
-      (_monitor: any, file: any, otherFile: any, eventType: number) => {
+      (_m: any, _f: any, _o: any, event: number) => {
         if (
-          eventType === Gio.FileMonitorEvent.CREATED ||
-          eventType === Gio.FileMonitorEvent.DELETED ||
-          eventType === Gio.FileMonitorEvent.MOVED_IN ||
-          eventType === Gio.FileMonitorEvent.MOVED_OUT ||
-          eventType === Gio.FileMonitorEvent.CHANGES_DONE_HINT
+          event === Gio.FileMonitorEvent.CREATED ||
+          event === Gio.FileMonitorEvent.DELETED
         ) {
           GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
             updateGrid();
@@ -144,36 +124,18 @@ export default function WallpaperPicker() {
         }
       },
     );
-
-    monitorActive = true;
-    console.log(`File monitor active for: ${WALLPAPER_DIR}`);
   } catch (e) {
-    console.error(`File monitor failed: ${e}`);
-  }
-
-  // Only use polling as fallback if monitor failed
-  if (!monitorActive) {
-    console.log(`Starting polling fallback mode (every ${POLL_INTERVAL}ms)`);
-    startPolling();
+    console.error(e);
   }
 
   onCleanup(() => {
-    if (pollTimeoutId) {
-      GLib.source_remove(pollTimeoutId);
-      pollTimeoutId = null;
-    }
-    if (monitorSignalId && fileMonitor) {
-      try {
-        fileMonitor.disconnect(monitorSignalId);
-      } catch (e) {}
-    }
+    if (monitorSignalId && fileMonitor) fileMonitor.disconnect(monitorSignalId);
   });
 
   return (
     <Gtk.ScrolledWindow
       heightRequest={400}
       vscrollbarPolicy={Gtk.PolicyType.AUTOMATIC}
-      hscrollbarPolicy={Gtk.PolicyType.NEVER}
     >
       <Gtk.Box
         orientation={Gtk.Orientation.VERTICAL}
@@ -187,11 +149,9 @@ export default function WallpaperPicker() {
           $={(self) => {
             flowBoxRef = self;
             currentWallpapers = loadWallpapers();
-            console.log(`Initial load: ${currentWallpapers.length} wallpapers`);
-            currentWallpapers.forEach((path) => {
-              self.append(createWallpaperButton(path));
-            });
-            startPolling();
+            currentWallpapers.forEach((path) =>
+              self.append(createWallpaperButton(path)),
+            );
           }}
         />
       </Gtk.Box>

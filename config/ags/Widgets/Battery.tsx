@@ -45,10 +45,12 @@ export default function Battery() {
         <image iconName={createBinding(battery, "iconName")} />
         <label label={percent} />
       </box>
-      <popover>
+      <popover cssClasses={["battery-popover"]}>
         <box
           orientation={Gtk.Orientation.VERTICAL}
           cssClasses={["popover-box"]}
+          widthRequest={50} // Forces a specific width
+          heightRequest={70} // Forces a specific height
         >
           <label label="Power Profiles" cssClasses={["title"]} />
           {powerprofiles.get_profiles().map(({ profile }) => {

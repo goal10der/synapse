@@ -92,19 +92,10 @@
 
 * {
   padding: 0;
-  -gtktoolbutton-icon-spacing: 4;
-  -gtktextview-error-underline-color: @error_bg_color;
-  -gtkscrolledwindow-scrollbar-spacing: 0;
-  -gtktoolitemgroup-expander-size: 11;
-  -gtkwidget-text-handle-width: 20;
-  -gtkwidget-text-handle-height: 24;
-  -gtkdialog-button-spacing: 4;
-  -gtkdialog-action-area-border: 0;
   outline-color: alpha(currentColor, 0.3);
   outline-style: dashed;
   outline-offset: -3px;
   outline-width: 1px;
-  -gtk-outline-radius: 4px;
   -gtk-secondary-caret-color: @accent_bg_color;
 }
 
@@ -119,7 +110,6 @@
 }
 
 *:disabled {
-  -gtk-icon-effect: dim;
 }
 
 .gtkstyle-fallback {
@@ -850,7 +840,6 @@ button {
   outline-style: solid;
   outline-offset: -2px;
   outline-width: 2px;
-  -gtk-outline-radius: 4px;
   color: @window_fg_color;
   outline-color: alpha(@accent_color, 0.5);
   background-color: mix(currentColor, @window_bg_color, 0.903);
@@ -887,7 +876,6 @@ button:hover {
   color: @window_fg_color;
   background-color: mix(currentColor, @window_bg_color, 0.85);
   box-shadow: none;
-  -gtk-icon-effect: highlight;
 }
 
 notebook > header > tabs > arrow:active,
@@ -913,7 +901,6 @@ notebook > header > tabs > arrow:backdrop,
 button:backdrop.flat,
 button:backdrop {
   transition: 200ms ease-out;
-  -gtk-icon-effect: none;
 }
 
 button.sidebar-button:backdrop,
@@ -1473,7 +1460,6 @@ button.font > box > box > label {
 
 button.circular {
   border-radius: 9999px;
-  -gtk-outline-radius: 9999px;
   padding: 4px;
   background-origin: padding-box, border-box;
   background-clip: padding-box, border-box;
@@ -1610,7 +1596,6 @@ toolbar.inline-toolbar toolbutton > button.flat {
   border-right-color: alpha(currentColor, 0.15);
   border-right-style: none;
   border-radius: 0;
-  -gtk-outline-radius: 0;
 }
 
 .linked:not(.vertical) > combobox:first-child > box > button.combo,
@@ -1628,8 +1613,6 @@ toolbar.inline-toolbar toolbutton:first-child > button.flat {
   border-left-color: transparent;
   border-top-left-radius: 6px;
   border-bottom-left-radius: 6px;
-  -gtk-outline-top-left-radius: 6px;
-  -gtk-outline-bottom-left-radius: 6px;
 }
 
 .linked:not(.vertical)
@@ -1671,8 +1654,6 @@ toolbar.inline-toolbar toolbutton:last-child > button.flat {
   border-right-style: solid;
   border-top-right-radius: 6px;
   border-bottom-right-radius: 6px;
-  -gtk-outline-top-right-radius: 6px;
-  -gtk-outline-bottom-right-radius: 6px;
 }
 
 .linked:not(.vertical)
@@ -1705,7 +1686,6 @@ headerbar .linked button:only-child:not(:only-child),
 toolbar.inline-toolbar toolbutton:only-child > button.flat {
   border-style: solid;
   border-radius: 6px;
-  -gtk-outline-radius: 6px;
 }
 
 .xfce4-panel.background button menu .linked button,
@@ -1731,7 +1711,6 @@ headerbar > .stack-switcher.linked > button:not(:only-child),
   border-bottom-color: alpha(currentColor, 0.15);
   border-style: solid none none none;
   border-radius: 0;
-  -gtk-outline-radius: 0;
 }
 
 .linked.vertical > combobox:first-child > box > button.combo,
@@ -1741,8 +1720,6 @@ headerbar > .stack-switcher.linked > button:not(:only-child),
   border-top-color: transparent;
   border-top-left-radius: 6px;
   border-top-right-radius: 6px;
-  -gtk-outline-top-left-radius: 6px;
-  -gtk-outline-top-right-radius: 6px;
 }
 
 .linked.vertical > combobox:last-child > box > button.combo,
@@ -1753,8 +1730,6 @@ headerbar > .stack-switcher.linked > button:not(:only-child),
   border-bottom-style: solid;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
-  -gtk-outline-bottom-left-radius: 6px;
-  -gtk-outline-bottom-right-radius: 6px;
 }
 
 .linked.vertical > combobox:only-child > box > button.combo,
@@ -1763,7 +1738,6 @@ headerbar > .stack-switcher.linked > button:not(:only-child),
 .linked.vertical > button:only-child {
   border-style: solid;
   border-radius: 6px;
-  -gtk-outline-radius: 6px;
 }
 
 .linked.vertical > spinbutton:not(.vertical),
@@ -2432,7 +2406,6 @@ headerbar.selection-mode button:backdrop {
   background-color: mix(currentColor, @accent_bg_color, 0.9);
   text-shadow: none;
   -gtk-icon-shadow: none;
-  -gtk-icon-effect: none;
   border-color: transparent;
 }
 
@@ -3511,7 +3484,6 @@ notebook > header tab {
 }
 
 notebook > header tab.reorderable-page {
-  -gtk-outline-radius: 8px;
   outline-width: 2px;
   outline-offset: -2px;
   outline-style: solid;
@@ -3860,7 +3832,6 @@ switch slider {
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   transition: all 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  -gtk-outline-radius: 20px;
 }
 
 switch image {
@@ -4406,12 +4377,10 @@ scale.fine-tune fill,
 scale.fine-tune highlight,
 scale.fine-tune trough {
   border-radius: 5px;
-  -gtk-outline-radius: 7px;
 }
 
 scale trough {
   outline-offset: 2px;
-  -gtk-outline-radius: 5px;
 }
 
 scale.horizontal trough {
@@ -5740,7 +5709,6 @@ list row {
   outline-style: solid;
   outline-offset: -3px;
   outline-width: 2px;
-  -gtk-outline-radius: 6px;
 }
 
 row {
@@ -5923,7 +5891,6 @@ messagedialog.csd .dialog-action-area button {
   border-right-style: none;
   border-bottom-style: none;
   border-radius: 0;
-  -gtk-outline-radius: 0;
   background-color: @dialog_bg_color;
   color: @dialog_fg_color;
   border-top: 1px solid alpha(currentColor, 0.15);
@@ -5961,12 +5928,10 @@ messagedialog.csd .dialog-action-area button:checked:active {
 messagedialog.csd .dialog-action-area button:first-child {
   border-left-style: none;
   border-bottom-left-radius: 11px;
-  -gtk-outline-bottom-left-radius: 11px;
 }
 
 messagedialog.csd .dialog-action-area button:last-child {
   border-bottom-right-radius: 11px;
-  -gtk-outline-bottom-right-radius: 11px;
 }
 
 filechooser .dialog-action-box {
@@ -6123,7 +6088,6 @@ button.sidebar-button {
   margin-bottom: 3px;
   padding: 0;
   border-radius: 100%;
-  -gtk-outline-radius: 100%;
 }
 
 button.sidebar-button:not(:hover):not(:active) > image,
@@ -6620,7 +6584,6 @@ colorchooser .popover.osd {
 }
 
 .content-view:hover {
-  -gtk-icon-effect: highlight;
 }
 
 .osd .scale-popup button.flat {
@@ -9276,30 +9239,22 @@ popover.combo list > row:not(:last-child) {
 
 popover.combo list > row:first-child {
   border-top-left-radius: 8px;
-  -gtk-outline-top-left-radius: 7px;
   border-top-right-radius: 8px;
-  -gtk-outline-top-right-radius: 7px;
 }
 
 popover.combo list > row:last-child {
   border-bottom-left-radius: 8px;
-  -gtk-outline-bottom-left-radius: 7px;
   border-bottom-right-radius: 8px;
-  -gtk-outline-bottom-right-radius: 7px;
 }
 
 popover.combo overshoot.top {
   border-top-left-radius: 8px;
-  -gtk-outline-top-left-radius: 7px;
   border-top-right-radius: 8px;
-  -gtk-outline-top-right-radius: 7px;
 }
 
 popover.combo overshoot.bottom {
   border-bottom-left-radius: 8px;
-  -gtk-outline-bottom-left-radius: 7px;
   border-bottom-right-radius: 8px;
-  -gtk-outline-bottom-right-radius: 7px;
 }
 
 popover.combo scrollbar.vertical {
@@ -9309,16 +9264,12 @@ popover.combo scrollbar.vertical {
 
 popover.combo scrollbar.vertical:dir(ltr) {
   border-top-right-radius: 8px;
-  -gtk-outline-top-right-radius: 7px;
   border-bottom-right-radius: 8px;
-  -gtk-outline-bottom-right-radius: 7px;
 }
 
 popover.combo scrollbar.vertical:dir(rtl) {
   border-top-left-radius: 8px;
-  -gtk-outline-top-left-radius: 7px;
   border-bottom-left-radius: 8px;
-  -gtk-outline-bottom-left-radius: 7px;
 }
 
 row.expander {
@@ -9415,7 +9366,6 @@ list.content > row:not(:first-child):not(:last-child) {
   border-radius: 0;
   border-left: 1px solid @card_shade_color;
   border-right: 1px solid @card_shade_color;
-  -gtk-outline-radius: 0;
 }
 
 list.content > row:first-child {
@@ -9424,7 +9374,6 @@ list.content > row:first-child {
   border-top: 1px solid @card_shade_color;
   border-left: 1px solid @card_shade_color;
   border-right: 1px solid @card_shade_color;
-  -gtk-outline-radius: 12px 12px 0 0;
 }
 
 list.content > row:last-child {
@@ -9435,13 +9384,11 @@ list.content > row:last-child {
   border-bottom: 1px solid @card_shade_color;
   border-left: 1px solid @card_shade_color;
   border-right: 1px solid @card_shade_color;
-  -gtk-outline-radius: 0 0 12px 12px;
 }
 
 list.content > row:only-child {
   border: 1px solid @card_shade_color;
   border-radius: 12px;
-  -gtk-outline-radius: 12px;
 }
 
 list.content > row:not(.expander):not(:active):hover.activatable:not(:selected),
@@ -10038,7 +9985,6 @@ leaflet > outline {
 
 avatar {
   border-radius: 9999px;
-  -gtk-outline-radius: 9999px;
   font-weight: bold;
 }
 
@@ -10466,11 +10412,6 @@ list .h4 {
 }
 
 GraniteWidgetsPopOver {
-  -granitewidgetspopover-arrow-width: 21;
-  -granitewidgetspopover-arrow-height: 10;
-  -granitewidgetspopover-border-radius: 12px;
-  -granitewidgetspopover-border-width: 0;
-  -granitewidgetspopover-shadow-size: 12;
   border: 1px solid @view_bg_color;
   background: @view_bg_color;
   color: @window_fg_color;
@@ -10905,7 +10846,6 @@ XfdesktopIconView.view .rubberband {
 }
 
 .xfce4-panel.background button menu {
-  -gtk-icon-effect: none;
   text-shadow: none;
 }
 
@@ -11396,15 +11336,6 @@ geary-conversation-viewer#conversation_viewer searchbar > revealer > box {
   min-height: 32px;
 }
 
-/* ============================================================
-
-/* ============================================================
- * GLOBAL BUTTON RESET
- * Overrides gtk-contained-dark.css base theme background-image
- * injection on all buttons. Uses background shorthand (resets
- * background-image in one declaration, same pattern as AGS shell).
- * ============================================================ */
-
 button {
   background: @window_bg_color;
   color: @window_fg_color;
@@ -11501,4 +11432,108 @@ button.toggle.active {
 
 * {
   font-family: "JetBrains Mono", "JetBrainsMono Nerd Font", monospace;
+}
+* {
+  outline: none;
+}
+
+/* ============================================================
+ * DIALOG/FILECHOOSER BUTTON RESET
+ * Scoped to dialogs only — avoids interfering with AGS buttons.
+ * Overrides base theme background-image injection.
+ * ============================================================ */
+
+dialog button,
+filechooser button,
+messagedialog button,
+.dialog button {
+  background-color: @window_bg_color;
+  color: @window_fg_color;
+  border-color: alpha(@window_fg_color, 0.12);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+dialog button:hover,
+filechooser button:hover {
+  background-color: alpha(@window_fg_color, 0.08);
+}
+
+dialog button:active,
+dialog button:checked,
+filechooser button:active,
+filechooser button:checked {
+  background-color: alpha(@window_fg_color, 0.14);
+  box-shadow: none;
+}
+
+dialog button:disabled,
+filechooser button:disabled {
+  background-color: alpha(@window_bg_color, 0.6);
+  color: alpha(@window_fg_color, 0.35);
+}
+
+dialog button.flat,
+filechooser button.flat {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+button.suggested-action,
+dialog button.suggested-action,
+filechooser button.suggested-action {
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+  border-color: alpha(@accent_bg_color, 0.8);
+}
+
+button.suggested-action:hover,
+dialog button.suggested-action:hover,
+filechooser button.suggested-action:hover {
+  background-color: mix(black, @accent_bg_color, 0.12);
+  color: @accent_fg_color;
+}
+
+button.suggested-action:active,
+dialog button.suggested-action:active,
+filechooser button.suggested-action:active {
+  background-color: mix(black, @accent_bg_color, 0.22);
+  color: @accent_fg_color;
+}
+
+button.suggested-action:disabled {
+  background-color: mix(@accent_bg_color, @window_bg_color, 0.5);
+  color: alpha(@accent_fg_color, 0.5);
+}
+
+button.destructive-action,
+dialog button.destructive-action {
+  background-color: @destructive_bg_color;
+  color: @destructive_fg_color;
+  border-color: alpha(@destructive_bg_color, 0.8);
+}
+
+button.destructive-action:hover {
+  background-color: mix(black, @destructive_bg_color, 0.12);
+}
+
+filechooser box revealer box button {
+  background-color: @window_bg_color;
+  border-color: transparent;
+}
+
+filechooser box revealer box button:hover {
+  background-color: alpha(@window_fg_color, 0.08);
+}
+
+/* ============================================================
+ * GLOBAL FONT OVERRIDE — JetBrains Mono
+ * ============================================================ */
+
+* {
+  font-family: "JetBrains Mono", "JetBrainsMono Nerd Font", monospace;
+}
+* {
+  outline: none;
 }

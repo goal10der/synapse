@@ -84,6 +84,7 @@ app.start({
     } catch (e) {
       console.error(e);
     }
+
     const monitors = createBinding(app, "monitors");
     return (
       <For each={monitors}>

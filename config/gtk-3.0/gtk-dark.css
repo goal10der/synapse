@@ -11396,15 +11396,6 @@ geary-conversation-viewer#conversation_viewer searchbar > revealer > box {
   min-height: 32px;
 }
 
-/* ============================================================
-
-/* ============================================================
- * GLOBAL BUTTON RESET
- * Overrides gtk-contained-dark.css base theme background-image
- * injection on all buttons. Uses background shorthand (resets
- * background-image in one declaration, same pattern as AGS shell).
- * ============================================================ */
-
 button {
   background: @window_bg_color;
   color: @window_fg_color;
@@ -11435,7 +11426,7 @@ button:backdrop {
 /* Flat buttons */
 button.flat {
   background: transparent;
-  border-color: transparent;
+  border-color: none;
   box-shadow: none;
 }
 
@@ -11501,4 +11492,108 @@ button.toggle.active {
 
 * {
   font-family: "JetBrains Mono", "JetBrainsMono Nerd Font", monospace;
+}
+* {
+  outline: none;
+}
+
+/* ============================================================
+ * DIALOG/FILECHOOSER BUTTON RESET
+ * Scoped to dialogs only — avoids interfering with AGS buttons.
+ * Overrides base theme background-image injection.
+ * ============================================================ */
+
+dialog button,
+filechooser button,
+messagedialog button,
+.dialog button {
+  background-color: @window_bg_color;
+  color: @window_fg_color;
+  border-color: alpha(@window_fg_color, 0.12);
+  box-shadow: none;
+  text-shadow: none;
+}
+
+dialog button:hover,
+filechooser button:hover {
+  background-color: alpha(@window_fg_color, 0.08);
+}
+
+dialog button:active,
+dialog button:checked,
+filechooser button:active,
+filechooser button:checked {
+  background-color: alpha(@window_fg_color, 0.14);
+  box-shadow: none;
+}
+
+dialog button:disabled,
+filechooser button:disabled {
+  background-color: alpha(@window_bg_color, 0.6);
+  color: alpha(@window_fg_color, 0.35);
+}
+
+dialog button.flat,
+filechooser button.flat {
+  background-color: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+button.suggested-action,
+dialog button.suggested-action,
+filechooser button.suggested-action {
+  background-color: @accent_bg_color;
+  color: @accent_fg_color;
+  border-color: alpha(@accent_bg_color, 0.8);
+}
+
+button.suggested-action:hover,
+dialog button.suggested-action:hover,
+filechooser button.suggested-action:hover {
+  background-color: mix(black, @accent_bg_color, 0.12);
+  color: @accent_fg_color;
+}
+
+button.suggested-action:active,
+dialog button.suggested-action:active,
+filechooser button.suggested-action:active {
+  background-color: mix(black, @accent_bg_color, 0.22);
+  color: @accent_fg_color;
+}
+
+button.suggested-action:disabled {
+  background-color: mix(@accent_bg_color, @window_bg_color, 0.5);
+  color: alpha(@accent_fg_color, 0.5);
+}
+
+button.destructive-action,
+dialog button.destructive-action {
+  background-color: @destructive_bg_color;
+  color: @destructive_fg_color;
+  border-color: alpha(@destructive_bg_color, 0.8);
+}
+
+button.destructive-action:hover {
+  background-color: mix(black, @destructive_bg_color, 0.12);
+}
+
+filechooser box revealer box button {
+  background-color: @window_bg_color;
+  border-color: transparent;
+}
+
+filechooser box revealer box button:hover {
+  background-color: alpha(@window_fg_color, 0.08);
+}
+
+/* ============================================================
+ * GLOBAL FONT OVERRIDE — JetBrains Mono
+ * ============================================================ */
+
+* {
+  font-family: "JetBrains Mono", "JetBrainsMono Nerd Font", monospace;
+}
+* {
+  outline: none;
 }
