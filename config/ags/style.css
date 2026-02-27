@@ -1,5 +1,7 @@
 @import url("file:///home/tim/.cache/matugen/colors.css");
-
+label {
+  color: var(--primary);
+}
 /* =============================================================================
    SHARED HOVER PATTERNS
    Selectors that produce identical output are grouped here once instead of
@@ -11,10 +13,9 @@
   outline: none;
 }
 /* Targets the container you added */
-.dropdown {
-  margin-top: 4px;
+popover {
+  all: unset;
 }
-
 /* Forces the hidden popover to respect the clean look */
 .tonal-dropdown popover contents {
   padding: 0;
@@ -141,8 +142,9 @@ popover listview row:checked image,
 /* surface_container_high on hover */
 .back-button:hover,
 .cal-cell:hover,
-.cal-icon-btn:hover {
-  background: var(--surface_container_high);
+.cal-icon-btn:hover,
+.qs-bar-btn:hover {
+  background: var(--surface_container);
 }
 
 /* surface_container + primary border on hover */
@@ -819,13 +821,14 @@ popover listview row modelbutton {
 
 .notification-list {
   min-height: 200px;
+  padding: 2px 0;
 }
 
 .notification-item {
   background-color: var(--surface_container_low);
   border: 1.5px solid var(--outline_variant);
   border-radius: 12px;
-  padding: 12px;
+  padding: 14px;
   color: var(--on_surface);
   margin-bottom: 8px;
   transition: all 0.2s ease;
@@ -928,17 +931,17 @@ popover listview row modelbutton {
   border: 1.5px solid var(--outline_variant);
   border-radius: 24px 0 0 24px;
   border-right: none;
-  padding: 20px;
+  padding: 24px;
   margin-top: 15px;
   margin-bottom: 15px;
-  min-width: 380px;
+  min-width: 400px;
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-header {
   border-bottom: 1.5px solid var(--outline_variant);
-  padding-bottom: 12px;
-  margin-bottom: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 4px;
 }
 
 .sidebar-title {
@@ -970,8 +973,135 @@ popover listview row modelbutton {
   background-color: var(--surface_container_low);
   border: 1.5px solid var(--outline_variant);
   border-radius: 16px;
-  padding: 20px;
+  padding: 16px 20px;
   transition: all 0.2s ease;
+}
+
+/* Bar-style quick-setting buttons */
+.qs-bar-btn {
+  background: var(--surface_container_low);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 12px;
+  padding: 10px 14px;
+  min-height: 38px;
+  color: var(--on_surface);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.18s ease;
+}
+
+.qs-bar-btn label {
+  color: var(--on_surface);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.qs-bar-btn image {
+  color: var(--primary);
+  -gtk-icon-size: 16px;
+}
+
+.qs-bar-btn:hover {
+  background: var(--surface_container);
+  border-color: var(--primary);
+}
+
+.qs-bar-btn:hover label,
+.qs-bar-btn:hover image {
+  color: var(--primary);
+}
+
+.qs-bar-btn.active {
+  background: var(--primary_container);
+  border-color: var(--primary);
+}
+
+.qs-bar-btn.active label {
+  color: var(--on_primary_container);
+  font-weight: 600;
+}
+
+.qs-bar-btn.active image {
+  color: var(--primary);
+}
+
+/* Dropdown panel that appears in revealers */
+.qs-dropdown-panel {
+  background: var(--surface_container_low);
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+}
+
+.qs-dropdown-scroll {
+  border-radius: 12px;
+}
+
+/* Panel header title (e.g. "Wi-Fi", "Bluetooth") */
+.qs-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Sub-section labels inside panels (e.g. "Paired", "Available") */
+.qs-panel-section {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--on_surface_variant);
+  opacity: 0.7;
+}
+
+/* ── Audio panel ───────────────────────────────────────────────────────────── */
+
+.audio-vol-slider trough {
+  background: var(--surface_container_highest);
+  border-radius: 10px;
+  min-height: 6px;
+}
+
+.audio-vol-slider highlight {
+  background: var(--primary);
+  border-radius: 10px;
+}
+
+.audio-vol-slider slider {
+  background: var(--surface_container_highest);
+  border: 2px solid var(--primary);
+  border-radius: 100%;
+  min-width: 14px;
+  min-height: 14px;
+  margin: -4px;
+}
+
+.audio-vol-pct {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--on_surface_variant);
+  min-width: 38px;
+}
+
+.audio-device-drop {
+  font-size: 12px;
+}
+
+.audio-device-icon {
+  color: var(--on_surface_variant);
+  -gtk-icon-size: 14px;
+}
+
+.audio-app-icon {
+  -gtk-icon-size: 16px;
+  color: var(--primary);
+}
+
+.audio-app-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--on_surface);
 }
 
 .sliders-container {
@@ -982,7 +1112,7 @@ popover listview row modelbutton {
 }
 
 .notification-section {
-  margin-bottom: 2px;
+  margin-bottom: 6px;
 }
 
 .notification-title {
@@ -1007,7 +1137,7 @@ popover listview row modelbutton {
   background: var(--surface_container_low);
   border: 1.5px solid var(--outline_variant);
   border-radius: 12px;
-  padding: 10px 14px;
+  padding: 12px 16px;
 }
 
 .back-button {
@@ -1282,7 +1412,7 @@ popover listview row modelbutton {
    ============================================================================= */
 
 .cal-widget {
-  padding: 4px 0 8px 0;
+  padding: 4px 0 12px 0;
 }
 
 .cal-section-title {
@@ -1295,7 +1425,7 @@ popover listview row modelbutton {
 }
 
 .cal-nav {
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .cal-month-lbl {
@@ -1355,8 +1485,8 @@ popover listview row modelbutton {
   color: var(--on_surface_variant);
   opacity: 0.6;
   text-transform: uppercase;
-  min-width: 32px;
-  padding: 2px 0;
+  min-width: 34px;
+  padding: 4px 0 6px 0;
 }
 
 .cal-grid {
@@ -1365,13 +1495,13 @@ popover listview row modelbutton {
 
 .cal-cell,
 .cal-cell-blank {
-  min-width: 32px;
-  min-height: 34px;
+  min-width: 34px;
+  min-height: 40px;
 }
 
 .cal-cell {
   border-radius: 8px;
-  padding: 2px 4px;
+  padding: 4px 4px;
   transition: background 0.12s ease;
 }
 
@@ -1403,7 +1533,7 @@ popover listview row modelbutton {
 }
 
 .cal-event-list {
-  margin-top: 2px;
+  margin-top: 6px;
 }
 
 .cal-day-heading {
@@ -1640,8 +1770,8 @@ popover listview row modelbutton {
 }
 
 .dv-slot {
-  min-height: 48px;
-  padding: 4px 0;
+  min-height: 56px;
+  padding: 6px 0;
   transition: background 0.1s ease;
 }
 
@@ -1676,7 +1806,7 @@ popover listview row modelbutton {
 }
 
 .dv-ev-col {
-  padding: 3px 10px 3px 8px;
+  padding: 4px 12px 4px 10px;
 }
 
 .dv-half-line {
@@ -1690,7 +1820,7 @@ popover listview row modelbutton {
   background: var(--surface_container_low);
   border: 1.5px solid var(--outline_variant);
   border-radius: 8px;
-  padding: 6px 8px;
+  padding: 8px 10px;
   transition: background 0.12s ease;
 }
 

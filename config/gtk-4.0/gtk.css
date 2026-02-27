@@ -92,6 +92,7 @@
 
 * {
   padding: 0;
+  margin: 0;
   outline-color: alpha(currentColor, 0.3);
   outline-style: dashed;
   outline-offset: -3px;
@@ -283,7 +284,6 @@ popover.background.magnifier,
   color: rgba(255, 255, 255, 0.9);
   border: none;
   background-color: rgba(0, 0, 0, 0.7);
-  background-clip: padding-box;
 }
 
 @keyframes spin {
@@ -11452,4 +11452,9 @@ filechooser box revealer box button:hover {
 }
 * {
   outline: none;
+}
+popover {
+  background-color: none;
+  margin: 0;
+  padding: 0;
 }

@@ -9,6 +9,8 @@ const DATA_DIR = `${GLib.get_home_dir()}/.local/share/ags`;
 const EVENTS_FILE = `${DATA_DIR}/calendar-events.json`;
 const SUBS_FILE = `${DATA_DIR}/calendar-subscriptions.json`;
 
+export type RecurrenceFreq = "daily" | "weekly" | "monthly" | "yearly";
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -17,6 +19,8 @@ export interface CalendarEvent {
   description?: string;
   color?: string;
   sourceId?: string; // set when imported from a subscription
+  recurrence?: RecurrenceFreq; // repeat frequency
+  recurrenceEnd?: string; // "YYYY-MM-DD" — last date to generate instances (inclusive)
 }
 
 export interface CalendarSubscription {
@@ -217,6 +221,49 @@ function firstWeekdayMon(y: number, m: number) {
   return (new Date(y, m, 1).getDay() + 6) % 7;
 }
 
+// ── Recurring event expansion ─────────────────────────────────────────────────
+
+/**
+ * Returns all events (real + virtual recurring instances) that fall on `date`.
+ * Virtual instances share the same fields as the master event but with their
+ * actual `date` set to the occurrence date. They are NOT persisted.
+ */
+export function getEventsForDate(
+  events: CalendarEvent[],
+  date: string,
+): CalendarEvent[] {
+  const result: CalendarEvent[] = [];
+  for (const ev of events) {
+    if (ev.date === date) {
+      result.push(ev);
+      continue;
+    }
+    if (!ev.recurrence) continue;
+    if (ev.date >= date) continue;
+    if (ev.recurrenceEnd && date > ev.recurrenceEnd) continue;
+
+    const [sy, sm, sd] = ev.date.split("-").map(Number);
+    const [ty, tm, td] = date.split("-").map(Number);
+
+    let matches = false;
+    if (ev.recurrence === "daily") {
+      matches = true;
+    } else if (ev.recurrence === "weekly") {
+      const start = new Date(sy, sm - 1, sd);
+      const target = new Date(ty, tm - 1, td);
+      const diff = Math.round((target.getTime() - start.getTime()) / 86400000);
+      matches = diff % 7 === 0;
+    } else if (ev.recurrence === "monthly") {
+      matches = sd === td;
+    } else if (ev.recurrence === "yearly") {
+      matches = sm === tm && sd === td;
+    }
+
+    if (matches) result.push({ ...ev, date });
+  }
+  return result;
+}
+
 const MONTHS = [
   "January",
   "February",
@@ -243,38 +290,395 @@ const COLORS = [
   "#73daca",
 ];
 
-// ── Colour swatch helper ──────────────────────────────────────────────────────
+// ── Colour helpers ────────────────────────────────────────────────────────────
 
-function makeSwatchRow(
+function hexToHsl(hex: string): [number, number, number] {
+  const h = hex.replace("#", "");
+  let r = parseInt(h.slice(0, 2), 16) / 255;
+  let g = parseInt(h.slice(2, 4), 16) / 255;
+  let b = parseInt(h.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b),
+    min = Math.min(r, g, b);
+  let hh = 0,
+    s = 0;
+  const l = (max + min) / 2;
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r:
+        hh = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        break;
+      case g:
+        hh = ((b - r) / d + 2) / 6;
+        break;
+      case b:
+        hh = ((r - g) / d + 4) / 6;
+        break;
+    }
+  }
+  return [Math.round(hh * 360), Math.round(s * 100), Math.round(l * 100)];
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  const s1 = s / 100,
+    l1 = l / 100;
+  const a = s1 * Math.min(l1, 1 - l1);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    const c = l1 - a * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(255 * c)
+      .toString(16)
+      .padStart(2, "0");
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function setBg(widget: Gtk.Widget, css: string) {
+  const p = new Gtk.CssProvider();
+  p.load_from_data(css, -1);
+  widget
+    .get_style_context()
+    .add_provider(p, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+}
+
+// ── Custom colour-picker window ───────────────────────────────────────────────
+
+/**
+ * Opens a custom colour-picker window that:
+ *  - hides `parentDialog` while it is open
+ *  - is styled just like the event dialog (same CSS class, same size, centered)
+ *  - shows preset swatches, HSL sliders, a live preview, and a hex entry
+ *  - calls `onAccept(hex)` and restores `parentDialog` on "Choose"
+ *  - calls `onCancel()` and restores `parentDialog` on "Cancel" / close
+ */
+function openColorPickerWindow(
+  parentDialog: Gtk.Window,
+  getWin: () => Gtk.Window | null,
   initial: string,
-  onChange: (c: string) => void,
-): Gtk.Box {
-  const row = new Gtk.Box({ spacing: 4 });
-  COLORS.forEach((c) => {
+  onAccept: (hex: string) => void,
+  onCancel: () => void,
+) {
+  // Hide the event dialog while the picker is open
+  parentDialog.hide();
+
+  let [curH, curS, curL] = hexToHsl(initial);
+  let curHex = initial;
+
+  const win = new Gtk.Window({
+    title: "Choose Colour",
+    defaultWidth: 320,
+    resizable: false,
+    modal: true,
+    transientFor: getWin() ?? undefined,
+  });
+  win.add_css_class("cal-dialog");
+
+  const restore = (accepted: boolean) => {
+    win.close();
+    parentDialog.present();
+    if (accepted) onAccept(curHex);
+    else onCancel();
+  };
+
+  // Close button / window-delete also cancels
+  win.connect("close-request", () => {
+    parentDialog.present();
+    onCancel();
+    return false;
+  });
+
+  const vbox = new Gtk.Box({
+    orientation: Gtk.Orientation.VERTICAL,
+    spacing: 12,
+    marginTop: 16,
+    marginBottom: 16,
+    marginStart: 16,
+    marginEnd: 16,
+  });
+
+  const mkLabel = (t: string) =>
+    new Gtk.Label({ label: t, xalign: 0, cssClasses: ["cal-dlg-label"] });
+
+  // ── Live preview ──────────────────────────────────────────────────────────
+  const previewRow = new Gtk.Box({ spacing: 10 });
+  const previewSwatch = new Gtk.Box();
+  previewSwatch.set_size_request(40, 40);
+  setBg(
+    previewSwatch,
+    `* { background:${curHex}; border-radius:8px; min-width:40px; min-height:40px;
+         border:1px solid alpha(white,0.2); }`,
+  );
+  const previewHexLbl = new Gtk.Label({
+    label: curHex.toUpperCase(),
+    xalign: 0,
+    cssClasses: ["cal-dlg-label"],
+  });
+  previewRow.append(previewSwatch);
+  previewRow.append(previewHexLbl);
+
+  const syncPreview = () => {
+    curHex = hslToHex(curH, curS, curL);
+    previewHexLbl.label = curHex.toUpperCase();
+    setBg(
+      previewSwatch,
+      `* { background:${curHex}; border-radius:8px; min-width:40px; min-height:40px;
+           border:1px solid alpha(white,0.2); }`,
+    );
+    hexEntry.text = curHex.toUpperCase();
+  };
+
+  // ── Preset swatches ───────────────────────────────────────────────────────
+  vbox.append(mkLabel("Presets"));
+  const swatchGrid = new Gtk.Box({ spacing: 6, marginBottom: 2 });
+
+  const clearSwatchActive = () => {
+    let ch: Gtk.Widget | null = swatchGrid.get_first_child();
+    while (ch) {
+      ch.remove_css_class("active-swatch");
+      ch = ch.get_next_sibling();
+    }
+  };
+
+  // Extra palette: 16 colours (original 8 + 8 more)
+  const FULL_PALETTE = [
+    ...COLORS,
+    "#f7768e",
+    "#ff9e64",
+    "#e0af68",
+    "#9ece6a",
+    "#73daca",
+    "#7dcfff",
+    "#7aa2f7",
+    "#bb9af7",
+  ].filter((c, i, a) => a.indexOf(c) === i); // dedupe
+
+  FULL_PALETTE.forEach((c) => {
     const btn = new Gtk.Button();
-    btn.set_size_request(22, 22);
+    btn.set_size_request(26, 26);
     const p = new Gtk.CssProvider();
     p.load_from_data(
-      `button { background:${c}; border-radius:50%; padding:0; min-width:22px; min-height:22px; border:2px solid transparent; }
-       button.active-swatch { border-color:white; }`,
+      `button { background:${c}; border-radius:50%; padding:0; min-width:26px; min-height:26px;
+                border:2px solid transparent; }
+       button.active-swatch { border-color:white; box-shadow:0 0 0 1px rgba(0,0,0,0.5); }`,
       -1,
     );
     btn
       .get_style_context()
       .add_provider(p, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
-    if (c === initial) btn.add_css_class("active-swatch");
-    btn.connect("clicked", () => {
-      let ch = row.get_first_child();
-      while (ch) {
-        ch.remove_css_class("active-swatch");
-        ch = ch.get_next_sibling();
-      }
+    if (c.toLowerCase() === curHex.toLowerCase())
       btn.add_css_class("active-swatch");
-      onChange(c);
+    btn.connect("clicked", () => {
+      clearSwatchActive();
+      btn.add_css_class("active-swatch");
+      [curH, curS, curL] = hexToHsl(c);
+      curHex = c;
+      hSlider.set_value(curH);
+      sSlider.set_value(curS);
+      lSlider.set_value(curL);
+      syncPreview();
     });
-    row.append(btn);
+    swatchGrid.append(btn);
   });
-  return row;
+  vbox.append(swatchGrid);
+
+  // ── HSL sliders ───────────────────────────────────────────────────────────
+  const makeSlider = (label: string, min: number, max: number, val: number) => {
+    vbox.append(mkLabel(label));
+    const sl = new Gtk.Scale({
+      orientation: Gtk.Orientation.HORIZONTAL,
+      adjustment: new Gtk.Adjustment({
+        lower: min,
+        upper: max,
+        value: val,
+        stepIncrement: 1,
+        pageIncrement: 10,
+      }),
+      drawValue: true,
+      digits: 0,
+      hexpand: true,
+    });
+    sl.add_css_class("cal-color-slider");
+    vbox.append(sl);
+    return sl;
+  };
+
+  const hSlider = makeSlider("Hue (0–360)", 0, 360, curH);
+  const sSlider = makeSlider("Saturation (0–100)", 0, 100, curS);
+  const lSlider = makeSlider("Lightness (0–100)", 0, 100, curL);
+
+  // Declare hexEntry before syncPreview uses it
+  const hexEntry = new Gtk.Entry({
+    text: curHex.toUpperCase(),
+    placeholderText: "#RRGGBB",
+    maxLength: 7,
+    widthChars: 9,
+  });
+
+  hSlider.connect("value-changed", () => {
+    curH = Math.round(hSlider.get_value());
+    clearSwatchActive();
+    syncPreview();
+  });
+  sSlider.connect("value-changed", () => {
+    curS = Math.round(sSlider.get_value());
+    clearSwatchActive();
+    syncPreview();
+  });
+  lSlider.connect("value-changed", () => {
+    curL = Math.round(lSlider.get_value());
+    clearSwatchActive();
+    syncPreview();
+  });
+
+  // ── Hex entry ─────────────────────────────────────────────────────────────
+  vbox.append(mkLabel("Hex"));
+  const hexRow = new Gtk.Box({ spacing: 8 });
+  const applyHexBtn = new Gtk.Button({
+    label: "Apply",
+    cssClasses: ["cal-dlg-save"],
+  });
+  applyHexBtn.connect("clicked", () => {
+    const val = hexEntry.text.trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+      curHex = val.toLowerCase();
+      [curH, curS, curL] = hexToHsl(curHex);
+      hSlider.set_value(curH);
+      sSlider.set_value(curS);
+      lSlider.set_value(curL);
+      clearSwatchActive();
+      syncPreview();
+    }
+  });
+  hexEntry.connect("activate", () => applyHexBtn.emit("clicked"));
+  hexRow.append(hexEntry);
+  hexRow.append(applyHexBtn);
+  vbox.append(hexRow);
+
+  // ── Preview + action buttons ──────────────────────────────────────────────
+  vbox.append(mkLabel("Preview"));
+  vbox.append(previewRow);
+
+  const btnRow = new Gtk.Box({
+    spacing: 8,
+    halign: Gtk.Align.END,
+    marginTop: 4,
+  });
+  const cancelBtn = new Gtk.Button({ label: "Cancel" });
+  const chooseBtn = new Gtk.Button({
+    label: "Choose",
+    cssClasses: ["cal-dlg-save"],
+  });
+  cancelBtn.connect("clicked", () => restore(false));
+  chooseBtn.connect("clicked", () => restore(true));
+  btnRow.append(cancelBtn);
+  btnRow.append(chooseBtn);
+  vbox.append(btnRow);
+
+  win.set_child(vbox);
+  win.present();
+}
+
+// ── Colour picker inline widget ───────────────────────────────────────────────
+
+/**
+ * Builds the in-dialog colour section: preset swatches + a live preview swatch
+ * + a "Custom…" button that swaps to the full colour-picker window.
+ */
+function makeColorPicker(
+  initial: string,
+  getParentDialog: () => Gtk.Window,
+  getWin: () => Gtk.Window | null,
+  onChange: (c: string) => void,
+): Gtk.Box {
+  let current = initial;
+
+  const outer = new Gtk.Box({
+    orientation: Gtk.Orientation.VERTICAL,
+    spacing: 6,
+  });
+
+  // Preview row
+  const previewWrap = new Gtk.Box({ spacing: 8 });
+  const preview = new Gtk.Box();
+  preview.set_size_request(28, 28);
+  setBg(
+    preview,
+    `* { background:${current}; border-radius:6px; min-width:28px; min-height:28px; border:1px solid alpha(white,0.25); }`,
+  );
+  const previewLbl = new Gtk.Label({
+    label: current.toUpperCase(),
+    xalign: 0,
+    cssClasses: ["cal-dlg-label"],
+  });
+  previewWrap.append(preview);
+  previewWrap.append(previewLbl);
+
+  const refreshPreview = (c: string) => {
+    current = c;
+    previewLbl.label = c.toUpperCase();
+    setBg(
+      preview,
+      `* { background:${c}; border-radius:6px; min-width:28px; min-height:28px; border:1px solid alpha(white,0.25); }`,
+    );
+    onChange(c);
+  };
+
+  // Preset swatches
+  const swatchRow = new Gtk.Box({ spacing: 4, marginBottom: 2 });
+  const clearActive = () => {
+    let ch: Gtk.Widget | null = swatchRow.get_first_child();
+    while (ch) {
+      ch.remove_css_class("active-swatch");
+      ch = ch.get_next_sibling();
+    }
+  };
+  COLORS.forEach((c) => {
+    const btn = new Gtk.Button();
+    btn.set_size_request(24, 24);
+    const p = new Gtk.CssProvider();
+    p.load_from_data(
+      `button { background:${c}; border-radius:50%; padding:0; min-width:24px; min-height:24px; border:2px solid transparent; }
+       button.active-swatch { border-color:white; box-shadow:0 0 0 1px rgba(0,0,0,0.4); }`,
+      -1,
+    );
+    btn
+      .get_style_context()
+      .add_provider(p, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION);
+    if (c === current) btn.add_css_class("active-swatch");
+    btn.connect("clicked", () => {
+      clearActive();
+      btn.add_css_class("active-swatch");
+      refreshPreview(c);
+    });
+    swatchRow.append(btn);
+  });
+
+  // "Custom…" button — opens the full picker window
+  const customBtn = new Gtk.Button({
+    label: "Custom…",
+    cssClasses: ["cal-dlg-label"],
+    marginTop: 2,
+  });
+  customBtn.connect("clicked", () => {
+    openColorPickerWindow(
+      getParentDialog(),
+      getWin,
+      current,
+      (hex) => {
+        clearActive();
+        refreshPreview(hex);
+      },
+      () => {
+        /* cancelled — colour unchanged */
+      },
+    );
+  });
+
+  outer.append(previewWrap);
+  outer.append(swatchRow);
+  outer.append(customBtn);
+  return outer;
 }
 
 // ── Event edit dialog ─────────────────────────────────────────────────────────
@@ -323,10 +727,43 @@ function openEventDialog(
     text: existing?.description ?? "",
   });
 
-  let color = existing?.color ?? COLORS[0];
-  const swatches = makeSwatchRow(color, (c) => {
-    color = c;
+  // ── Recurrence ──────────────────────────────────────────────────────────────
+  const RECUR_LABELS = ["None", "Daily", "Weekly", "Monthly", "Yearly"];
+  const RECUR_VALUES: (RecurrenceFreq | undefined)[] = [
+    undefined,
+    "daily",
+    "weekly",
+    "monthly",
+    "yearly",
+  ];
+
+  const recurStore = Gtk.StringList.new(RECUR_LABELS);
+  const recurDrop = new Gtk.DropDown({
+    model: recurStore,
+    selected: RECUR_VALUES.indexOf(existing?.recurrence),
   });
+
+  const recurEndEntry = new Gtk.Entry({
+    placeholderText: "End date YYYY-MM-DD (optional)",
+    text: existing?.recurrenceEnd ?? "",
+    sensitive: !!existing?.recurrence,
+  });
+
+  recurDrop.connect("notify::selected", () => {
+    const idx = recurDrop.selected;
+    recurEndEntry.sensitive = idx > 0;
+    if (idx === 0) recurEndEntry.text = "";
+  });
+
+  let color = existing?.color ?? COLORS[0];
+  const colorPicker = makeColorPicker(
+    color,
+    () => dialog,
+    getWin,
+    (c) => {
+      color = c;
+    },
+  );
 
   const btnRow = new Gtk.Box({
     spacing: 8,
@@ -359,9 +796,31 @@ function openEventDialog(
     if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
     const time = timeEntry.text.trim() || undefined;
     const description = descEntry.text.trim() || undefined;
+    const recurrence = RECUR_VALUES[recurDrop.selected];
+    const recurrenceEnd =
+      recurrence && /^\d{4}-\d{2}-\d{2}$/.test(recurEndEntry.text.trim())
+        ? recurEndEntry.text.trim()
+        : undefined;
     if (existing)
-      updateEvent(existing.id, { title, date, time, description, color });
-    else addEvent({ title, date, time, description, color });
+      updateEvent(existing.id, {
+        title,
+        date,
+        time,
+        description,
+        color,
+        recurrence,
+        recurrenceEnd,
+      });
+    else
+      addEvent({
+        title,
+        date,
+        time,
+        description,
+        color,
+        recurrence,
+        recurrenceEnd,
+      });
     dialog.close();
   });
 
@@ -377,8 +836,12 @@ function openEventDialog(
     timeEntry,
     mkLabel("Description (optional)"),
     descEntry,
+    mkLabel("Repeat"),
+    recurDrop,
+    mkLabel("Repeat ends (optional)"),
+    recurEndEntry,
     mkLabel("Colour"),
-    swatches,
+    colorPicker,
     btnRow,
   ].forEach((w) => vbox.append(w));
 
@@ -443,7 +906,7 @@ export function buildDayView(
   });
 
   const renderContent = () => {
-    const evs = calendarEvents.get().filter((e) => e.date === date);
+    const evs = getEventsForDate(calendarEvents.get(), date);
 
     const container = new Gtk.Box({
       orientation: Gtk.Orientation.VERTICAL,
@@ -582,6 +1045,14 @@ export function buildDayView(
         });
         tl.set_ellipsize(3);
         info.append(tl);
+        if (ev.recurrence) {
+          const badge = new Gtk.Label({
+            label: `↺ ${ev.recurrence}`,
+            xalign: 0,
+            cssClasses: ["dv-ev-recur"],
+          });
+          info.append(badge);
+        }
         if (ev.time)
           info.append(
             new Gtk.Label({
@@ -1087,7 +1558,7 @@ export default function CalendarWidget(
       row = 0;
     for (let dd = 1; dd <= days; dd++) {
       const ds = toDateStr(y, m, dd);
-      const dayEvs = events.filter((e) => e.date === ds);
+      const dayEvs = getEventsForDate(events, ds);
 
       const cell = new Gtk.Box({
         orientation: Gtk.Orientation.VERTICAL,
@@ -1166,15 +1637,12 @@ export default function CalendarWidget(
     hdr.append(openBtn);
     miniList.append(hdr);
 
-    const evs = calendarEvents
-      .get()
-      .filter((e) => e.date === date)
-      .sort((a, b) => {
-        if (!a.time && !b.time) return 0;
-        if (!a.time) return -1;
-        if (!b.time) return 1;
-        return a.time!.localeCompare(b.time!);
-      });
+    const evs = getEventsForDate(calendarEvents.get(), date).sort((a, b) => {
+      if (!a.time && !b.time) return 0;
+      if (!a.time) return -1;
+      if (!b.time) return 1;
+      return a.time!.localeCompare(b.time!);
+    });
 
     if (!evs.length) {
       miniList.append(
