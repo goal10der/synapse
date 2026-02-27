@@ -13,6 +13,9 @@ label {
   outline: none;
 }
 /* Targets the container you added */
+.dropdown {
+  margin-top: 4px;
+}
 popover {
   all: unset;
 }
@@ -1147,6 +1150,80 @@ popover listview row modelbutton {
   padding: 6px 10px;
   color: var(--on_surface);
   transition: all 0.15s ease;
+}
+
+/* =============================================================================
+   UPDATE POPUP
+   ============================================================================= */
+
+.update-popup-window {
+  background: transparent;
+}
+
+.update-popup {
+  background: var(--surface);
+  border: 1.5px solid var(--primary);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 12px;
+  min-width: 320px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+.update-popup-icon {
+  -gtk-icon-size: 28px;
+  color: var(--primary);
+}
+
+.update-popup-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--on_surface);
+}
+
+.update-popup-body {
+  font-size: 12px;
+  color: var(--on_surface_variant);
+}
+
+.update-popup-later {
+  background: transparent;
+  border: 1.5px solid var(--outline_variant);
+  border-radius: 8px;
+  padding: 5px 14px;
+  color: var(--on_surface_variant);
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+
+.update-popup-later:hover {
+  background: var(--surface_container);
+  border-color: var(--outline);
+  color: var(--on_surface);
+}
+
+.update-popup-view {
+  background: var(--primary);
+  border: 1.5px solid var(--primary);
+  border-radius: 8px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.15s ease;
+}
+
+.update-popup-view label {
+  color: var(--on_primary);
+}
+
+.update-popup-view:hover {
+  background: var(--primary_container);
+  border-color: var(--primary);
+}
+
+.update-popup-view:hover label {
+  color: var(--on_primary_container);
 }
 
 /* =============================================================================

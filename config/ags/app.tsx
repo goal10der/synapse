@@ -7,6 +7,7 @@ import Gtk from "gi://Gtk?version=4.0";
 import Bar from "./Bar";
 import VolumePopup from "./Widgets/VolumePopup";
 import BrightnessPopup from "./Widgets/BrightnessPopup";
+import UpdatePopup from "./Widgets/Updatepopup";
 import SettingsWindow from "./Widgets/Settings";
 import Applauncher from "./Widgets/Applauncher";
 import NotificationPopups from "./Widgets/Notificationpopup";
@@ -95,6 +96,7 @@ app.start({
             <SettingsWindow gdkmonitor={gdkmonitor} />
             <VolumePopup gdkmonitor={gdkmonitor} />
             <BrightnessPopup gdkmonitor={gdkmonitor} />
+            <UpdatePopup gdkmonitor={gdkmonitor} />
             <NotificationPopups />
             <Sidebar gdkmonitor={gdkmonitor} />
             <PowerMenu gdkmonitor={gdkmonitor} />

@@ -313,6 +313,12 @@ install_dotfiles() {
     done
     
     echo -e "\033[0;32m[✓] Dotfiles installation completed.\033[0m"
+    
+    # Write the installed commit SHA so UpdatePopup can detect newer versions
+    local commit_sha
+    commit_sha=$(git -C "$SCRIPT_DIR" rev-parse HEAD 2>/dev/null || echo "unknown")
+    echo "$commit_sha" > "$HOME/.config/ags/.synapse-version"
+    echo "    - Recorded installed version: ${commit_sha:0:7}"
 }
 
 install_zen_browser() {

@@ -25,7 +25,7 @@ const defaultConfig: BarConfig = {
 
 export const barConfig = new Variable<BarConfig>(defaultConfig);
 export const editMode = new Variable<boolean>(false);
-const CONFIG_PATH = `${GLib.get_user_config_dir()}/ags/bar-layout.json`;
+const CONFIG_PATH = `${GLib.get_user_data_dir()}/ags/bar-layout.json`;
 
 export function toggleEditMode(): void {
   editMode.set(!editMode.get());
