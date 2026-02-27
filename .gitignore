@@ -6,3 +6,4 @@ node_modules/
 *.log
 # Thunar Bookmarks
 config/gtk-3.0/bookmarks
+config/ags/.synapse-version
