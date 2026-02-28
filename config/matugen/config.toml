@@ -4,8 +4,8 @@ default_mode = 'dark'
 default_type = 'scheme-tonal-spot'
 
 [templates.colors]
-input_path = '/home/tim/.config/matugen/templates/colors.css'
-output_path = '/home/tim/.cache/matugen/colors.css'
+input_path = '~/.config/matugen/templates/colors.css'
+output_path = '~/.cache/matugen/colors.css'
 
 [templates.foot]
 input_path = '~/.config/matugen/templates/foot.conf'
