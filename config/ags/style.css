@@ -1,4 +1,4 @@
-@import url("file:///home/tim/.cache/matugen/colors.css");
+@import url("colors.css");
 label {
   color: var(--primary);
 }
@@ -760,6 +760,14 @@ popover listview row modelbutton {
   border-color: var(--primary);
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Video/GIF wallpaper card */
+/* play icon badge on video thumbnail */
+.wallpaper-video-play-badge {
+  opacity: 0.85;
+  color: white;
+  -gtk-icon-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
 /* =============================================================================
@@ -1905,4 +1913,10 @@ popover listview row modelbutton {
   font-size: 11px;
   font-weight: 600;
   color: var(--primary);
+}
+label {
+  color: var(--primary);
+}
+button label {
+  color: var(--on_surface);
 }

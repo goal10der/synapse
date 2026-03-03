@@ -58,16 +58,25 @@ export function execAsync(cmd: string): Promise<void> {
 
 export const matugenState = {
   currentTonalSpot: loadSavedValue("tonalSpot", "scheme-tonal-spot") as string,
+  lastWallpaperPath: loadSavedValue("lastWallpaperPath", "") as string,
+};
+
+export const setLastWallpaperPath = (path: string) => {
+  matugenState.lastWallpaperPath = path;
+  saveToDisk("lastWallpaperPath", path);
 };
 
 export const runMatugen = (spot: string, imagePath?: string) => {
   matugenState.currentTonalSpot = spot;
   saveToDisk("tonalSpot", spot);
 
-  const targetImage = imagePath
-    ? `"${imagePath}"`
-    : `$(awww query | sed -n "s/.*image: //p" | cut -d: -f1 | head -n1)`;
-  const cmd = `bash -c 'matugen image -t ${spot} "${targetImage}"'`;
+  const target = imagePath ?? matugenState.lastWallpaperPath;
+  if (!target) {
+    console.warn("runMatugen: no wallpaper path known yet, skipping.");
+    return;
+  }
+
+  const cmd = `bash -c 'matugen image -t ${spot} "${target}"'`;
   execAsync(cmd);
 };
 function TabButton({ label, id, activeTab, icon }: any) {

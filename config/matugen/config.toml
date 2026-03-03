@@ -5,7 +5,7 @@ default_type = 'scheme-tonal-spot'
 
 [templates.colors]
 input_path = '~/.config/matugen/templates/colors.css'
-output_path = '~/.cache/matugen/colors.css'
+output_path = '~/.config/ags/colors.css'
 
 [templates.foot]
 input_path = '~/.config/matugen/templates/foot.conf'
