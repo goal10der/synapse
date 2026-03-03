@@ -6,10 +6,6 @@ default_type = 'scheme-tonal-spot'
 [templates.colors]
 input_path = '~/.config/matugen/templates/colors.css'
 output_path = '~/.config/ags/colors.css'
-<<<<<<< HEAD
-=======
-
->>>>>>> ec0116a (fixed a bug where matugen config was being read from the wrong location)
 
 [templates.foot]
 input_path = '~/.config/matugen/templates/foot.conf'
