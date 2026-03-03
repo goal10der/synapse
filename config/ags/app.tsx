@@ -18,7 +18,7 @@ import { toggleEditMode, editMode } from "./State";
 
 const configDir = `${GLib.get_user_config_dir()}/ags`;
 const STYLE_PATH = `${configDir}/style.css`;
-const MATUGEN_DIR = `${GLib.get_home_dir()}/.cache/matugen`;
+const MATUGEN_DIR = `${GLib.get_home_dir()}/.config/ags`;
 app.start({
   instanceName: "shell",
   css: STYLE_PATH,
