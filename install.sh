@@ -349,17 +349,6 @@ install_vscode() {
 
 check_requirements() {
     echo -e "\033[0;34m[→] Checking environment...\033[0m"
-    
-    if ! command -v iwctl &> /dev/null; then
-        echo -e "\033[1;31m[!] Error: iwd is not installed.\033[0m"
-        echo "My configurations use iwdctl for networking. Please install 'iwd' first."
-        exit 1
-    fi
-    
-    if ! systemctl is-active --quiet iwd; then
-        echo -e "\033[1;33m[!] Warning: iwd service is not active.\033[0m"
-        echo "Networking components in the UI may not work until you start 'iwd'."
-    fi
 
     echo -e "\033[0;32m[✓] Environment check passed.\033[0m"
 }
@@ -397,7 +386,6 @@ main() {
     echo "Next steps:"
     echo "  1. Restart your Hyprland session (or reboot)"
     echo "  2. Your wallpaper is in ~/Wallpapers/"
-    echo "  3. If needed, configure iwd: sudo systemctl enable --now iwd"
     echo ""
 
     # Clean up background sudo process and lock sudo
