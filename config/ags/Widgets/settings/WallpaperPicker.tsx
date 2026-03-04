@@ -117,7 +117,7 @@ export default function WallpaperPicker() {
       }
 
       execAsync(
-        `bash -c 'pkill -x mpvpaper; pkill -x awww; sleep 0.2; mpvpaper "*" "${path}" --mpv-options "no-audio loop"'`,
+        `bash -c 'pkill -x mpvpaper; awww clear; sleep 0.2; mpvpaper "*" "${path}" --mpv-options "no-audio loop"; matugen image --type ${matugenState.currentTonalSpot} "${path}"'`,
       )
         .then(() => {
           setLastWallpaperPath(path);
