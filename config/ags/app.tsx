@@ -20,7 +20,7 @@ const configDir = `${GLib.get_user_config_dir()}/ags`;
 const STYLE_PATH = `${configDir}/style.css`;
 const MATUGEN_DIR = `${GLib.get_home_dir()}/.config/ags`;
 app.start({
-  instanceName: "shell",
+  instanceName: "synapse",
   css: STYLE_PATH,
   requestHandler(argv, res) {
     if (argv[0] === "toggle") {
