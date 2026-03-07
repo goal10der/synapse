@@ -7,3 +7,7 @@ node_modules/
 # Thunar Bookmarks
 config/gtk-3.0/bookmarks
 config/ags/.synapse-version
+
+# hyprland userconfigs
+config/hypr/custom/user.conf
+config/hypr/custom/variables.conf
