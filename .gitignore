@@ -17,3 +17,5 @@ config/foot/colors.ini
 config/gtk-3.0/colors.css
 config/gtk-4.0/colors.css
 config/hypr/colors/colors.conf
+config/ags/colors.css
+
