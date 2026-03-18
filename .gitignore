@@ -12,10 +12,5 @@ config/ags/.synapse-version
 config/hypr/custom/user.conf
 config/hypr/custom/variables.conf
 
-# colors gen by matugen
-config/foot/colors.ini
-config/gtk-3.0/colors.css
-config/gtk-4.0/colors.css
-config/hypr/colors/colors.conf
-config/ags/colors.css
+
 

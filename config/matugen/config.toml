@@ -22,8 +22,12 @@ output_path = "~/.config/gtk-3.0/colors.css"
 [templates.gtk4]
 input_path = "~/.config/matugen/templates/gtk.tmp"
 output_path = "~/.config/gtk-4.0/colors.css"
-post_hook = "pkill -f xdg-desktop-portal-gtk; (/usr/lib/xdg-desktop-portal-gtk & disown)"
+post_hook = "pkill -f xdg-desktop-portal-gtk; /usr/lib/xdg-desktop-portal-gtk & disown"
 
 [templates.vesktop]
 input_path  = "~/.config/matugen/templates/synapse.css"
 output_path = "~/.config/vesktop/themes/synapse.css"
+
+[templates.starship]
+input_path = "~/.config/matugen/templates/starship.toml"
+output_path = "~/.config/starship.toml"

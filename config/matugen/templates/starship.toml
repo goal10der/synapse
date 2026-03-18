@@ -1,0 +1,66 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = """
+[░▒▓](fg:{{colors.primary.default.hex}})\
+[ 󰣇  ](bg:{{colors.primary.default.hex}} fg:{{colors.on_primary.default.hex}})\
+[](bg:{{colors.secondary.default.hex}} fg:{{colors.primary.default.hex}})\
+$directory\
+[](fg:{{colors.secondary.default.hex}} bg:{{colors.secondary.default.hex}})\
+$git_branch\
+$git_status\
+[](fg:{{colors.secondary.default.hex}} bg:#212736)\
+$nodejs\
+$rust\
+$golang\
+$php\
+[](fg:{{colors.background.default.hex}} bg:{{colors.surface_container_lowest.default.hex}})\
+$time\
+[ ](fg:{{colors.surface_container_lowest.default.hex}})\
+\n$character"""
+
+[directory]
+style = "fg:{{colors.on_secondary.default.hex}} bg:{{colors.secondary.default.hex}}"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+
+[git_branch]
+symbol = ""
+style = "bg:{{colors.on_secondary.default.hex}}"
+format = '[[ $symbol $branch ](fg:{{colors.on_secondary.default.hex}} bg:{{colors.secondary.default.hex}})]($style)'
+
+[git_status]
+style = "bg:{{colors.on_secondary.default.hex}}"
+format = '[[($all_status$ahead_behind )](fg:{{colors.on_secondary.default.hex}} bg:{{colors.secondary.default.hex}})]($style)'
+
+[nodejs]
+symbol = ""
+style = "bg:{{colors.background.default.hex}}"
+format = '[[ $symbol ($version) ](fg:{{colors.on_background.default.hex}} bg:{{colors.background.default.hex}})]($style)'
+
+[rust]
+symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+
+[golang]
+symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+
+[php]
+symbol = ""
+style = "bg:#212736"
+format = '[[ $symbol ($version) ](fg:#769ff0 bg:#212736)]($style)'
+
+[time]
+disabled = false
+time_format = "%R" # Hour:Minute Format
+style = "bg:{{colors.surface_container_lowest.default.hex}}"
+format = '[[  $time ](fg:{{colors.on_error_container.default.hex}} bg:{{colors.surface_container_lowest.default.hex}})]($style)'
