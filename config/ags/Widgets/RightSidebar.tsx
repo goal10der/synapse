@@ -8,7 +8,6 @@ import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import Gio from "gi://Gio";
 import Pango from "gi://Pango";
-import { onCleanup } from "ags";
 import { Variable } from "../utils/Variable";
 import { editMode, toggleEditMode } from "../State";
 import CalendarWidget, { buildDayView } from "./Calendar";
@@ -1368,7 +1367,7 @@ export default function RightSidebar({
     });
 
     const header = (
-      <box cssClasses={["sidebar-header"]} spacing={12} marginBottom={8}>
+      <box cssClasses={["sidebar-header"]} spacing={10}>
         <label
           label="Quick Settings"
           hexpand
@@ -1377,6 +1376,8 @@ export default function RightSidebar({
         />
         <button
           cssClasses={["settings-toggle"]}
+          widthRequest={40}
+          heightRequest={40}
           onClicked={() => {
             app.toggle_window(`settings-window-${gdkmonitor.connector}`);
             win.hide();
@@ -1386,6 +1387,8 @@ export default function RightSidebar({
         </button>
         <button
           cssClasses={["powermenu-toggle"]}
+          widthRequest={40}
+          heightRequest={40}
           onClicked={() => {
             app.toggle_window(`powermenu-${gdkmonitor.connector}`);
             win.hide();

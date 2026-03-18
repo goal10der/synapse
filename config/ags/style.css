@@ -1315,7 +1315,7 @@ popover listview row modelbutton {
 }
 
 .powermenu-toggle {
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--surface_container);
   border-radius: 8px;
   padding: 6px 10px;
 }
