@@ -7,9 +7,13 @@ A modern Hyprland configuration with dynamic Material You theming and a custom A
 
 ## Preview
 
-https://github.com/user-attachments/assets/49df6e5d-170e-47ee-a5e3-40f8b6e4a929
+https://github.com/user-attachments/assets/a81ac816-09c3-4425-a689-263ee0f62816
 
 _Wallpaper photographed by me_
+
+
+
+
 
 ## Features
 
