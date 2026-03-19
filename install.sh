@@ -257,7 +257,6 @@ install_dotfiles() {
     
     # Create Wallpapers directory
     mkdir -p "$HOME/Wallpapers"
-    mkdir -p "$HOME/.cache/matugen"
     
     # Check and copy default wallpaper
     if [ -f "$SCRIPT_DIR/DefaultWallpaper/morningafter.JPG" ]; then
