@@ -11,10 +11,8 @@ export class Variable<T> {
   }
 
   set(newValue: T): void {
-    if (this.value !== newValue) {
-      this.value = newValue;
-      this.subscribers.forEach((callback) => callback(this.value));
-    }
+    this.value = newValue;
+    this.subscribers.forEach((callback) => callback(this.value));
   }
 
   subscribe(callback: (value: T) => void): () => void {

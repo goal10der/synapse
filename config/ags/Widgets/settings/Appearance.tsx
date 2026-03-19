@@ -2,19 +2,17 @@ import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import WallpaperPicker from "./WallpaperPicker";
 import { matugenState, runMatugen } from "../Settings";
-import Notifd from "gi://AstalNotifd";
-import { createState } from "ags";
+import { Variable } from "../../utils/Variable";
 import { workspaceCount, setWorkspaceCount } from "../Settings";
 
-export const [notificationTimeout, setNotificationTimeout] = createState(5000);
+// Use Variable so Notificationpopup can call .get() and .subscribe() on it
+export const notificationTimeout = new Variable(5000);
 
 export default function AppearancePage({
   scaleFactor,
 }: {
   scaleFactor: number;
 }) {
-  const notifd = Notifd.get_default();
-
   // Debounce timer ID for Matugen
   let matugenTimeoutId: number | null = null;
 
@@ -74,13 +72,12 @@ export default function AppearancePage({
                 const updateValue = () => {
                   self.text = notificationTimeout.get().toString();
                 };
-
                 updateValue();
 
                 const applyValue = () => {
                   const value = parseInt(self.text);
                   if (!isNaN(value) && value >= 1000 && value <= 30000) {
-                    setNotificationTimeout(value);
+                    notificationTimeout.set(value);
                   } else {
                     updateValue();
                   }
@@ -136,7 +133,7 @@ export default function AppearancePage({
                 };
 
                 syncText(workspaceCount.get());
-                workspaceCount.subscribe(syncText);
+                const unsub = workspaceCount.subscribe(syncText);
 
                 const apply = () => {
                   const val = parseInt(self.text);
@@ -151,6 +148,8 @@ export default function AppearancePage({
                 const focus = new Gtk.EventControllerFocus();
                 focus.connect("leave", apply);
                 self.add_controller(focus);
+                // Unsubscribe when widget is destroyed to avoid leak
+                self.connect("destroy", unsub);
               }}
             />
 
@@ -188,12 +187,10 @@ export default function AppearancePage({
               self.connect("notify::selected", () => {
                 const selected = tonalSpots[self.selected];
 
-                // Remove existing timeout if user changes selection again quickly
                 if (matugenTimeoutId !== null) {
                   GLib.source_remove(matugenTimeoutId);
                 }
 
-                // Debounce: wait 500ms before running the heavy Matugen script
                 matugenTimeoutId = GLib.timeout_add(
                   GLib.PRIORITY_DEFAULT,
                   500,

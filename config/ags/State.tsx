@@ -23,9 +23,21 @@ const defaultConfig: BarConfig = {
   right: ["tray", "sidebar", "battery"],
 };
 
-export const barConfig = new Variable<BarConfig>(defaultConfig);
-export const editMode = new Variable<boolean>(false);
 const CONFIG_PATH = `${GLib.get_user_data_dir()}/ags/bar-layout.json`;
+
+export function loadBarConfig(): BarConfig {
+  try {
+    const file = Gio.File.new_for_path(CONFIG_PATH);
+    if (!file.query_exists(null)) return defaultConfig;
+    const [, contents] = file.load_contents(null);
+    return JSON.parse(new TextDecoder().decode(contents)) as BarConfig;
+  } catch (e) {
+    console.error("Failed to load bar config:", e);
+    return defaultConfig;
+  }
+}
+export const barConfig = new Variable<BarConfig>(loadBarConfig());
+export const editMode = new Variable<boolean>(false);
 
 export function toggleEditMode(): void {
   editMode.set(!editMode.get());
@@ -34,10 +46,9 @@ export function toggleEditMode(): void {
 export function saveBarConfig(config: BarConfig): void {
   barConfig.set(config);
   try {
+    GLib.mkdir_with_parents(GLib.path_get_dirname(CONFIG_PATH), 0o755);
     const file = Gio.File.new_for_path(CONFIG_PATH);
-    const contents = JSON.stringify(config, null, 2);
-    const bytes = new TextEncoder().encode(contents);
-
+    const bytes = new TextEncoder().encode(JSON.stringify(config, null, 2));
     file.replace_contents(
       bytes,
       null,
@@ -47,24 +58,5 @@ export function saveBarConfig(config: BarConfig): void {
     );
   } catch (e) {
     console.error("Failed to save bar config:", e);
-  }
-}
-
-export function loadBarConfig(): BarConfig {
-  try {
-    const file = Gio.File.new_for_path(CONFIG_PATH);
-
-    if (!file.query_exists(null)) {
-      return defaultConfig;
-    }
-
-    const [, contents] = file.load_contents(null);
-    const decoder = new TextDecoder();
-    const config = JSON.parse(decoder.decode(contents)) as BarConfig;
-    barConfig.set(config);
-    return config;
-  } catch (e) {
-    console.error("Failed to load bar config:", e);
-    return defaultConfig;
   }
 }

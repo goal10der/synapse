@@ -2,7 +2,6 @@ import Gtk from "gi://Gtk?version=4.0";
 import GLib from "gi://GLib";
 import Bluetooth from "gi://AstalBluetooth";
 import { onCleanup } from "ags";
-// Use the shared Variable from utils instead of a local duplicate.
 import { Variable } from "../../utils/Variable";
 
 export default function BluetoothPage() {
@@ -144,7 +143,6 @@ export default function BluetoothPage() {
       cssClasses: ["bt-connect-btn"],
       valign: Gtk.Align.CENTER,
     });
-    // Keep button label in sync.
     devSignals.push(
       dev.connect("notify::connected", () => {
         connectBtn.label = dev.connected ? "Disconnect" : "Connect";
@@ -273,11 +271,11 @@ export default function BluetoothPage() {
         vexpand
         $={(self: any) => {
           const unsub = devices.subscribe((list) => {
+            // Remove all children — no .destroy() needed, remove() is sufficient
             let child = self.get_first_child();
             while (child) {
               const next = child.get_next_sibling();
               self.remove(child);
-              if (typeof child.destroy === "function") child.destroy();
               child = next;
             }
 

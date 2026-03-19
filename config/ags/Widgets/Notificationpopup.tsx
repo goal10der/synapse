@@ -1,6 +1,5 @@
 import Astal from "gi://Astal?version=4.0";
 import Gtk from "gi://Gtk?version=4.0";
-import Gdk from "gi://Gdk?version=4.0";
 import Notifd from "gi://AstalNotifd";
 import Pango from "gi://Pango";
 import { onCleanup, createState, For, createBinding } from "ags";
@@ -20,8 +19,15 @@ function Notification({
 }) {
   let timeoutId: number | null = null;
 
+  const clearTimeout = () => {
+    if (timeoutId !== null) {
+      GLib.source_remove(timeoutId);
+      timeoutId = null;
+    }
+  };
+
   const scheduleAutoHide = () => {
-    if (timeoutId !== null) GLib.source_remove(timeoutId);
+    clearTimeout();
     timeoutId = GLib.timeout_add(
       GLib.PRIORITY_DEFAULT,
       notificationTimeout.get(),
@@ -35,17 +41,17 @@ function Notification({
 
   scheduleAutoHide();
   const unsub = notificationTimeout.subscribe(scheduleAutoHide);
+
   notification.connect("resolved", () => {
     unsub();
-    if (timeoutId !== null) GLib.source_remove(timeoutId);
+    clearTimeout();
   });
 
-  // 1. HARD LIMITS: Fixed height and width
   const box = new Gtk.Box({
     css_classes: ["notification-popup"],
     spacing: 10,
     width_request: 400,
-    height_request: 90, // Keeps it consistent
+    height_request: 90,
   });
 
   if (notification.image) {
@@ -83,7 +89,7 @@ function Notification({
       halign: Gtk.Align.START,
       css_classes: ["notification-popup-summary"],
       ellipsize: Pango.EllipsizeMode.END,
-      max_width_chars: 25, // Force ellipsis on title
+      max_width_chars: 25,
     }),
   );
 
@@ -92,7 +98,12 @@ function Notification({
     valign: Gtk.Align.START,
   });
   closeBtn.set_child(new Gtk.Label({ label: "×" }));
-  closeBtn.connect("clicked", () => notification.dismiss());
+  closeBtn.connect("clicked", () => {
+    // Clean up subscription and timer before dismissing
+    unsub();
+    clearTimeout();
+    notification.dismiss();
+  });
   header.append(closeBtn);
   content.append(header);
 
@@ -103,9 +114,9 @@ function Notification({
       use_markup: true,
       halign: Gtk.Align.START,
       css_classes: ["notification-popup-body"],
-      lines: 2, // Max 2 lines of text
+      lines: 2,
       ellipsize: Pango.EllipsizeMode.END,
-      max_width_chars: 40, // HARD LIMIT to prevent horizontal expansion
+      max_width_chars: 40,
     });
     content.append(body);
   }

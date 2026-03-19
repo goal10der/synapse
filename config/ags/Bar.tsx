@@ -20,6 +20,8 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
 
   const { TOP, LEFT, RIGHT } = Astal.WindowAnchor;
   const draggableContainers = new Map<WidgetType, Gtk.Box>();
+  const dropZoneCache = new Map<Section, Gtk.Box>();
+
   const createWidget = (type: WidgetType): Gtk.Widget => {
     switch (type) {
       case "clock":
@@ -96,6 +98,20 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
     return dragBox;
   };
 
+  // Returns controllers of the given types from a widget
+  const collectControllers = (
+    widget: Gtk.Widget,
+    ...types: Function[]
+  ): Gtk.EventController[] => {
+    const result: Gtk.EventController[] = [];
+    const model = widget.observe_controllers();
+    for (let i = 0; i < model.get_n_items(); i++) {
+      const c = model.get_item(i) as Gtk.EventController;
+      if (types.some((T) => c instanceof T)) result.push(c);
+    }
+    return result;
+  };
+
   const createDraggableContainer = (type: WidgetType): Gtk.Box => {
     const container = new Gtk.Box();
     container.add_css_class("draggable-widget");
@@ -112,25 +128,14 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
 
     const updateEditMode = () => {
       const isEditMode = editMode.get();
-      const controllers: Gtk.EventController[] = [];
 
-      // Collect all existing drag/drop controllers
-      let i = 0;
-      let controller = container.observe_controllers().get_item(i);
-      while (controller !== null) {
-        if (
-          controller instanceof Gtk.DragSource ||
-          controller instanceof Gtk.DropTarget
-        ) {
-          controllers.push(controller);
-        }
-        i++;
-        controller = container.observe_controllers().get_item(i);
-      }
+      collectControllers(container, Gtk.DragSource, Gtk.DropTarget).forEach(
+        (c) => container.remove_controller(c),
+      );
 
-      controllers.forEach((c) => container.remove_controller(c));
       if (isEditMode) {
         container.add_css_class("edit-mode");
+
         const dragSource = Gtk.DragSource.new();
         dragSource.set_actions(Gdk.DragAction.MOVE);
         dragSource.connect("prepare", () => {
@@ -139,7 +144,7 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
           value.set_string(type);
           return Gdk.ContentProvider.new_for_value(value);
         });
-        dragSource.connect("drag-begin", (_source, drag) => {
+        dragSource.connect("drag-begin", (_source, _drag) => {
           draggedWidget = type;
           const dragIcon = createDragIcon(type);
           const paintable = new Gtk.WidgetPaintable({ widget: dragIcon });
@@ -181,7 +186,7 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
             right: [...currentConfig.right],
           };
           for (const section of ["left", "center", "right"] as const) {
-            const index = newConfig[section].indexOf(draggedWidget);
+            const index = newConfig[section].indexOf(draggedWidget!);
             if (index !== -1) {
               newConfig[section].splice(index, 1);
               break;
@@ -192,7 +197,7 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
             if (targetIndex !== -1) {
               const insertIndex =
                 position === "before" ? targetIndex : targetIndex + 1;
-              newConfig[section].splice(insertIndex, 0, draggedWidget);
+              newConfig[section].splice(insertIndex, 0, draggedWidget!);
               break;
             }
           }
@@ -231,19 +236,11 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
 
     const updateEditMode = () => {
       const isEditMode = editMode.get();
-      const controllers: Gtk.EventController[] = [];
 
-      let i = 0;
-      let controller = dropZone.observe_controllers().get_item(i);
-      while (controller !== null) {
-        if (controller instanceof Gtk.DropTarget) {
-          controllers.push(controller);
-        }
-        i++;
-        controller = dropZone.observe_controllers().get_item(i);
-      }
+      collectControllers(dropZone, Gtk.DropTarget).forEach((c) =>
+        dropZone.remove_controller(c),
+      );
 
-      controllers.forEach((c) => dropZone.remove_controller(c));
       if (isEditMode) {
         const dropTarget = Gtk.DropTarget.new(
           GObject.TYPE_STRING,
@@ -271,13 +268,13 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
             right: [...currentConfig.right],
           };
           for (const sec of ["left", "center", "right"] as const) {
-            const index = newConfig[sec].indexOf(draggedWidget);
+            const index = newConfig[sec].indexOf(draggedWidget!);
             if (index !== -1) {
               newConfig[sec].splice(index, 1);
               break;
             }
           }
-          newConfig[section].push(draggedWidget);
+          newConfig[section].push(draggedWidget!);
           saveBarConfig(newConfig);
           draggedWidget = null;
           isOver = false;
@@ -295,10 +292,15 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
   };
 
   const getOrCreateContainer = (type: WidgetType): Gtk.Box => {
-    if (!draggableContainers.has(type)) {
+    if (!draggableContainers.has(type))
       draggableContainers.set(type, createDraggableContainer(type));
-    }
     return draggableContainers.get(type)!;
+  };
+
+  const getOrCreateDropZone = (section: Section): Gtk.Box => {
+    if (!dropZoneCache.has(section))
+      dropZoneCache.set(section, createDropZone(section));
+    return dropZoneCache.get(section)!;
   };
 
   const updateBar = () => {
@@ -318,7 +320,9 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
 
     const populate = (box: Gtk.Box, items: WidgetType[], section: Section) => {
       if (items.length === 0 && isEditMode) {
-        box.append(createDropZone(section));
+        const dz = getOrCreateDropZone(section);
+        if (dz.get_parent()) dz.get_parent()?.remove(dz);
+        box.append(dz);
       } else {
         items.forEach((type) => {
           const container = getOrCreateContainer(type);
@@ -332,6 +336,7 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
     populate(centerBox, config.center, "center");
     populate(rightBox, config.right, "right");
   };
+
   const unsub1 = barConfig.subscribe(updateBar);
   const unsub2 = editMode.subscribe(updateBar);
 
@@ -344,11 +349,8 @@ export default function Bar({ gdkmonitor }: { gdkmonitor: Gdk.Monitor }) {
     <window
       $={(self) => {
         const updateWindowMode = (isEdit: boolean) => {
-          if (isEdit) {
-            self.add_css_class("bar-edit-mode");
-          } else {
-            self.remove_css_class("bar-edit-mode");
-          }
+          if (isEdit) self.add_css_class("bar-edit-mode");
+          else self.remove_css_class("bar-edit-mode");
         };
         updateWindowMode(editMode.get());
         const unsub = editMode.subscribe(updateWindowMode);

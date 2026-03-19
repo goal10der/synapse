@@ -51,6 +51,15 @@ async function execAsync(cmd: string): Promise<string> {
   }
 }
 
+/** Resolves after `ms` milliseconds without blocking the main loop. */
+const delay = (ms: number): Promise<void> =>
+  new Promise((resolve) =>
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => {
+      resolve();
+      return GLib.SOURCE_REMOVE;
+    }),
+  );
+
 function commandExists(cmd: string): boolean {
   return execSync(`which ${cmd}`) !== "";
 }
@@ -78,12 +87,7 @@ function nmcliGetDevice(): string {
 
 async function nmcliScanAndList(device: string): Promise<WifiNetwork[]> {
   await execAsync(`nmcli device wifi rescan ifname ${device}`).catch(() => {});
-  await new Promise((r) =>
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
-      r(null);
-      return GLib.SOURCE_REMOVE;
-    }),
-  );
+  await delay(1500);
 
   const out = await execAsync(
     "nmcli -t -f IN-USE,SSID,SECURITY,SIGNAL device wifi list",
@@ -144,12 +148,7 @@ function iwctlGetDevice(): string {
 
 async function iwctlScanAndList(device: string): Promise<WifiNetwork[]> {
   await execAsync(`iwctl station ${device} scan`);
-  await new Promise((r) =>
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
-      r(null);
-      return GLib.SOURCE_REMOVE;
-    }),
-  );
+  await delay(1000);
 
   const out = await execAsync(`iwctl station ${device} get-networks`);
   const networks: WifiNetwork[] = [];
@@ -429,7 +428,6 @@ export default function NetworkPage() {
                 while (child) {
                   const next = child.get_next_sibling();
                   self.remove(child);
-                  if (child.run_dispose) child.run_dispose();
                   child = next;
                 }
                 networkList.forEach((n) => self.append(createNetworkItem(n)));

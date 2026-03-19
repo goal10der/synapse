@@ -19,6 +19,7 @@ import { toggleEditMode, editMode } from "./State";
 const configDir = `${GLib.get_user_config_dir()}/ags`;
 const STYLE_PATH = `${configDir}/style.css`;
 const MATUGEN_DIR = `${GLib.get_home_dir()}/.config/ags`;
+
 app.start({
   instanceName: "synapse",
   css: STYLE_PATH,
@@ -62,14 +63,19 @@ app.start({
   },
   main() {
     const _app: any = app;
-    _app.applauncherWin = Applauncher() as Gtk.Window;
-    _app.applauncherWin.visible = false;
-    _app.applauncherWin.hide();
-    app.add_window(_app.applauncherWin);
+
+    // Applauncher is initialised imperatively (plain function call, not JSX)
+    // so we are not using a JSX-returned value — this is safe for AGS v4.
+    const launcherWin = Applauncher() as Gtk.Window;
+    launcherWin.visible = false;
+    launcherWin.hide();
+    app.add_window(launcherWin);
+    _app.applauncherWin = launcherWin;
+
     const dir = Gio.File.new_for_path(MATUGEN_DIR);
     try {
       _app.fileMonitor = dir.monitor_directory(Gio.FileMonitorFlags.NONE, null);
-      _app.fileMonitor.connect("changed", (_self, file) => {
+      _app.fileMonitor.connect("changed", (_self: any, file: any) => {
         if (file.get_basename() !== "colors.css") return;
         if ((_app.debounceTimerId ?? 0) > 0)
           GLib.source_remove(_app.debounceTimerId);
@@ -87,6 +93,8 @@ app.start({
       console.error(e);
     }
 
+    // Return a single JSX element — no fragment needed, avoiding the
+    // "nesting Fragments are not yet supported" gnim error.
     const monitors = createBinding(app, "monitors");
     return (
       <For each={monitors}>
