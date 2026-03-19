@@ -2,6 +2,7 @@
 # Global settings (mandatory)
 default_mode = 'dark'
 default_type = 'scheme-tonal-spot'
+source_color_index = '0'
 
 [templates.colors]
 input_path = '~/.config/matugen/templates/colors.css'

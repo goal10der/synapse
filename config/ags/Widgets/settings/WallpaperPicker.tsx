@@ -117,7 +117,7 @@ export default function WallpaperPicker() {
       }
 
       execAsync(
-        `bash -c 'pkill -x mpvpaper; awww clear; sleep 0.2; mpvpaper "*" "${path}" --mpv-options "no-audio loop"; matugen image --type ${matugenState.currentTonalSpot} "${path}"'`,
+        `bash -c 'pkill -x mpvpaper; awww clear; sleep 0.2; mpvpaper "*" "${path}" --mpv-options "no-audio loop"; matugen image --type ${matugenState.currentTonalSpot} "${path}" --source-color-index 0'`,
       )
         .then(() => {
           setLastWallpaperPath(path);
@@ -141,7 +141,7 @@ export default function WallpaperPicker() {
       // Remember this path so the tonal-spot dropdown can re-run matugen later
       setLastWallpaperPath(path);
 
-      const cmd = `bash -c 'awww img "${path}" -t wipe --transition-duration 3 --transition-fps 60 && matugen image --type ${matugenState.currentTonalSpot} "${path}" &'`;
+      const cmd = `bash -c 'awww img "${path}" -t wipe --transition-duration 3 --transition-fps 60 && matugen image --type ${matugenState.currentTonalSpot} "${path}" --source-color-index 0 &'`;
       execAsync(cmd)
         .then(() => {
           GLib.spawn_command_line_async(

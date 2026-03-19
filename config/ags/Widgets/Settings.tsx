@@ -76,7 +76,7 @@ export const runMatugen = (spot: string, imagePath?: string) => {
     return;
   }
 
-  const cmd = `bash -c 'matugen image -t ${spot} "${target}"'`;
+  const cmd = `bash -c 'matugen image -t ${spot} "${target}" --source-color-index 0'`;
   execAsync(cmd);
 };
 function TabButton({ label, id, activeTab, icon }: any) {
