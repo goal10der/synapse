@@ -9,13 +9,13 @@ sudo_prime() {
         echo -e "\n\033[1;31m[!] Sudo authentication failed. Exiting...\033[0m"
         exit 1
     fi
-    while true; do 
+    while true; do
         sudo -n true
         sleep 60
         kill -0 "$$" || exit
     done 2>/dev/null &
-    
-    SUDO_PID=$! 
+
+    SUDO_PID=$!
     echo -e "\033[0;32m[✓] Sudo access granted.\033[0m"
 }
 
@@ -56,7 +56,7 @@ getargs() {
                 ;;
         esac
     done
-    
+
     if [[ -z "$AUR_HELPER" ]]; then
         echo -e "Error: --aur-helper=[yay|paru] is required.\n"
         show_help
@@ -73,7 +73,7 @@ getargs() {
 getdistro() {
     if [ -f /etc/os-release ]; then
         . /etc/os-release
-        
+
         # Check for known Arch-based IDs
         if [[ "$ID" != "arch" && "$ID_LIKE" != *"arch"* ]]; then
             echo -e "\033[1;33m[!] WARNING: Distro not officially supported.\033[0m"
@@ -81,7 +81,7 @@ getdistro() {
             echo "This script is designed for Arch-based systems."
             echo ""
             read -p "Do you want to attempt the installation anyway? [y/N]: " confirm
-            
+
             if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
                 echo "Installation aborted by user."
                 exit 1
@@ -100,7 +100,7 @@ cleanup() {
     [ -n "$SUDO_PID" ] && kill "$SUDO_PID" 2>/dev/null
     sudo -k
     rm -rf /tmp/yay-bin /tmp/paru-bin 2>/dev/null
-    
+
     exit 1
 }
 
@@ -108,14 +108,14 @@ install_aur_helper() {
     local helper=$1
     if ! command -v "$helper" &> /dev/null; then
         echo -e "\033[0;34m[→] $helper not found. Installing from AUR...\033[0m"
-        
+
         # Ensure git and base-devel are there (needed to build any AUR package)
         sudo pacman -S --needed ${CONFIRM_FLAG:-} git base-devel
-        
+
         git clone "https://aur.archlinux.org/${helper}-bin.git" "/tmp/${helper}-bin"
-        
+
         pushd "/tmp/${helper}-bin" > /dev/null || exit 1
-        
+
         # Build with error checking
         if makepkg -si ${CONFIRM_FLAG:-}; then
             echo -e "\033[0;32m[✓] $helper installed successfully.\033[0m"
@@ -124,7 +124,7 @@ install_aur_helper() {
             popd > /dev/null
             exit 1
         fi
-        
+
         popd > /dev/null || exit 1
         rm -rf "/tmp/${helper}-bin"
     else
@@ -140,11 +140,11 @@ confirm_install() {
     echo "Zen Browser: ${ZEN_BROWSER_OPTION:-(no)}"
     echo "Confirm: ${CONFIRM_FLAG:-(Manual confirmation)}"
     echo -e "------------------------------------------\n"
-    
+
     if [[ -z "$CONFIRM_FLAG" ]]; then
         read -p "Proceed with installation? [y/N]: " final_confirm
         if [[ ! "$final_confirm" =~ ^[Yy]$ ]]; then
-            cleanup 
+            cleanup
         fi
     fi
 
@@ -156,10 +156,10 @@ backup_config() {
     local DATE=$(date +%Y%m%d_%H%M%S)
     local BACKUP_DIR="$HOME/config_backup_$DATE"
     mkdir -p "$BACKUP_DIR"
-    
+
     local targets=(ags btop fish foot hypr matugen starship.toml gtk-3.0 gtk-4.0)
     local backed_up=0
-    
+
     for item in "${targets[@]}"; do
         if [ -e "$HOME/.config/$item" ]; then
             cp -rf "$HOME/.config/$item" "$BACKUP_DIR/" 2>/dev/null
@@ -167,7 +167,7 @@ backup_config() {
             ((backed_up++))
         fi
     done
-    
+
     if [ $backed_up -eq 0 ]; then
         echo -e "\033[0;33m[→] No existing configs found to backup.\033[0m"
         rm -rf "$BACKUP_DIR"
@@ -184,11 +184,11 @@ update_system() {
 
 install_pacman_packages() {
     local packages=(
-        pipewire-jack hyprland iwd foot thunar brightnessctl slurp 
-        wl-clipboard swappy wireplumber polkit-gnome hypridle 
-        xdg-desktop-portal-hyprland qt6ct qt5ct blueman geoclue 
-        btop starship fish gvfs nss meson vala valadoc 
-        gobject-introspection libnotify hyprlock grim tumbler 
+        pipewire-jack hyprland foot thunar brightnessctl slurp
+        wl-clipboard swappy wireplumber polkit-gnome hypridle
+        xdg-desktop-portal-hyprland qt6ct qt5ct blueman geoclue
+        btop starship fish gvfs nss meson vala valadoc
+        gobject-introspection libnotify hyprlock grim tumbler
         xdg-desktop-portal-gtk
     )
 
@@ -221,9 +221,9 @@ install_pacman_packages() {
 install_aur_packages() {
     local helper=$1
     local aur_packages=(
-        aylurs-gtk-shell-git 
-        libastal-meta 
-        matugen 
+        aylurs-gtk-shell-git
+        libastal-meta
+        matugen
         awww-bin
     )
 
@@ -254,10 +254,10 @@ install_aur_packages() {
 
 install_dotfiles() {
     echo -e "\033[0;34m[→] Cleaning and installing dotfiles...\033[0m"
-    
+
     # Create Wallpapers directory
     mkdir -p "$HOME/Wallpapers"
-    
+
     # Check and copy default wallpaper
     if [ -f "$SCRIPT_DIR/DefaultWallpaper/morningafter.JPG" ]; then
         cp "$SCRIPT_DIR/DefaultWallpaper/morningafter.JPG" "$HOME/Wallpapers/Default_Wallpaper.jpg"
@@ -265,9 +265,9 @@ install_dotfiles() {
     else
         echo -e "\033[1;33m    [!] Warning: Default wallpaper not found in repo.\033[0m"
     fi
-    
+
     mkdir -p "$HOME/Downloads"
-    
+
     local targets=(ags btop fish foot hypr matugen starship.toml)
     for item in "${targets[@]}"; do
         # Special handling for hypr to preserve custom directory
@@ -278,7 +278,7 @@ install_dotfiles() {
                 mkdir -p "/tmp/hypr_custom_backup"
                 cp -rf "$HOME/.config/hypr/custom" "/tmp/hypr_custom_backup/"
             fi
-            
+
             # Remove and reinstall hypr config
             if [ -e "$HOME/.config/$item" ]; then
                 rm -rf "$HOME/.config/$item"
@@ -289,7 +289,7 @@ install_dotfiles() {
             else
                 echo -e "\033[1;33m    [!] Warning: $item not found in repo source.\033[0m"
             fi
-            
+
             # Restore custom directory if it was backed up
             if [ -d "/tmp/hypr_custom_backup/custom" ]; then
                 echo "    - Restoring hypr/custom directory..."
@@ -310,9 +310,9 @@ install_dotfiles() {
             fi
         fi
     done
-    
+
     echo -e "\033[0;32m[✓] Dotfiles installation completed.\033[0m"
-    
+
     # Write the installed commit SHA so UpdatePopup can detect newer versions
     local commit_sha
     commit_sha=$(git -C "$SCRIPT_DIR" rev-parse HEAD 2>/dev/null || echo "unknown")
@@ -355,15 +355,15 @@ check_requirements() {
 main() {
     # Change to script directory for reliable path resolution
     cd "$SCRIPT_DIR" || exit 1
-    
+
     trap cleanup SIGINT SIGTERM
-    
+
     getargs "$@"
     getdistro
     check_requirements
     confirm_install
     sudo_prime
-    
+
     # Ensure .config exists
     mkdir -p "$HOME/.config"
 
